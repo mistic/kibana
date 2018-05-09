@@ -29,6 +29,7 @@ module.exports = {
         'packages/kbn-test-subj-selector/**/*',
         'packages/kbn-eslint-import-resolver-kibana/**/*',
         'x-pack/plugins/apm/**/*',
+        'platform/**/*',
       ],
       plugins: ['prettier'],
       rules: Object.assign(

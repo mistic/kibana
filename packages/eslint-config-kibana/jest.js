@@ -1,7 +1,10 @@
 module.exports = {
   overrides: [
     {
-      files: ['**/*.test.js'],
+      files: [
+        '**/*.test.js',
+        '**/__mocks__/**/*.js',
+      ],
       plugins: [
         'jest',
       ],

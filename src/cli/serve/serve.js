@@ -5,6 +5,7 @@ import { resolve } from 'path';
 
 import { fromRoot } from '../../utils';
 import { getConfig } from '../../server/path';
+import { Config } from '../../server/config/config';
 import { readYamlConfig } from './read_yaml_config';
 import { readKeystore } from './read_keystore';
 
@@ -184,7 +185,7 @@ export default function (program) {
       if (CAN_CLUSTER && opts.dev && !isWorker) {
         // stop processing the action and handoff to cluster manager
         const ClusterManager = require(CLUSTER_MANAGER_PATH);
-        await ClusterManager.create(opts, settings);
+        new ClusterManager(opts, settings);
         return;
       }
 
@@ -216,11 +217,18 @@ export default function (program) {
         process.exit(exitCode);
       }
 
-      process.on('SIGHUP', async function reloadConfig() {
+      process.on('SIGHUP', function reloadConfig() {
         const settings = getCurrentSettings();
+        const config = new Config(kbnServer.config.getSchema(), settings);
+
         kbnServer.server.log(['info', 'config'], 'Reloading logging configuration due to SIGHUP.');
-        await kbnServer.applyLoggingConfiguration(settings);
+        kbnServer.applyLoggingConfiguration(config);
         kbnServer.server.log(['info', 'config'], 'Reloaded logging configuration due to SIGHUP.');
+
+        // If new platform config subscription is active, let's notify it with the updated config.
+        if (kbnServer.newPlatform) {
+          kbnServer.newPlatform.updateConfig(config);
+        }
       });
 
       return kbnServer;

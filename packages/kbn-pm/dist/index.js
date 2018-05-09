@@ -36149,7 +36149,7 @@ var _path = __webpack_require__(3);
 function getProjectPaths(rootPath, options) {
     const skipKibanaExtra = Boolean(options['skip-kibana-extra']);
     const ossOnly = Boolean(options.oss);
-    const projectPaths = [rootPath, (0, _path.resolve)(rootPath, 'packages/*')];
+    const projectPaths = [rootPath, (0, _path.resolve)(rootPath, 'packages/*'), (0, _path.resolve)(rootPath, 'platform')];
     if (!ossOnly) {
         projectPaths.push((0, _path.resolve)(rootPath, 'x-pack'));
         projectPaths.push((0, _path.resolve)(rootPath, 'x-pack/plugins/*'));

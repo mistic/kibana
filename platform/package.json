@@ -1,0 +1,17 @@
+{
+  "name": "@kbn/platform",
+  "version": "1.0.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "index.js",
+  "dependencies": {
+    "@kbn/utils": "link:../packages/kbn-utils",
+    "hapi": "^17.4.0",
+    "rxjs": "^6.1.0",
+    "symbol-observable": "^1.2.0"
+  },
+  "devDependencies": {
+    "has-ansi": "^3.0.0",
+    "strip-ansi": "^4.0.0"
+  }
+}

@@ -9,6 +9,7 @@ export default {
     '<rootDir>/src/cli_plugin',
     '<rootDir>/src/dev',
     '<rootDir>/packages',
+    '<rootDir>/platform',
   ],
   collectCoverageFrom: [
     'packages/kbn-ui-framework/src/components/**/*.js',

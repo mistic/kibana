@@ -12,7 +12,11 @@ export function getProjectPaths(rootPath: string, options: ProjectPathOptions) {
   const skipKibanaExtra = Boolean(options['skip-kibana-extra']);
   const ossOnly = Boolean(options.oss);
 
-  const projectPaths = [rootPath, resolve(rootPath, 'packages/*')];
+  const projectPaths = [
+    rootPath,
+    resolve(rootPath, 'packages/*'),
+    resolve(rootPath, 'platform'),
+  ];
 
   if (!ossOnly) {
     projectPaths.push(resolve(rootPath, 'x-pack'));
