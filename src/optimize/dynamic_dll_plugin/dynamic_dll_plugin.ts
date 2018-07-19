@@ -18,6 +18,7 @@
  */
 
 // tslint:disable max-classes-per-file
+/* tslint:disable */
 
 import { ChildProcess, fork } from 'child_process';
 import * as Fs from 'fs';
