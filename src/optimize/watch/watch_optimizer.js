@@ -46,6 +46,8 @@ export default class WatchOptimizer extends BaseOptimizer {
     // log status changes
     this.status$.subscribe(this.onStatusChangeHandler);
 
+    // TODO: Review this reset here
+    await this.uiBundles.resetBundleDir();
     await this.uiBundles.writeEntryFiles();
     await this.uiBundles.ensureStyleFiles();
 
