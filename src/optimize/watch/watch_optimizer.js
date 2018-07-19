@@ -112,6 +112,10 @@ export default class WatchOptimizer extends BaseOptimizer {
   compilerDoneTap = {
     name: 'kibana-compilerDoneTap',
     fn: (stats) => {
+      if (stats.compilation.needAdditionalPass) {
+        return;
+      }
+
       this.initialBuildComplete = true;
       const seconds = parseFloat((stats.endTime - stats.startTime) / 1000).toFixed(2);
 
@@ -130,8 +134,15 @@ export default class WatchOptimizer extends BaseOptimizer {
     }
   }
 
-  compilerWatchErrorHandler = (error) => {
-    if (error) {
+  compilerWatchErrorHandler = (error, stats) => {
+    if (error && stats) {
+      const seconds = parseFloat((stats.endTime - stats.startTime) / 1000).toFixed(2);
+      this.status$.next({
+        type: STATUS.FAILURE,
+        seconds,
+        error: this.failedStatsToError(stats)
+      });
+    } else if (error) {
       this.status$.next({
         type: STATUS.FATAL,
         error

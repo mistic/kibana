@@ -32,6 +32,10 @@ export default class FsOptimizer extends BaseOptimizer {
       return super.run((err, stats) => {
         if (err || !stats) return cb(err);
 
+        if (this.isDllUpdateNeeded(stats)) {
+          return cb(new Error('dll update needed'));
+        }
+
         if (this.isFailure(stats)) {
           return cb(this.failedStatsToError(stats));
         }

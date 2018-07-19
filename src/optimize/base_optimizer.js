@@ -25,7 +25,8 @@ import webpack from 'webpack';
 import Stats from 'webpack/lib/Stats';
 import webpackMerge from 'webpack-merge';
 import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
-import { DLLBundlerPlugin } from './dll_bundler';
+
+import { DynamicDllPlugin } from './dynamic_dll_plugin';
 
 import { defaults } from 'lodash';
 
@@ -97,27 +98,6 @@ export default class BaseOptimizer {
         });
       }
     });
-  }
-
-  getDLLConfig() {
-    return {
-      dllEntries: [
-        {
-          name: 'vendor'
-        }
-      ],
-      context: fromRoot('.'),
-      isDistributable: IS_KIBANA_DISTRIBUTABLE,
-      outputPath: `${this.uiBundles.getWorkingDir()}/dlls`,
-      publicPath: PUBLIC_PATH_PLACEHOLDER,
-      mergeConfig: {
-        node: { fs: 'empty', child_process: 'empty', dns: 'empty', net: 'empty', tls: 'empty' },
-        resolve: {
-          extensions: ['.js', '.json'],
-          mainFields: ['browser', 'browserify', 'main']
-        }
-      }
-    };
   }
 
   getConfig() {
@@ -225,6 +205,8 @@ export default class BaseOptimizer {
       },
 
       plugins: [
+        new DynamicDllPlugin(this.uiBundles),
+
         new MiniCssExtractPlugin({
           filename: '[name].style.css',
         }),
@@ -400,18 +382,8 @@ export default class BaseOptimizer {
       }
     };
 
-    const dllBundlerPlugin = {
-      plugins: [
-        new DLLBundlerPlugin({
-          dllConfig: this.getDLLConfig(),
-          log: this.log
-        }),
-      ]
-    };
-
     return webpackMerge(
       commonConfig,
-      dllBundlerPlugin,
       IS_KIBANA_DISTRIBUTABLE
         ? {}
         : transpileTsConfig,
@@ -456,6 +428,6 @@ export default class BaseOptimizer {
   }
 
   async run(...args) {
-    await this.compiler.run(args);
+    await this.compiler.run(...args);
   }
 }
