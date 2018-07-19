@@ -96,8 +96,13 @@ export class Compiler {
         return;
       }
 
-      content.forEach(({ entryPaths, name }) => {
-        this.upsertDllEntryFile(entryPaths, name);
+
+      console.log('FODI');
+
+      this.upsertDllEntryFile(JSON.parse(content));
+
+      process.send({
+        type: 'dllEntryPathsWrote'
       });
 
       if (this.isDistributable) {

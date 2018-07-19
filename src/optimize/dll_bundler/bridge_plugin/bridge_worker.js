@@ -17,5 +17,7 @@
  * under the License.
  */
 
-export { DLLBundlerCompiler } from './compiler';
-export { DLLBundlerBridgePlugin } from './bridge_plugin';
+import { DLLBundlerCompiler } from '../compiler';
+
+const dllConfig = process.env.dllConfig;
+new DLLBundlerCompiler(JSON.parse(dllConfig), null);

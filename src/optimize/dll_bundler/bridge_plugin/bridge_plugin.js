@@ -19,27 +19,38 @@
 
 import NormalModule from 'webpack/lib/NormalModule';
 import { fromRoot } from '../../../utils';
+import path from 'path';
+import webpack from 'webpack';
 
 export class BridgePlugin {
-  constructor({ compilerProcess }) {
+  constructor({ compilerProcess, dllConfig }) {
     this.compilerProcess = compilerProcess;
+    this.dllConfig = dllConfig;
     this.nodeModulesEntryPaths = {};
 
     this.stopCompilerWhenNeeded();
   }
 
   apply(compiler) {
+
     compiler.hooks.compile.tap({
       name: 'dllBundlerBridgePlugin-buildEntryPaths',
       fn: ({ normalModuleFactory }) => {
         this.buildEntryPaths(normalModuleFactory);
+        new webpack.DllReferencePlugin({
+          context: this.dllConfig.context,
+          manifest: require.resolve(`${ this.dllConfig.outputPath }/vendor.json`),
+        }).apply(compiler);
       }
     });
 
     compiler.hooks.done.tap({
       name: 'dllBundlerBridgePlugin-sendEntryPaths',
       fn: () => {
-        this.sendEntryPaths();
+        if (!this.sent) {
+          this.sendEntryPaths();
+          this.sent = true;
+        }
       }
     });
 
@@ -89,7 +100,11 @@ export class BridgePlugin {
 
           if (!result.request.includes('loader')
             && result.request.includes(nodeModulesPath)) {
-            this.nodeModulesEntryPaths[result.request] = true;
+            // TODO: Improve the way we build relative path for result.request
+            const relativeRequestPath = result.request.replace(`${fromRoot('.')}/`, '../../../');
+            const normalizedRequestPath = path.normalize(relativeRequestPath);
+
+            this.nodeModulesEntryPaths[normalizedRequestPath] = true;
           }
 
           let createdModule = normalModuleFactory.hooks.createModule.call(result);
@@ -113,7 +128,7 @@ export class BridgePlugin {
     if (this.compilerProcess && this.compilerProcess.send) {
       this.compilerProcess.send({
         type: 'dllEntryPaths',
-        content: this.nodeModulesEntryPaths
+        content: JSON.stringify(Object.keys(this.nodeModulesEntryPaths))
       });
     }
   }

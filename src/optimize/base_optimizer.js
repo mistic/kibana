@@ -81,14 +81,13 @@ export default class BaseOptimizer {
     if (this.isCompilerReady()) return this;
 
     if (this.shouldStartDLLCompiler()) {
-      this.dllCompilerProcess = cp.fork(
-        fromRoot('.', '/src/optimize/dll_bundler/index.js'),
-        {
-          env: {
-            dllConfig: 29
-          }
+      this.dllCompilerProcess = cp.fork(require.resolve('./dll_bundler/bridge_plugin/bridge_worker'), [], {
+        execArgv: ['-r', require.resolve('../setup_node_env')],
+        stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
+        env: {
+          dllConfig: JSON.stringify(this.getDLLConfig())
         }
-      );
+      });
     }
 
     const compilerConfig = this.getConfig();
@@ -118,7 +117,7 @@ export default class BaseOptimizer {
 
   getDLLBundlerBridgePlugin() {
     return this.shouldStartDLLCompiler()
-      ? new DLLBundlerBridgePlugin({ compilerProcess: this.dllCompilerProcess })
+      ? new DLLBundlerBridgePlugin({ compilerProcess: this.dllCompilerProcess, dllConfig: this.getDLLConfig() })
       : {};
   }
 
@@ -251,10 +250,10 @@ export default class BaseOptimizer {
       plugins: [
         this.getDLLBundlerBridgePlugin(),
 
-        new webpack.DllReferencePlugin({
+        /*new webpack.DllReferencePlugin({
           context: fromRoot('.'),
           manifest: require(`${this.uiBundles.getWorkingDir()}/dlls/vendor.json`)
-        }),
+        }),*/
 
         new MiniCssExtractPlugin({
           filename: '[name].style.css',
