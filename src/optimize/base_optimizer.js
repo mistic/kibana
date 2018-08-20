@@ -18,9 +18,8 @@
  */
 
 import { writeFile } from 'fs';
-import os from 'os';
 import Boom from 'boom';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 import webpack from 'webpack';
 import Stats from 'webpack/lib/Stats';
@@ -38,7 +37,6 @@ const BABEL_PRESET_PATH = require.resolve('@kbn/babel-preset/webpack_preset');
 const BABEL_EXCLUDE_RE = [
   /[\/\\](webpackShims|node_modules|bower_components)[\/\\]/,
 ];
-const STATS_WARNINGS_FILTER = /export .* was not found in/;
 
 export default class BaseOptimizer {
   constructor(opts) {
@@ -83,19 +81,13 @@ export default class BaseOptimizer {
   }
 
   writeStatsHook() {
-    this.compiler.hooks.done.tap({
-      name: 'kibana-writeStatsJson',
-      fn: stats => {
-        if (!this.profile || stats.compilation.needAdditionalPass) {
-          return;
-        }
-
-        const path = this.uiBundles.resolvePath('stats.json');
-        const content = JSON.stringify(stats.toJson());
-        writeFile(path, content, function (err) {
-          if (err) throw err;
-        });
-      }
+    this.compiler.plugin('done', stats => {
+      if (!this.profile) return;
+      const path = this.uiBundles.resolvePath('stats.json');
+      const content = JSON.stringify(stats.toJson());
+      writeFile(path, content, function (err) {
+        if (err) throw err;
+      });
     });
   }
 
@@ -122,34 +114,33 @@ export default class BaseOptimizer {
   }
 
   getConfig() {
-    function getStyleLoaderExtractor() {
-      return [
-        MiniCssExtractPlugin.loader
-      ];
-    }
-
     function getStyleLoaders(preProcessors = [], postProcessors = []) {
-      return [
-        ...postProcessors,
-        {
-          loader: 'css-loader',
-          options: {
-            // importLoaders needs to know the number of loaders that follow this one,
-            // so we add 1 (for the postcss-loader) to the length of the preProcessors
-            // array that we merge into this array
-            importLoaders: 1 + preProcessors.length,
-          },
+      return ExtractTextPlugin.extract({
+        fallback: {
+          loader: 'style-loader'
         },
-        {
-          loader: 'postcss-loader',
-          options: {
-            config: {
-              path: POSTCSS_CONFIG_PATH,
+        use: [
+          ...postProcessors,
+          {
+            loader: 'css-loader',
+            options: {
+              // importLoaders needs to know the number of loaders that follow this one,
+              // so we add 1 (for the postcss-loader) to the length of the preProcessors
+              // array that we merge into this array
+              importLoaders: 1 + preProcessors.length,
             },
           },
-        },
-        ...preProcessors,
-      ];
+          {
+            loader: 'postcss-loader',
+            options: {
+              config: {
+                path: POSTCSS_CONFIG_PATH,
+              },
+            },
+          },
+          ...preProcessors,
+        ],
+      });
     }
 
     /**
@@ -193,10 +184,8 @@ export default class BaseOptimizer {
     };
 
     const commonConfig = {
-      mode: 'development',
       node: { fs: 'empty' },
       context: fromRoot('.'),
-      parallelism: os.cpus().length - 1,
       cache: !!this.unsafeCache,
       entry: this.uiBundles.toWebpackEntries(),
 
@@ -211,24 +200,18 @@ export default class BaseOptimizer {
         devtoolModuleFilenameTemplate: '[absolute-resource-path]'
       },
 
-      optimization: {
-        splitChunks: {
-          cacheGroups: {
-            commons: {
-              name: 'commons',
-              chunks: 'initial',
-              minChunks: 2,
-              reuseExistingChunk: true,
-            }
-          }
-        },
-        noEmitOnErrors: true
-      },
-
       plugins: [
-        new MiniCssExtractPlugin({
-          filename: '[name].style.css',
+        new ExtractTextPlugin('[name].style.css', {
+          allChunks: true
         }),
+
+        new webpack.optimize.CommonsChunkPlugin({
+          name: 'commons',
+          filename: 'commons.bundle.js',
+          minChunks: 2,
+        }),
+
+        new webpack.NoEmitOnErrorsPlugin(),
 
         // replace imports for `uiExports/*` modules with a synthetic module
         // created by create_ui_exports_module.js
@@ -262,17 +245,14 @@ export default class BaseOptimizer {
         rules: [
           {
             test: /\.less$/,
-            use: [
-              ...getStyleLoaderExtractor(),
-              ...getStyleLoaders(['less-loader'], maybeAddCacheLoader('less', []))
-            ],
+            use: getStyleLoaders(
+              ['less-loader'],
+              maybeAddCacheLoader('less', [])
+            ),
           },
           {
             test: /\.css$/,
-            use: [
-              ...getStyleLoaderExtractor(),
-              ...getStyleLoaders([], maybeAddCacheLoader('css', []))
-            ],
+            use: getStyleLoaders(),
           },
           {
             test: /\.(html|tmpl)$/,
@@ -318,12 +298,9 @@ export default class BaseOptimizer {
           'node_modules',
           fromRoot('node_modules'),
         ],
-        alias: this.uiBundles.getAliases()
+        alias: this.uiBundles.getAliases(),
+        unsafeCache: this.unsafeCache,
       },
-
-      performance: {
-        hints: false // TODO: review this
-      }
     };
 
     // when running from the distributable define an environment variable we can use
@@ -339,32 +316,49 @@ export default class BaseOptimizer {
     };
 
     // when running from source transpile TypeScript automatically
-    const isSourceConfig = {
-      module: {
-        rules: [
-          {
-            resource: createSourceFileResourceSelector(/\.tsx?$/),
-            use: maybeAddCacheLoader('typescript', [
-              {
-                loader: 'ts-loader',
-                options: {
-                  transpileOnly: true,
-                  experimentalWatchApi: true,
-                  onlyCompileBundledFiles: true,
-                  configFile: fromRoot('tsconfig.browser.json'),
-                  compilerOptions: {
-                    sourceMap: Boolean(this.sourceMaps),
+    const getSourceConfig = () => {
+      // dev/typescript is deleted from the distributable, so only require it if we actually need the source config
+      const { Project } = require('../dev/typescript');
+      const browserProject = new Project(fromRoot('tsconfig.browser.json'));
+
+      return {
+        module: {
+          rules: [
+            {
+              resource: createSourceFileResourceSelector(/\.tsx?$/),
+              use: maybeAddCacheLoader('typescript', [
+                {
+                  loader: 'ts-loader',
+                  options: {
+                    transpileOnly: true,
+                    experimentalWatchApi: true,
+                    onlyCompileBundledFiles: true,
+                    configFile: fromRoot('tsconfig.json'),
+                    compilerOptions: {
+                      ...browserProject.config.compilerOptions,
+                      sourceMap: Boolean(this.sourceMaps),
+                    }
                   }
                 }
-              }
-            ]),
-          }
-        ]
-      },
+              ]),
+            }
+          ]
+        },
 
-      resolve: {
-        extensions: ['.ts', '.tsx'],
-      },
+        stats: {
+          // when typescript doesn't do a full type check, as we have the ts-loader
+          // configured here, it does not have enough information to determine
+          // whether an imported name is a type or not, so when the name is then
+          // exported, typescript has no choice but to emit the export. Fortunately,
+          // the extraneous export should not be harmful, so we just suppress these warnings
+          // https://github.com/TypeStrong/ts-loader#transpileonly-boolean-defaultfalse
+          warningsFilter: /export .* was not found in/
+        },
+
+        resolve: {
+          extensions: ['.ts', '.tsx'],
+        },
+      };
     };
 
     // We need to add react-addons (and a few other bits) for enzyme to work.
@@ -393,46 +387,48 @@ export default class BaseOptimizer {
 
     // in production we set the process.env.NODE_ENV and uglify our bundles
     const productionConfig = {
-      mode: 'production',
-      optimization: {
-        minimize: true,
-        minimizer: [
-          new UglifyJsPlugin({
-            parallel: true,
-            sourceMap: false,
-            uglifyOptions: {
-              compress: {
-                // the following is required for dead-code the removal
-                // check in React DevTools
-                unused: true,
-                dead_code: true,
-                conditionals: true,
-                evaluate: true,
+      plugins: [
+        new webpack.DefinePlugin({
+          'process.env': {
+            'NODE_ENV': '"production"'
+          }
+        }),
+        new UglifyJsPlugin({
+          parallel: true,
+          sourceMap: false,
+          uglifyOptions: {
+            compress: {
+              // the following is required for dead-code the removal
+              // check in React DevTools
 
-                comparisons: false,
-                sequences: false,
-                properties: false,
-                drop_debugger: false,
-                booleans: false,
-                loops: false,
-                toplevel: false,
-                top_retain: false,
-                hoist_funs: false,
-                if_return: false,
-                join_vars: false,
-                collapse_vars: false,
-                reduce_vars: false,
-                warnings: false,
-                negate_iife: false,
-                keep_fnames: true,
-                keep_infinity: true,
-                side_effects: false
-              },
-              mangle: false
-            }
-          }),
-        ]
-      }
+              unused: true,
+              dead_code: true,
+              conditionals: true,
+              evaluate: true,
+
+              comparisons: false,
+              sequences: false,
+              properties: false,
+              drop_debugger: false,
+              booleans: false,
+              loops: false,
+              toplevel: false,
+              top_retain: false,
+              hoist_funs: false,
+              if_return: false,
+              join_vars: false,
+              collapse_vars: false,
+              reduce_vars: false,
+              warnings: false,
+              negate_iife: false,
+              keep_fnames: true,
+              keep_infinity: true,
+              side_effects: false
+            },
+            mangle: false
+          }
+        }),
+      ]
     };
 
     const dllBundlerPlugin = {
@@ -449,44 +445,23 @@ export default class BaseOptimizer {
       dllBundlerPlugin,
       IS_KIBANA_DISTRIBUTABLE
         ? isDistributableConfig
-        : isSourceConfig,
+        : getSourceConfig(),
       this.uiBundles.isDevMode()
         ? webpackMerge(watchingConfig, supportEnzymeConfig)
         : productionConfig
     );
   }
 
-  isFailure(stats) {
-    if (stats.hasErrors()) {
-      return true;
-    }
-
-    const { warnings } = stats.toJson({ all: false, warnings: true });
-
-    // when typescript doesn't do a full type check, as we have the ts-loader
-    // configured here, it does not have enough information to determine
-    // whether an imported name is a type or not, so when the name is then
-    // exported, typescript has no choice but to emit the export. Fortunately,
-    // the extraneous export should not be harmful, so we just suppress these warnings
-    // https://github.com/TypeStrong/ts-loader#transpileonly-boolean-defaultfalse
-    const filteredWarnings = Stats.filterWarnings(warnings, STATS_WARNINGS_FILTER);
-
-    return filteredWarnings.length > 0;
-  }
-
   failedStatsToError(stats) {
     const details = stats.toString(defaults(
-      { colors: true, warningsFilter: STATS_WARNINGS_FILTER },
+      { colors: true },
       Stats.presetToOptions('minimal')
     ));
 
     return Boom.create(
       500,
       `Optimizations failure.\n${details.split('\n').join('\n    ')}\n`,
-      stats.toJson(defaults({
-        warningsFilter: STATS_WARNINGS_FILTER,
-        ...Stats.presetToOptions('detailed')
-      }))
+      stats.toJson(Stats.presetToOptions('detailed'))
     );
   }
 

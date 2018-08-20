@@ -98,21 +98,23 @@ export class Plugin {
   }
 
   bindToCompiler(compiler) {
-    compiler.hooks.run.tapPromise('DynamicDllPlugin', async () => {
+    compiler.plugin('run', async (cp, cb) => {
       this.log('starting compile');
       await this.ensureManifestExists();
       this.entryPaths = await this.readEnsureEntry();
+      cb();
     });
 
-    compiler.hooks.watchRun.tapPromise('DynamicDllPlugin', async () => {
+    compiler.plugin('watch-run', async (wc, cb) => {
       this.log('starting compile');
       await this.ensureManifestExists();
       this.entryPaths = await this.readEnsureEntry();
+      cb();
     });
 
-    compiler.hooks.beforeCompile.tapPromise('DynamicDllPlugin', async ({ normalModuleFactory }) => {
-      normalModuleFactory.hooks.factory.tap(
-        'DynamicDllPlugin',
+    compiler.plugin('before-compile', async ({ normalModuleFactory }, mainCb) => {
+      normalModuleFactory.plugin(
+        'factory',
         (actualFactory) => (params, cb) => {
           // This is used in order to avoid the cache for DLL modules
           // resolved from other dependencies
@@ -132,10 +134,12 @@ export class Plugin {
           });
         }
       );
+      mainCb();
     });
 
-    compiler.hooks.compilation.tap('DynamicDllPlugin', compilation => {
-      compilation.hooks.needAdditionalPass.tap('DynamicDllPlugin', () => {
+    compiler.plugin('compilation', compilation => {
+      compilation.plugin('need-additional-pass', () => {
+        this.log('need additional pass');
         // Verify if we must check if a dll compilation is needed
         // In case we are in distributable environment and we already
         // have on dll bundle, we don't need to check it
@@ -176,13 +180,12 @@ export class Plugin {
     });
 
 
-    compiler.hooks.done.tapPromise('DynamicDllPlugin', async stats => {
+    compiler.plugin('done', async (stats) => {
+      this.log('done');
       if (stats.compilation.needsDLLCompilation) {
         this.log('writing new bundler entry file');
         await this.runDLLsCompiler(compiler);
       }
-
-      this.log('done');
     });
   }
 

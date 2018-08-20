@@ -48,8 +48,8 @@ export default class WatchOptimizer extends BaseOptimizer {
     await this.uiBundles.resetBundleDir();
     await super.init();
 
-    this.compiler.hooks.watchRun.tap(this.compilerWatchRunTap);
-    this.compiler.hooks.done.tap(this.compilerDoneTap);
+    this.compiler.plugin('watch-run', this.compilerRunStartHandler);
+    this.compiler.plugin('done', this.compilerDoneHandler);
     this.compiler.watch({ aggregateTimeout: 200 }, this.compilerWatchErrorHandler);
 
     if (this.prebuild) {
@@ -97,39 +97,35 @@ export default class WatchOptimizer extends BaseOptimizer {
     }
   }
 
-  compilerWatchRunTap = {
-    name: 'kibana-compilerWatchRunTap',
-    fn: () => {
+  compilerRunStartHandler = (watchingCompiler, cb) => {
+    this.status$.next({
+      type: STATUS.RUNNING
+    });
+
+    cb();
+  };
+
+  compilerDoneHandler = (stats) => {
+    if (stats.compilation.needAdditionalPass) {
+      return;
+    }
+
+    this.initialBuildComplete = true;
+    const seconds = parseFloat((stats.endTime - stats.startTime) / 1000).toFixed(2);
+
+    if (stats.hasErrors() || stats.hasWarnings()) {
       this.status$.next({
-        type: STATUS.RUNNING
+        type: STATUS.FAILURE,
+        seconds,
+        error: this.failedStatsToError(stats)
+      });
+    } else {
+      this.status$.next({
+        type: STATUS.SUCCESS,
+        seconds,
       });
     }
-  }
-
-  compilerDoneTap = {
-    name: 'kibana-compilerDoneTap',
-    fn: (stats) => {
-      if (stats.compilation.needAdditionalPass) {
-        return;
-      }
-
-      this.initialBuildComplete = true;
-      const seconds = parseFloat((stats.endTime - stats.startTime) / 1000).toFixed(2);
-
-      if (this.isFailure(stats)) {
-        this.status$.next({
-          type: STATUS.FAILURE,
-          seconds,
-          error: this.failedStatsToError(stats)
-        });
-      } else {
-        this.status$.next({
-          type: STATUS.SUCCESS,
-          seconds,
-        });
-      }
-    }
-  }
+  };
 
   compilerWatchErrorHandler = (error) => {
     if (error) {

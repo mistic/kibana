@@ -108,7 +108,7 @@ export const CleanExtraFilesFromModulesTask = {
       '.jscs.json',
       '.lint',
     ];
-    const hints = ['*.flow', '*.webidl', '*.map'];
+    const hints = ['*.flow', '*.webidl', '*.map', '@types'];
     const scripts = [
       '*.sh',
       '*.bat',
@@ -486,8 +486,10 @@ export const CleanNodeModulesOnDLLTask = {
     for (const relativeModuleEntryPath of modules) {
       const moduleEntryPath = build.resolvePath(relativeModuleEntryPath);
 
-      await cleanModule(moduleEntryPath);
-      await buildEmptyEntryFile(moduleEntryPath);
+      if (!moduleEntryPath.includes('.entry.dll.js')) {
+        await cleanModule(moduleEntryPath);
+        await buildEmptyEntryFile(moduleEntryPath);
+      }
     }
   }
 };

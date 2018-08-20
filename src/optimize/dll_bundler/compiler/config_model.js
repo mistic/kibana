@@ -85,7 +85,6 @@ function common(options) {
 function optimized() {
   return webpackMerge(
     {
-      mode: 'production'
     }
   );
 }
@@ -93,7 +92,6 @@ function optimized() {
 function unoptimized() {
   return webpackMerge(
     {
-      mode: 'development'
     }
   );
 }
