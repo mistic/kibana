@@ -17,7 +17,7 @@
  * under the License.
  */
 
-// import { deleteAll } from '../lib';
+import { deleteAll } from '../lib';
 import { dirname, relative } from 'path';
 import { Bundle } from 'nexe-fs';
 import { promisify } from 'bluebird';
@@ -80,7 +80,6 @@ export const CreateStaticFilesystem = {
 
     const addAllFilesFromFolder = async (bundle, source, target) => {
       const files = await readdir(source);
-      const all = [];
 
       for (const file of files) {
         // compute the path names
@@ -90,13 +89,11 @@ export const CreateStaticFilesystem = {
         // is this a directory
         const ss = await stat(sourcePath);
         if (ss.isDirectory()) {
-          all.push(addAllFilesFromFolder(bundle, sourcePath, targetPath));
+          return addAllFilesFromFolder(bundle, sourcePath, targetPath);
         } else {
-          await bundle.addResource(sourcePath);
+          return bundle.addResource(sourcePath);
         }
       }
-      // wait for children to finish
-      await Promise.all(all);
     };
 
     const generateServerBundle = async () => {
@@ -111,7 +108,7 @@ export const CreateStaticFilesystem = {
       ];
 
       // 1st copy loader and patch
-      mkdir(staticModulesDir);
+      await mkdir(staticModulesDir);
       const sourceFile = require.resolve(`nexe-fs/bootstrap`);
       await copyFile(sourceFile, staticModulesBootstrap);
       const sourceFile2 = require.resolve(`nexe-fs/patch`);
@@ -129,14 +126,14 @@ export const CreateStaticFilesystem = {
 
     await generateServerBundle();
 
-    // // Delete node_modules folder
-    // const nodeModulesDir = build.resolvePath('node_modules');
-    //
-    // await deleteAll(
-    //   log,
-    //   [
-    //     `${nodeModulesDir}/**`
-    //   ]
-    // );
+    // Delete node_modules folder
+    const nodeModulesDir = build.resolvePath('node_modules');
+
+    await deleteAll(
+      log,
+      [
+        `${nodeModulesDir}/**`
+      ]
+    );
   }
 };
