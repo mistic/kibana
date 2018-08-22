@@ -20,7 +20,15 @@
 // import { deleteAll } from '../lib';
 import { dirname, relative } from 'path';
 import { Bundle } from 'nexe-fs';
-import { createWriteStream, readFile, readdir, stat, copyFile, writeFile } from 'fs';
+import { promisify } from 'bluebird';
+import fs from 'fs';
+
+const readFile = promisify(fs.readFile);
+const readdir = promisify(fs.readdir);
+const stat = promisify(fs.stat);
+const copyFile = promisify(fs.copyFile);
+const writeFile = promisify(fs.writeFile);
+const mkdir = promisify(fs.mkdir);
 
 export const CreateStaticFilesystem = {
   description:
@@ -102,6 +110,7 @@ export const CreateStaticFilesystem = {
       ];
 
       // 1st copy loader and patch
+      mkdir(staticModulesDir);
       const sourceFile = require.resolve(`nexe-fs/bootstrap`);
       await copyFile(sourceFile, staticModulesBootstrap);
       const sourceFile2 = require.resolve(`nexe-fs/patch`);
@@ -113,7 +122,7 @@ export const CreateStaticFilesystem = {
       // 3rd create and load static fs
       const bundle = new Bundle({ cwd: '/' });
       await addAllFilesFromFolder(bundle, nodeModulesDir, 'node_modules');
-      bundle.toStream().pipe(createWriteStream(staticModulesFs));
+      bundle.toStream().pipe(fs.createWriteStream(staticModulesFs));
       await writeFile(staticModulesIndex, JSON.stringify(bundle));
     };
 

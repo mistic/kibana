@@ -12451,10 +12451,6 @@ static-extend@^0.1.1:
     define-property "^0.2.5"
     object-copy "^0.1.0"
 
-"static-fs@git+https://git@github.com/mistic/static-fs.git#efbde0a":
-  version "0.1.0"
-  resolved "git+https://git@github.com/mistic/static-fs.git#efbde0aa9f5aa29dbc7125dee850338f0613d2ff"
-
 static-module@^2.2.0:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/static-module/-/static-module-2.2.2.tgz#496e9bf1d29cb5177a30fae224511953d7dd291b"
