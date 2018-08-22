@@ -112,10 +112,10 @@ export const CreateStaticFilesystem = {
 
       // 1st copy loader and patch
       await mkdir(staticModulesDir);
-      const sourceFile = require.resolve(`nexe-fs/bootstrap`);
-      await copyFile(sourceFile, staticModulesBootstrap);
-      const sourceFile2 = require.resolve(`nexe-fs/patch`);
-      await copyFile(sourceFile2, staticModulesPatch);
+      const sourceBootstrapFile = require.resolve(`nexe-fs/bootstrap`);
+      await copyFile(sourceBootstrapFile, staticModulesBootstrap);
+      const sourcePatchFile = require.resolve(`nexe-fs/patch`);
+      await copyFile(sourcePatchFile, staticModulesPatch);
 
       // 2nd patch entrypoints
       await patchEntryPoints(entryPointsToPatch, staticModulesBootstrap, staticModulesPatch, staticModulesIndex, staticModulesFs);
@@ -127,11 +127,11 @@ export const CreateStaticFilesystem = {
       await writeFile(staticModulesIndex, JSON.stringify(bundle.index));
     };
 
+    // Init and wait completion for the node_modules bundle and patched server code
     await generateServerBundle();
 
     // Delete node_modules folder
     const nodeModulesDir = build.resolvePath('node_modules');
-
     await deleteAll(
       log,
       [
