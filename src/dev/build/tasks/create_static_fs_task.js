@@ -61,11 +61,11 @@ export const CreateStaticFilesystem = {
 
           let content = await readFile(entrypoint, { encoding: 'utf8' });
           const bootstrapLine = `require('${bootstrapPath}');`;
-          const patchLine = `const patch = require('${patchPath}');`;
-          const indexLine = `const fsIndex = JSON.parse(require('fs').readFileSync(require.resolve('${indexPath}')));`;
-          const shimLine = `patch.shimFs({
+          const patchLine = `const staticFsPatch = require('${patchPath}');`;
+          const indexLine = `const staticFsIndex = JSON.parse(require('fs').readFileSync(require.resolve('${indexPath}')));`;
+          const shimLine = `staticFsPatch.shimFs({
             blobPath: require.resolve('${fsPath}'),
-            resources: fsIndex.index,
+            resources: staticFsIndex,
             layout: {
               stat: require('fs').statSync(require.resolve('${indexPath}')),
               resourceStart: 0
@@ -78,22 +78,25 @@ export const CreateStaticFilesystem = {
       }
     };
 
-    const addAllFilesFromFolder = async (bundle, source, target) => {
+    const addAllFilesFromFolder = async (bundle, source) => {
       const files = await readdir(source);
+      const all = [];
 
       for (const file of files) {
         // compute the path names
         const sourcePath = `${source}/${file}`;
-        const targetPath = `${target}/${file}`;
 
         // is this a directory
         const ss = await stat(sourcePath);
         if (ss.isDirectory()) {
-          return addAllFilesFromFolder(bundle, sourcePath, targetPath);
+          all.push(addAllFilesFromFolder(bundle, sourcePath));
         } else {
-          return bundle.addResource(sourcePath);
+          await bundle.addResource(sourcePath, (await readFile(sourcePath)));
         }
       }
+
+      // wait for children to finish
+      await Promise.all(all);
     };
 
     const generateServerBundle = async () => {
@@ -119,9 +122,9 @@ export const CreateStaticFilesystem = {
 
       // 3rd create and load static fs
       const bundle = new Bundle({ cwd: '/' });
-      await addAllFilesFromFolder(bundle, nodeModulesDir, 'node_modules');
-      bundle.toStream().pipe(fs.createWriteStream(staticModulesFs));
-      await writeFile(staticModulesIndex, JSON.stringify(bundle));
+      await addAllFilesFromFolder(bundle, nodeModulesDir);
+      await bundle.toStream().pipe(fs.createWriteStream(staticModulesFs));
+      await writeFile(staticModulesIndex, JSON.stringify(bundle.index));
     };
 
     await generateServerBundle();
