@@ -9046,6 +9046,13 @@ multimatch@^2.0.0, multimatch@^2.1.0:
     arrify "^1.0.0"
     minimatch "^3.0.0"
 
+multistream@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/multistream/-/multistream-2.1.1.tgz#629d3a29bd76623489980d04519a2c365948148c"
+  dependencies:
+    inherits "^2.0.1"
+    readable-stream "^2.0.5"
+
 murmurhash3js@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/murmurhash3js/-/murmurhash3js-3.0.1.tgz#3e983e5b47c2a06f43a713174e7e435ca044b998"
@@ -9113,6 +9120,12 @@ nested-error-stacks@^1.0.0:
   resolved "https://registry.yarnpkg.com/nested-error-stacks/-/nested-error-stacks-1.0.2.tgz#19f619591519f096769a5ba9a86e6eeec823c3cf"
   dependencies:
     inherits "~2.0.1"
+
+nexe-fs@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/nexe-fs/-/nexe-fs-1.0.1.tgz#fcb99fff1ae936cf63d0ae4f81ffc4d043c2b394"
+  dependencies:
+    multistream "^2.1.1"
 
 next-tick@1:
   version "1.0.0"

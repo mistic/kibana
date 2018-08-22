@@ -308,6 +308,7 @@
     "mock-fs": "^4.4.2",
     "murmurhash3js": "3.0.1",
     "mutation-observer": "^1.0.3",
+    "nexe-fs": "^1.0.1",
     "nock": "8.0.0",
     "node-sass": "^4.9.0",
     "pixelmatch": "4.0.2",
