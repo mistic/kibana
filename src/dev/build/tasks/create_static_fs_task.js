@@ -121,7 +121,7 @@ export const CreateStaticFilesystem = {
       await patchEntryPoints(entryPointsToPatch, staticModulesBootstrap, staticModulesPatch, staticModulesIndex, staticModulesFs);
 
       // 3rd create and load static fs
-      const bundle = new Bundle({ cwd: '/' });
+      const bundle = new Bundle();
       await addAllFilesFromFolder(bundle, nodeModulesDir);
       await bundle.toStream().pipe(fs.createWriteStream(staticModulesFs));
       await writeFile(staticModulesIndex, JSON.stringify(bundle.index));
