@@ -19,9 +19,8 @@
 
 // import { deleteAll } from '../lib';
 import { dirname, relative } from 'path';
-import { isFile, writeFile, copyFile, readFile, readdir, stat } from 'static-fs/dist/lib/common';
 import { Bundle } from 'nexe-fs';
-import { createWriteStream } from 'fs';
+import { createWriteStream, readFile, readdir, stat, copyFile, writeFile } from 'fs';
 
 export const CreateStaticFilesystem = {
   description:
@@ -32,7 +31,8 @@ export const CreateStaticFilesystem = {
       for (const each of entryPoints) {
         const entrypoint = require.resolve(build.resolvePath(each));
 
-        if (await isFile(entrypoint)) {
+        const isFile = !(await stat(entrypoint));
+        if (isFile) {
           let bootstrapPath = relative(dirname(entrypoint), staticModulesBootstrap).replace(/\\/g, '/');
           let patchPath = relative(dirname(entrypoint), staticModulesPatch).replace(/\\/g, '/');
           let indexPath = relative(dirname(entrypoint), staticModulesIndex).replace(/\\/g, '/');
