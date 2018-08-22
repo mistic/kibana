@@ -121,10 +121,13 @@ export const CreateStaticFilesystem = {
       await patchEntryPoints(entryPointsToPatch, staticModulesBootstrap, staticModulesPatch, staticModulesIndex, staticModulesFs);
 
       // 3rd create and load static fs
+      const oldCWD = process.cwd();
+      process.chdir(build.resolvePath('.'));
       const bundle = new Bundle();
       await addAllFilesFromFolder(bundle, nodeModulesDir);
       await bundle.toStream().pipe(fs.createWriteStream(staticModulesFs));
       await writeFile(staticModulesIndex, JSON.stringify(bundle.index));
+      process.chdir(oldCWD);
     };
 
     // Init and wait completion for the node_modules bundle and patched server code
