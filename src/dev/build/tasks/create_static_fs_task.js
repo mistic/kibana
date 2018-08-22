@@ -26,6 +26,7 @@ import fs from 'fs';
 const readFile = promisify(fs.readFile);
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
+const lstat = promisify(fs.lstat);
 const copyFile = promisify(fs.copyFile);
 const writeFile = promisify(fs.writeFile);
 const mkdir = promisify(fs.mkdir);
@@ -39,8 +40,8 @@ export const CreateStaticFilesystem = {
       for (const each of entryPoints) {
         const entrypoint = require.resolve(build.resolvePath(each));
 
-        const isFile = !(await stat(entrypoint));
-        if (isFile) {
+        const isDir = (await lstat(entrypoint)).isDirectory();
+        if (!isDir) {
           let bootstrapPath = relative(dirname(entrypoint), staticModulesBootstrap).replace(/\\/g, '/');
           let patchPath = relative(dirname(entrypoint), staticModulesPatch).replace(/\\/g, '/');
           let indexPath = relative(dirname(entrypoint), staticModulesIndex).replace(/\\/g, '/');
