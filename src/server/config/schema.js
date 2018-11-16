@@ -240,7 +240,7 @@ export default () => Joi.object({
           Joi.string().required(),
           Joi.boolean()
         )
-        .default('#cheap-source-map'),
+        .default('fast'),
     }),
     profile: Joi.boolean().default(false)
   }).default(),
