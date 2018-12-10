@@ -11,7 +11,7 @@ export default function ({ getService, getPageObjects }) {
   const esArchiver = getService('esArchiver');
   //const testSubjects = getService('testSubjects');
   //const log = getService('log');
-  const PageObjects = getPageObjects(['security', 'rollup', 'common', 'header']);
+  const PageObjects = getPageObjects(['common', 'header', 'security', 'rollUp']);
 
 
   describe('rollup_jobs', async () => {
@@ -24,7 +24,7 @@ export default function ({ getService, getPageObjects }) {
 
       // load canvas
       // see also navigateToUrl(app, hash)
-      await PageObjects.common.navigateToApp('rollup');
+      await PageObjects.common.navigateToApp('canvas');
     });
 
     it('create and and save a new job', async () => {

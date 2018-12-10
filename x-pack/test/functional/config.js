@@ -80,7 +80,7 @@ export default async function ({ readConfigFile }) {
       resolve(__dirname, './apps/logstash'),
       resolve(__dirname, './apps/grok_debugger'),
       resolve(__dirname, './apps/infra'),
-      resolve(__dirname, './apps/rollup'),
+      resolve(__dirname, './apps/rollupjob'),
       resolve(__dirname, './apps/status_page'),
     ],
 
@@ -134,7 +134,7 @@ export default async function ({ readConfigFile }) {
       spaceSelector: SpaceSelectorPageProvider,
       infraHome: InfraHomePageProvider,
       statusPage: StatusPagePageProvider,
-      rollupPage: RollUpPageProvider,
+      rollUp: RollUpPageProvider,
     },
 
     servers: kibanaFunctionalConfig.get('servers'),
