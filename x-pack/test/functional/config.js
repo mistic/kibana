@@ -20,6 +20,7 @@ import {
   AccountSettingProvider,
   InfraHomePageProvider,
   StatusPagePageProvider,
+  RollUpPageProvider,
 } from './page_objects';
 
 import {
@@ -49,6 +50,7 @@ import {
   RandomProvider,
   AceEditorProvider,
   GrokDebuggerProvider,
+  //RollUpPageProvider,
 
 } from './services';
 
@@ -73,6 +75,7 @@ export default async function ({ readConfigFile }) {
       resolve(__dirname, './apps/logstash'),
       resolve(__dirname, './apps/grok_debugger'),
       resolve(__dirname, './apps/infra'),
+      resolve(__dirname, './apps/rollup'),
       resolve(__dirname, './apps/status_page'),
     ],
 
@@ -108,6 +111,7 @@ export default async function ({ readConfigFile }) {
       random: RandomProvider,
       aceEditor: AceEditorProvider,
       grokDebugger: GrokDebuggerProvider,
+      //rollupPage: RollUpPageProvider,
     },
 
     // just like services, PageObjects are defined as a map of
@@ -125,6 +129,7 @@ export default async function ({ readConfigFile }) {
       spaceSelector: SpaceSelectorPageProvider,
       infraHome: InfraHomePageProvider,
       statusPage: StatusPagePageProvider,
+      rollupPage: RollUpPageProvider,
     },
 
     servers: kibanaFunctionalConfig.get('servers'),
@@ -185,6 +190,10 @@ export default async function ({ readConfigFile }) {
       canvas: {
         pathname: '/app/canvas',
         hash: '/',
+      },
+      rollup_jobs: {
+        pathname: '/app/kibana',
+        hash: '/management/elasticsearch/rollup_jobs/',
       }
     },
 
@@ -200,7 +209,8 @@ export default async function ({ readConfigFile }) {
 
     junit: {
       reportName: 'X-Pack Functional Tests',
-      rootDirectory: resolve(__dirname, '../../'),
-    }
+      rootDirectory: resolve(__dirname, '../../')
+    },
   };
+
 }
