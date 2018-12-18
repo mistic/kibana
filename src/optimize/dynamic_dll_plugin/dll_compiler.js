@@ -53,9 +53,9 @@ export class DllCompiler {
 
   constructor(uiBundles, threadLoaderPoolConfig, log) {
     this.rawDllConfig = DllCompiler.getRawDllConfig(
+      uiBundles,
       uiBundles.getCacheDirectory('babel'),
-      threadLoaderPoolConfig,
-      uiBundles
+      threadLoaderPoolConfig
     );
     this.log = log || (() => null);
   }
