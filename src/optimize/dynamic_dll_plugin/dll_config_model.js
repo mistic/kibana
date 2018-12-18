@@ -205,14 +205,14 @@ function common(config) {
   );
 }
 
-function optimized() {
+function optimized(config) {
   return webpackMerge(
     {
       mode: 'production',
       optimization: {
         minimizer: [
           new TerserPlugin({
-            parallel: true,
+            parallel: config.threadLoaderPoolConfig.workers,
             sourceMap: false,
             terserOptions: {
               compress: {
@@ -269,5 +269,5 @@ export function configModel(rawConfig = {}) {
     return webpackMerge(common(config), unoptimized());
   }
 
-  return webpackMerge(common(config), optimized());
+  return webpackMerge(common(config), optimized(config));
 }
