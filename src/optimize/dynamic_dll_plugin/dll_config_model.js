@@ -221,6 +221,8 @@ function optimized(config) {
             // the parallel processes on terser
             parallel: config.threadLoaderPoolConfig.workers,
             sourceMap: false,
+            // include: /^.*[\/\\]node_modules[\/\\]react[\/\\].*$/,
+            // exclude: /^(?!.*[\/\\]node_modules[\/\\]react[\/\\]).*$/,
             terserOptions: {
               compress: {
                 // The following is required for dead-code the removal
