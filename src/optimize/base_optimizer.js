@@ -21,7 +21,6 @@ import { writeFile } from 'fs';
 import os from 'os';
 import Boom from 'boom';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
 import webpack from 'webpack';
 import Stats from 'webpack/lib/Stats';
 import * as threadLoader from 'thread-loader';
@@ -495,16 +494,7 @@ export default class BaseOptimizer {
     const productionConfig = {
       mode: 'production',
       optimization: {
-        minimizer: [
-          new TerserPlugin({
-            parallel: true,
-            sourceMap: false,
-            terserOptions: {
-              compress: false,
-              mangle: false
-            }
-          }),
-        ]
+        minimize: false
       }
     };
 

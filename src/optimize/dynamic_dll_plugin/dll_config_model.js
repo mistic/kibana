@@ -21,7 +21,6 @@ import { fromRoot, IS_KIBANA_DISTRIBUTABLE } from '../../legacy/utils';
 import webpack from 'webpack';
 import webpackMerge from 'webpack-merge';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
 
 function generateDLL(config) {
   const {
@@ -212,24 +211,12 @@ function common(config) {
   );
 }
 
-function optimized(config) {
+function optimized() {
   return webpackMerge(
     {
       mode: 'production',
       optimization: {
-        minimizer: [
-          new TerserPlugin({
-            // Apply the same logic used to calculate the
-            // threadLoaderPool workers number to spawn
-            // the parallel processes on terser
-            parallel: config.threadLoaderPoolConfig.workers,
-            sourceMap: false,
-            terserOptions: {
-              compress: false,
-              mangle: false
-            }
-          }),
-        ]
+        minimize: false,
       }
     }
   );
@@ -250,5 +237,5 @@ export function configModel(rawConfig = {}) {
     return webpackMerge(common(config), unoptimized());
   }
 
-  return webpackMerge(common(config), optimized(config));
+  return webpackMerge(common(config), optimized());
 }
