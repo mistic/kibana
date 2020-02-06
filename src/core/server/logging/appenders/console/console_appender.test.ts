@@ -18,6 +18,7 @@
  */
 
 jest.mock('../../layouts/layouts', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { schema } = require('@kbn/config-schema');
   return {
     Layouts: {
@@ -58,12 +59,14 @@ test('`append()` correctly formats records and pushes them to console.', () => {
       level: LogLevel.All,
       message: 'message-1',
       timestamp: new Date(),
+      pid: 5355,
     },
     {
       context: 'context-2',
       level: LogLevel.Trace,
       message: 'message-2',
       timestamp: new Date(),
+      pid: 5355,
     },
     {
       context: 'context-3',
@@ -71,6 +74,7 @@ test('`append()` correctly formats records and pushes them to console.', () => {
       level: LogLevel.Fatal,
       message: 'message-3',
       timestamp: new Date(),
+      pid: 5355,
     },
   ];
 
@@ -82,10 +86,10 @@ test('`append()` correctly formats records and pushes them to console.', () => {
 
   for (const record of records) {
     appender.append(record);
-    // tslint:disable-next-line no-console
+    // eslint-disable-next-line no-console
     expect(console.log).toHaveBeenCalledWith(`mock-${JSON.stringify(record)}`);
   }
 
-  // tslint:disable-next-line no-console
+  // eslint-disable-next-line no-console
   expect(console.log).toHaveBeenCalledTimes(records.length);
 });

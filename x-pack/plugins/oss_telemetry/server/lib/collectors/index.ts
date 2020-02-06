@@ -4,9 +4,13 @@
  * you may not use this file except in compliance with the Elastic License.
  */
 
-import { HapiServer } from '../../../';
 import { registerVisualizationsCollector } from './visualizations/register_usage_collector';
+import { UsageCollectionSetup } from '../../../../../../src/plugins/usage_collection/server';
+import { TaskManagerStartContract } from '../../../../task_manager/server';
 
-export function registerCollectors(server: HapiServer) {
-  registerVisualizationsCollector(server);
+export function registerCollectors(
+  usageCollection: UsageCollectionSetup,
+  taskManager: Promise<TaskManagerStartContract>
+) {
+  registerVisualizationsCollector(usageCollection, taskManager);
 }

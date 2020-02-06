@@ -23,22 +23,29 @@ jest.mock('fs', () => ({
   createWriteStream: jest.fn(() => ({ write: mockStreamWrite })),
 }));
 
+const dynamicProps = { pid: expect.any(Number) };
+
+jest.mock('../../../legacy/server/logging/rotate', () => ({
+  setupLoggingRotate: jest.fn().mockImplementation(() => Promise.resolve({})),
+}));
+
 const timestamp = new Date(Date.UTC(2012, 1, 1));
-const mockConsoleLog = jest.spyOn(global.console, 'log').mockImplementation(() => {
-  // noop
-});
-jest.spyOn(global, 'Date').mockImplementation(() => timestamp);
+let mockConsoleLog: jest.SpyInstance;
 
 import { createWriteStream } from 'fs';
-const mockCreateWriteStream = createWriteStream as jest.Mock<typeof createWriteStream>;
+const mockCreateWriteStream = (createWriteStream as unknown) as jest.Mock<typeof createWriteStream>;
 
-import { LoggingConfig, LoggingService } from '.';
+import { LoggingService, config } from '.';
 
 let service: LoggingService;
-beforeEach(() => (service = new LoggingService()));
+beforeEach(() => {
+  mockConsoleLog = jest.spyOn(global.console, 'log').mockReturnValue(undefined);
+  jest.spyOn<any, any>(global, 'Date').mockImplementation(() => timestamp);
+  service = new LoggingService();
+});
 
 afterEach(() => {
-  mockConsoleLog.mockClear();
+  jest.restoreAllMocks();
   mockCreateWriteStream.mockClear();
   mockStreamWrite.mockClear();
 });
@@ -53,7 +60,9 @@ test('uses default memory buffer logger until config is provided', () => {
   const anotherLogger = service.get('test', 'context2');
   anotherLogger.fatal('fatal message', { some: 'value' });
 
-  expect(bufferAppendSpy.mock.calls).toMatchSnapshot();
+  expect(bufferAppendSpy).toHaveBeenCalledTimes(2);
+  expect(bufferAppendSpy.mock.calls[0][0]).toMatchSnapshot(dynamicProps);
+  expect(bufferAppendSpy.mock.calls[1][0]).toMatchSnapshot(dynamicProps);
 });
 
 test('flushes memory buffer logger and switches to real logger once config is provided', () => {
@@ -67,20 +76,21 @@ test('flushes memory buffer logger and switches to real logger once config is pr
 
   // Switch to console appender with `info` level, so that `trace` message won't go through.
   service.upgrade(
-    new LoggingConfig(
-      LoggingConfig.schema.validate({
-        appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
-        root: { level: 'info' },
-      })
-    )
+    config.schema.validate({
+      appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
+      root: { level: 'info' },
+    })
   );
 
-  expect(mockConsoleLog.mock.calls).toMatchSnapshot('buffered messages');
+  expect(JSON.parse(mockConsoleLog.mock.calls[0][0])).toMatchSnapshot(
+    dynamicProps,
+    'buffered messages'
+  );
   mockConsoleLog.mockClear();
 
   // Now message should go straight to thew newly configured appender, not buffered one.
   logger.info('some new info message');
-  expect(mockConsoleLog.mock.calls).toMatchSnapshot('new messages');
+  expect(JSON.parse(mockConsoleLog.mock.calls[0][0])).toMatchSnapshot(dynamicProps, 'new messages');
   expect(bufferAppendSpy).not.toHaveBeenCalled();
 });
 
@@ -98,32 +108,32 @@ test('appends records via multiple appenders.', () => {
   expect(mockCreateWriteStream).not.toHaveBeenCalled();
 
   service.upgrade(
-    new LoggingConfig(
-      LoggingConfig.schema.validate({
-        appenders: {
-          default: { kind: 'console', layout: { kind: 'pattern' } },
-          file: { kind: 'file', layout: { kind: 'pattern' }, path: 'path' },
-        },
-        loggers: [
-          { appenders: ['file'], context: 'tests', level: 'warn' },
-          { context: 'tests.child', level: 'error' },
-        ],
-      })
-    )
+    config.schema.validate({
+      appenders: {
+        default: { kind: 'console', layout: { kind: 'pattern' } },
+        file: { kind: 'file', layout: { kind: 'pattern' }, path: 'path' },
+      },
+      loggers: [
+        { appenders: ['file'], context: 'tests', level: 'warn' },
+        { context: 'tests.child', level: 'error' },
+      ],
+    })
   );
 
   // Now all logs should added to configured appenders.
-  expect(mockConsoleLog.mock.calls).toMatchSnapshot('console logs');
-  expect(mockStreamWrite.mock.calls).toMatchSnapshot('file logs');
+  expect(mockConsoleLog).toHaveBeenCalledTimes(1);
+  expect(mockConsoleLog.mock.calls[0][0]).toMatchSnapshot('console logs');
+
+  expect(mockStreamWrite).toHaveBeenCalledTimes(2);
+  expect(mockStreamWrite.mock.calls[0][0]).toMatchSnapshot('file logs');
+  expect(mockStreamWrite.mock.calls[1][0]).toMatchSnapshot('file logs');
 });
 
 test('uses `root` logger if context is not specified.', () => {
   service.upgrade(
-    new LoggingConfig(
-      LoggingConfig.schema.validate({
-        appenders: { default: { kind: 'console', layout: { kind: 'pattern' } } },
-      })
-    )
+    config.schema.validate({
+      appenders: { default: { kind: 'console', layout: { kind: 'pattern' } } },
+    })
   );
 
   const rootLogger = service.get();
@@ -134,12 +144,10 @@ test('uses `root` logger if context is not specified.', () => {
 
 test('`stop()` disposes all appenders.', async () => {
   service.upgrade(
-    new LoggingConfig(
-      LoggingConfig.schema.validate({
-        appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
-        root: { level: 'info' },
-      })
-    )
+    config.schema.validate({
+      appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
+      root: { level: 'info' },
+    })
   );
 
   const bufferDisposeSpy = jest.spyOn((service as any).bufferAppender, 'dispose');
@@ -155,12 +163,10 @@ test('asLoggerFactory() only allows to create new loggers.', () => {
   const logger = service.asLoggerFactory().get('test', 'context');
 
   service.upgrade(
-    new LoggingConfig(
-      LoggingConfig.schema.validate({
-        appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
-        root: { level: 'all' },
-      })
-    )
+    config.schema.validate({
+      appenders: { default: { kind: 'console', layout: { kind: 'json' } } },
+      root: { level: 'all' },
+    })
   );
 
   logger.trace('buffered trace message');
@@ -168,5 +174,9 @@ test('asLoggerFactory() only allows to create new loggers.', () => {
   logger.fatal('buffered fatal message');
 
   expect(Object.keys(service.asLoggerFactory())).toEqual(['get']);
-  expect(mockConsoleLog.mock.calls).toMatchSnapshot();
+
+  expect(mockConsoleLog).toHaveBeenCalledTimes(3);
+  expect(JSON.parse(mockConsoleLog.mock.calls[0][0])).toMatchSnapshot(dynamicProps);
+  expect(JSON.parse(mockConsoleLog.mock.calls[1][0])).toMatchSnapshot(dynamicProps);
+  expect(JSON.parse(mockConsoleLog.mock.calls[2][0])).toMatchSnapshot(dynamicProps);
 });
