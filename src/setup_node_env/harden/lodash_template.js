@@ -19,9 +19,6 @@
 var hook = require('require-in-the-middle');
 var isIterateeCall = require('lodash/_isIterateeCall');
 
-// The ordering of the patching currently matters because createFpProxy
-// uses _.template internally
-
 hook(['lodash'], function (lodash) {
   return {
     ...lodash,
@@ -61,6 +58,7 @@ function createProxy(template) {
 }
 
 function createFpProxy(template) {
+  // we have to do the require here, so that we get the patched version
   var _ = require('lodash');
   return new Proxy(template, {
     apply: function (target, thisArg, args) {
