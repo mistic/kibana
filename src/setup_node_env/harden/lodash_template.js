@@ -16,9 +16,35 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+var hook = require('require-in-the-middle');
 var isIterateeCall = require('lodash/_isIterateeCall');
 
-module.exports = function (template) {
+// The ordering of the patching currently matters because createFpProxy
+// uses _.template internally
+
+hook(['lodash'], function (lodash) {
+  return {
+    ...lodash,
+    template: createProxy(lodash.template),
+  };
+});
+
+hook(['lodash/template'], function (template) {
+  return createProxy(template);
+});
+
+hook(['lodash/fp'], function (fp) {
+  return {
+    ...fp,
+    template: createFpProxy(fp.template),
+  };
+});
+
+hook(['lodash/fp/template'], function (template) {
+  return createFpProxy(template);
+});
+
+function createProxy(template) {
   return new Proxy(template, {
     apply: function (target, thisArg, args) {
       if (args.length === 1 || isIterateeCall(args)) {
@@ -32,4 +58,17 @@ module.exports = function (template) {
       return target.apply(thisArg, newArgs);
     },
   });
-};
+}
+
+function createFpProxy(template) {
+  var _ = require('lodash');
+  return new Proxy(template, {
+    apply: function (target, thisArg, args) {
+      // per https://github.com/lodash/lodash/wiki/FP-Guide
+      // > Iteratee arguments are capped to avoid gotchas with variadic iteratees.
+      // this means that we can't specify the options in the second argument to fp.template because it's ignored.
+      // Instead, we're going to use the non-FP _.template with only the first argument which has already been patched
+      return _.template(args[0]);
+    },
+  });
+}
