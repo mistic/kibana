@@ -18,16 +18,32 @@
  */
 
 var hook = require('require-in-the-middle');
+var createLodashTemplateProxy = require('./patches/lodash_template');
+var createLodashFpTemplateProxy = require('./patches/lodash_fp_template');
 
 hook(['child_process'], function (exports, name) {
   return require(`./patches/${name}`)(exports); // eslint-disable-line import/no-dynamic-require
 });
 
 hook(['lodash'], function (exports) {
-  return require(`./patches/lodash`)(exports); // eslint-disable-line import/no-dynamic-require
+  return {
+    ...exports,
+    template: createLodashTemplateProxy(exports.template),
+  };
 });
 
-// the lodash_fp patch relies on lodash already being patched... the other matters here :)
+hook(['lodash/template'], function (exports) {
+  return createLodashTemplateProxy(exports);
+});
+
+// the lodash_fp patches relies on lodash already being patched... the order matters here
 hook(['lodash/fp'], function (exports) {
-  return require(`./patches/lodash_fp`)(exports, require('lodash')); // eslint-disable-line import/no-dynamic-require
+  return {
+    ...exports,
+    template: createLodashFpTemplateProxy(exports.template),
+  };
+});
+
+hook(['lodash/fp/template'], function (exports) {
+  return createLodashFpTemplateProxy(exports);
 });

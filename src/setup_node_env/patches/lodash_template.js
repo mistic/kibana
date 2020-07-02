@@ -18,8 +18,8 @@
  */
 var isIterateeCall = require('lodash/_isIterateeCall');
 
-module.exports = function (lodash) {
-  lodash.template = new Proxy(lodash.template, {
+module.exports = function (template) {
+  return new Proxy(template, {
     apply: function (target, thisArg, args) {
       if (args.length === 1 || isIterateeCall(args)) {
         return target.apply(thisArg, [args[0], { sourceURL: '' }]);
@@ -32,6 +32,4 @@ module.exports = function (lodash) {
       return target.apply(thisArg, newArgs);
     },
   });
-
-  return lodash;
 };

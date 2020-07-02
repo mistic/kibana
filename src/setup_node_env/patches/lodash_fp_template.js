@@ -17,16 +17,16 @@
  * under the License.
  */
 
-module.exports = function (fp, _) {
+module.exports = function (template) {
+  var _ = require('lodash');
+
   // per https://github.com/lodash/lodash/wiki/FP-Guide
   // > Iteratee arguments are capped to avoid gotchas with variadic iteratees.
   // this means that we can't specify the options in the second argument to fp.template because it's ignored.
   // Instead, we're going to use the non-FP _.template with only the first argument which has already been patched
-  fp.template = new Proxy(fp.template, {
+  return new Proxy(template, {
     apply: function (target, thisArg, args) {
       return _.template(args[0]);
     },
   });
-
-  return fp;
 };

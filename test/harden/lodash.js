@@ -19,6 +19,7 @@
 
 require('../../src/setup_node_env');
 const _ = require('lodash');
+const template = require('lodash/template');
 const test = require('tape');
 
 Object.prototype.sourceURL = '\u2028\u2029\n;global.whoops=true'; // eslint-disable-line no-extend-native
@@ -32,64 +33,66 @@ test('test setup ok', (t) => {
   t.end();
 });
 
-test(`_.template('<%= foo %>')`, (t) => {
-  const output = _.template('<%= foo %>')({ foo: 'bar' });
-  t.equal(output, 'bar');
-  t.equal(global.whoops, undefined);
-  t.end();
-});
-
-test(`_.template('<%= foo %>', {})`, (t) => {
-  const output = _.template('<%= foo %>', Object.freeze({}))({ foo: 'bar' });
-  t.equal(output, 'bar');
-  t.equal(global.whoops, undefined);
-  t.end();
-});
-
-test(`_.template('<%= data.foo %>', { variable: 'data' })`, (t) => {
-  const output = _.template('<%= data.foo %>', Object.freeze({ variable: 'data' }))({ foo: 'bar' });
-  t.equal(output, 'bar');
-  t.equal(global.whoops, undefined);
-  t.end();
-});
-
-test(`_.template('<%= foo %>', { sourceURL: '/foo/bar' })`, (t) => {
-  // throwing errors in the template and parsing the stack, which is a string, is super ugly, but all I know to do
-  const template = _.template('<% throw new Error() %>', Object.freeze({ sourceURL: '/foo/bar' }));
-  t.plan(2);
-  try {
-    template();
-  } catch (err) {
-    const path = parsePathFromStack(err.stack);
-    t.equal(path, '/foo/bar');
+[_.template, template].forEach((fn) => {
+  test(`_.template('<%= foo %>')`, (t) => {
+    const output = fn('<%= foo %>')({ foo: 'bar' });
+    t.equal(output, 'bar');
     t.equal(global.whoops, undefined);
-  }
-});
+    t.end();
+  });
 
-test(`_.template('<%= foo %>', { sourceURL: '\\u2028\\u2029\\nglobal.whoops=true' })`, (t) => {
-  // throwing errors in the template and parsing the stack, which is a string, is super ugly, but all I know to do
-  const template = _.template(
-    '<% throw new Error() %>',
-    Object.freeze({ sourceURL: '\u2028\u2029\nglobal.whoops=true' })
-  );
-  t.plan(2);
-  try {
-    template();
-  } catch (err) {
-    const path = parsePathFromStack(err.stack);
-    t.equal(path, 'global.whoops=true');
+  test(`_.template('<%= foo %>', {})`, (t) => {
+    const output = fn('<%= foo %>', Object.freeze({}))({ foo: 'bar' });
+    t.equal(output, 'bar');
     t.equal(global.whoops, undefined);
-  }
-});
+    t.end();
+  });
 
-test(`_.template used as an iteratee call(`, (t) => {
-  const templateStrArr = ['<%= data.foo %>', 'example <%= data.foo %>'];
-  const output = _.map(templateStrArr, _.template);
+  test(`_.template('<%= data.foo %>', { variable: 'data' })`, (t) => {
+    const output = fn('<%= data.foo %>', Object.freeze({ variable: 'data' }))({ foo: 'bar' });
+    t.equal(output, 'bar');
+    t.equal(global.whoops, undefined);
+    t.end();
+  });
 
-  t.equal(output[0]({ data: { foo: 'bar' } }), 'bar');
-  t.equal(output[1]({ data: { foo: 'bar' } }), 'example bar');
-  t.equal(global.whoops, undefined);
-  t.end();
+  test(`_.template('<%= foo %>', { sourceURL: '/foo/bar' })`, (t) => {
+    // throwing errors in the template and parsing the stack, which is a string, is super ugly, but all I know to do
+    const template = fn('<% throw new Error() %>', Object.freeze({ sourceURL: '/foo/bar' }));
+    t.plan(2);
+    try {
+      template();
+    } catch (err) {
+      const path = parsePathFromStack(err.stack);
+      t.equal(path, '/foo/bar');
+      t.equal(global.whoops, undefined);
+    }
+  });
+
+  test(`_.template('<%= foo %>', { sourceURL: '\\u2028\\u2029\\nglobal.whoops=true' })`, (t) => {
+    // throwing errors in the template and parsing the stack, which is a string, is super ugly, but all I know to do
+    const template = fn(
+      '<% throw new Error() %>',
+      Object.freeze({ sourceURL: '\u2028\u2029\nglobal.whoops=true' })
+    );
+    t.plan(2);
+    try {
+      template();
+    } catch (err) {
+      const path = parsePathFromStack(err.stack);
+      t.equal(path, 'global.whoops=true');
+      t.equal(global.whoops, undefined);
+    }
+  });
+
+  test(`_.template used as an iteratee call(`, (t) => {
+    const templateStrArr = ['<%= data.foo %>', 'example <%= data.foo %>'];
+    const output = _.map(templateStrArr, fn);
+
+    t.equal(output[0]({ data: { foo: 'bar' } }), 'bar');
+    t.equal(output[1]({ data: { foo: 'bar' } }), 'example bar');
+    t.equal(global.whoops, undefined);
+    t.end();
+  });
 });
 
 function parsePathFromStack(stack) {
