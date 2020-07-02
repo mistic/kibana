@@ -16,22 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+var isIterateeCall = require('lodash/_isIterateeCall');
 
 module.exports = function (lodash) {
   lodash.template = new Proxy(lodash.template, {
     apply: function (target, thisArg, args) {
-      var options;
-      if (args.length === 1) {
-        options = {
-          sourceURL: '',
-        };
-      } else {
-        options = Object.assign({}, args[1]);
-        options.sourceURL = (options.sourceURL + '').replace(/\s/g, ' ');
+      if (args.length === 1 || isIterateeCall(args)) {
+        return target.apply(thisArg, [args[0], { sourceURL: '' }]);
       }
 
-      args[1] = options;
-      return target.apply(thisArg, args);
+      var options = Object.assign({}, args[1]);
+      options.sourceURL = (options.sourceURL + '').replace(/\s/g, ' ');
+      var newArgs = args.slice(0); // copy
+      newArgs.splice(1, 1, options); // replace options in the copy
+      return target.apply(thisArg, newArgs);
     },
   });
 

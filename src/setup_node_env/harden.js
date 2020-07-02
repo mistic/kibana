@@ -23,10 +23,11 @@ hook(['child_process'], function (exports, name) {
   return require(`./patches/${name}`)(exports); // eslint-disable-line import/no-dynamic-require
 });
 
-hook(['lodash/fp'], function (exports) {
-  return require(`./patches/lodash_fp`)(exports, require('lodash')); // eslint-disable-line import/no-dynamic-require
-});
-
 hook(['lodash'], function (exports) {
   return require(`./patches/lodash`)(exports); // eslint-disable-line import/no-dynamic-require
+});
+
+// the lodash_fp patch relies on lodash already being patched... the other matters here :)
+hook(['lodash/fp'], function (exports) {
+  return require(`./patches/lodash_fp`)(exports, require('lodash')); // eslint-disable-line import/no-dynamic-require
 });

@@ -20,12 +20,11 @@
 module.exports = function (fp, _) {
   // per https://github.com/lodash/lodash/wiki/FP-Guide
   // > Iteratee arguments are capped to avoid gotchas with variadic iteratees.
-  // this means that we can't specify thhe options in the second argument... in the proxy
-  // and just have everything work. Instead, we're going to use the non-FP _.template
-  // with just the first argument that is specified, and a hardcoded options with sourceURL of ''
+  // this means that we can't specify the options in the second argument to fp.template because it's ignored.
+  // Instead, we're going to use the non-FP _.template with only the first argument which has already been patched
   fp.template = new Proxy(fp.template, {
     apply: function (target, thisArg, args) {
-      return _.template(args[0], { sourceURL: '' });
+      return _.template(args[0]);
     },
   });
 
