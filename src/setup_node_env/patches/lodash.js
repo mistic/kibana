@@ -17,16 +17,23 @@
  * under the License.
  */
 
-var hook = require('require-in-the-middle');
+module.exports = function (lodash) {
+  lodash.template = new Proxy(lodash.template, {
+    apply: function (target, thisArg, args) {
+      var options;
+      if (args.length === 1) {
+        options = {
+          sourceURL: '',
+        };
+      } else {
+        options = Object.assign({}, args[1]);
+        options.sourceURL = (options.sourceURL + '').replace(/\s/g, ' ');
+      }
 
-hook(['child_process'], function (exports, name) {
-  return require(`./patches/${name}`)(exports); // eslint-disable-line import/no-dynamic-require
-});
+      args[1] = options;
+      return target.apply(thisArg, args);
+    },
+  });
 
-hook(['lodash/fp'], function (exports) {
-  return require(`./patches/lodash_fp`)(exports, require('lodash')); // eslint-disable-line import/no-dynamic-require
-});
-
-hook(['lodash'], function (exports) {
-  return require(`./patches/lodash`)(exports); // eslint-disable-line import/no-dynamic-require
-});
+  return lodash;
+};
