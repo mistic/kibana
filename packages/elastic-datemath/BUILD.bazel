@@ -1,0 +1,28 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@npm//@babel/cli:index.bzl", "babel")
+
+filegroup(
+    name = "src",
+    srcs = glob([
+        "src/**/*",
+    ]),
+)
+
+babel(
+    name = "build",
+    data = [
+        ":src",
+        ".babelrc",
+        "@npm//@babel/preset-env",
+        "@npm//babel-plugin-add-module-exports",
+        "@npm//moment",
+    ],
+    output_dir = True,
+    args = [
+        "$(locations :src)",
+        "--out-dir",
+        "$(@D)",
+        "--copy-files"
+    ],
+)

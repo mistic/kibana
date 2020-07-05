@@ -17,83 +17,96 @@
  * under the License.
  */
 
-import { linkProjectExecutables } from '../utils/link_project_executables';
-import { log } from '../utils/log';
-import { parallelizeBatches } from '../utils/parallelize';
-import { topologicallyBatchProjects } from '../utils/projects';
-import { Project } from '../utils/project';
+// import { linkProjectExecutables } from '../utils/link_project_executables';
+// import { log } from '../utils/log';
+// import { parallelizeBatches } from '../utils/parallelize';
+// import { topologicallyBatchProjects } from '../utils/projects';
+// import { Project } from '../utils/project';
 import { ICommand } from './';
-import { getAllChecksums } from '../utils/project_checksums';
-import { BootstrapCacheFile } from '../utils/bootstrap_cache_file';
+// import { getAllChecksums } from '../utils/project_checksums';
+// import { BootstrapCacheFile } from '../utils/bootstrap_cache_file';
+import { spawn } from '../utils/child_process';
 
 export const BootstrapCommand: ICommand = {
   description: 'Install dependencies and crosslink projects',
   name: 'bootstrap',
 
   async run(projects, projectGraph, { options, kbn }) {
-    const batchedProjectsByWorkspace = topologicallyBatchProjects(projects, projectGraph, {
-      batchByWorkspace: true,
-    });
-    const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
-
-    const extraArgs = [
-      ...(options['frozen-lockfile'] === true ? ['--frozen-lockfile'] : []),
-      ...(options['prefer-offline'] === true ? ['--prefer-offline'] : []),
-    ];
-
-    for (const batch of batchedProjectsByWorkspace) {
-      for (const project of batch) {
-        if (project.isWorkspaceProject) {
-          log.verbose(`Skipping workspace project: ${project.name}`);
-          continue;
-        }
-
-        if (project.hasDependencies()) {
-          await project.installDependencies({ extraArgs });
-        }
-      }
+    // Install bazelisk
+    // TODO: add file to version bazelisk
+    // 2 - verify if it is installed
+    // 3 - kbn clean to support this
+    const { stdout } = await spawn('yarn', ['global', 'list'], { stdio: 'pipe' });
+    if (!stdout.includes('@bazel/bazelisk@1.5.0')) {
+      await spawn('yarn', ['global', 'add', '@bazel/bazelisk@1.5.0'], {});
     }
 
-    await linkProjectExecutables(projects, projectGraph);
+    // Run bazel to install dependencies and build packages
+    await spawn('bazel', ['build', '//packages:build'], {});
 
-    /**
-     * At the end of the bootstrapping process we call all `kbn:bootstrap` scripts
-     * in the list of projects. We do this because some projects need to be
-     * transpiled before they can be used. Ideally we shouldn't do this unless we
-     * have to, as it will slow down the bootstrapping process.
-     */
-
-    const checksums = await getAllChecksums(kbn, log);
-    const caches = new Map<Project, { file: BootstrapCacheFile; valid: boolean }>();
-    let cachedProjectCount = 0;
-
-    for (const project of projects.values()) {
-      if (project.hasScript('kbn:bootstrap')) {
-        const file = new BootstrapCacheFile(kbn, project, checksums);
-        const valid = options.cache && file.isValid();
-
-        if (valid) {
-          log.debug(`[${project.name}] cache up to date`);
-          cachedProjectCount += 1;
-        }
-
-        caches.set(project, { file, valid });
-      }
-    }
-
-    if (cachedProjectCount > 0) {
-      log.success(`${cachedProjectCount} bootstrap builds are cached`);
-    }
-
-    await parallelizeBatches(batchedProjects, async (project) => {
-      const cache = caches.get(project);
-      if (cache && !cache.valid) {
-        log.info(`[${project.name}] running [kbn:bootstrap] script`);
-        cache.file.delete();
-        await project.runScriptStreaming('kbn:bootstrap');
-        cache.file.write();
-        log.success(`[${project.name}] bootstrap complete`);
-      }
-    });
+    // const batchedProjectsByWorkspace = topologicallyBatchProjects(projects, projectGraph, {
+    //   batchByWorkspace: true,
+    // });
+    // const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
+    //
+    // const extraArgs = [
+    //   ...(options['frozen-lockfile'] === true ? ['--frozen-lockfile'] : []),
+    //   ...(options['prefer-offline'] === true ? ['--prefer-offline'] : []),
+    // ];
+    //
+    // for (const batch of batchedProjectsByWorkspace) {
+    //   for (const project of batch) {
+    //     if (project.isWorkspaceProject) {
+    //       log.verbose(`Skipping workspace project: ${project.name}`);
+    //       continue;
+    //     }
+    //
+    //     if (project.hasDependencies()) {
+    //       await project.installDependencies({ extraArgs });
+    //     }
+    //   }
+    // }
+    //
+    // await linkProjectExecutables(projects, projectGraph);
+    //
+    // /**
+    //  * At the end of the bootstrapping process we call all `kbn:bootstrap` scripts
+    //  * in the list of projects. We do this because some projects need to be
+    //  * transpiled before they can be used. Ideally we shouldn't do this unless we
+    //  * have to, as it will slow down the bootstrapping process.
+    //  */
+    //
+    // const checksums = await getAllChecksums(kbn, log);
+    // const caches = new Map<Project, { file: BootstrapCacheFile; valid: boolean }>();
+    // let cachedProjectCount = 0;
+    //
+    // for (const project of projects.values()) {
+    //   if (project.hasScript('kbn:bootstrap')) {
+    //     const file = new BootstrapCacheFile(kbn, project, checksums);
+    //     const valid = options.cache && file.isValid();
+    //
+    //     if (valid) {
+    //       log.debug(`[${project.name}] cache up to date`);
+    //       cachedProjectCount += 1;
+    //     }
+    //
+    //     caches.set(project, { file, valid });
+    //   }
+    // }
+    //
+    // if (cachedProjectCount > 0) {
+    //   log.success(`${cachedProjectCount} bootstrap builds are cached`);
+    // }
+    //
+    // await parallelizeBatches(batchedProjects, async (project) => {
+    //   const cache = caches.get(project);
+    //   if (cache && !cache.valid) {
+    //     log.info(`[${project.name}] running [kbn:bootstrap] script`);
+    //     cache.file.delete();
+    //     await project.runScriptStreaming('kbn:bootstrap');
+    //     cache.file.write();
+    //     log.success(`[${project.name}] bootstrap complete`);
+    //   }
+    // });
   },
 };

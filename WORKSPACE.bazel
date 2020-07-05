@@ -1,0 +1,47 @@
+workspace(
+    name = "kibana",
+    managed_directories = {"@npm": ["node_modules"]},
+)
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Fetch Node.js rules
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "84abf7ac4234a70924628baa9a73a5a5cbad944c4358cf9abdb4aab29c9a5b77",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.7.0/rules_nodejs-1.7.0.tar.gz"],
+)
+load("@build_bazel_rules_nodejs//:index.bzl", "check_rules_nodejs_version", "node_repositories", "yarn_install")
+
+check_rules_nodejs_version(minimum_version_string = "1.7.0")
+
+# Setup the Node.js toolchain
+node_repositories(
+    node_repositories = {
+        "10.21.0-darwin_amd64": ("node-v10.21.0-darwin-x64.tar.gz", "node-v10.21.0-darwin-x64", "596900700c4a0de0303bb4c378a1abcd63f31efc848704c5fbc1230de628577a"),
+        "10.21.0-linux_amd64": ("node-v10.21.0-linux-x64.tar.xz", "node-v10.21.0-linux-x64", "1d3296763e46540047099e4910812e81c4899c0595f2d82474e2099c1e1603e2"),
+        "10.21.0-windows_amd64": ("node-v10.21.0-win-x64.zip", "node-v10.21.0-win-x64", "03dddcdaccdb40978ddf15d189acdc20409d9a666636db2595118690ff83ce82"),
+    },
+    node_version = "10.21.0",
+    yarn_repositories = {
+        "1.21.1": ("yarn-v1.21.1.tar.gz", "yarn-v1.21.1", "d1d9f4a0f16f5ed484e814afeb98f39b82d4728c6c8beaafb5abc99c02db6674"),
+    },
+    yarn_version = "1.21.1",
+    package_json = ["//:package.json"],
+)
+
+# Run yarn_install rule to take care of dependencies
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    quiet = False,
+    yarn_lock = "//:yarn.lock",
+)
+
+# Install all Bazel dependencies needed for npm packages that supply Bazel rules
+load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+install_bazel_dependencies()
+
+# Setup typescript rule
+#load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
+#ts_setup_workspace()

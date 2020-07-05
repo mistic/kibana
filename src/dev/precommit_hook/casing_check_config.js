@@ -67,6 +67,7 @@ export const IGNORE_FILE_GLOBS = [
   'x-pack/plugins/apm/e2e/**/*',
 
   'x-pack/plugins/maps/server/fonts/**/*',
+  '**/**/*.bazel',
 ];
 
 /**
