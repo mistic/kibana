@@ -8740,7 +8740,7 @@ exports.ToolingLogCollectingWriter = ToolingLogCollectingWriter;
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commands", function() { return commands; });
 /* harmony import */ var _bootstrap__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(127);
-/* harmony import */ var _clean__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(181);
+/* harmony import */ var _clean__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(191);
 /* harmony import */ var _run__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(308);
 /* harmony import */ var _watch__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(382);
 /*
@@ -8780,6 +8780,10 @@ const commands = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "BootstrapCommand", function() { return BootstrapCommand; });
 /* harmony import */ var _utils_child_process__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(128);
+/* harmony import */ var _utils_fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(181);
+/* harmony import */ var _utils_log__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(180);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
 /*
  * Licensed to Elasticsearch B.V. under one or more contributor
  * license agreements. See the NOTICE file distributed with
@@ -8798,13 +8802,9 @@ __webpack_require__.r(__webpack_exports__);
  * specific language governing permissions and limitations
  * under the License.
  */
-// import { linkProjectExecutables } from '../utils/link_project_executables';
-// import { log } from '../utils/log';
-// import { parallelizeBatches } from '../utils/parallelize';
-// import { topologicallyBatchProjects } from '../utils/projects';
-// import { Project } from '../utils/project';
-// import { getAllChecksums } from '../utils/project_checksums';
-// import { BootstrapCacheFile } from '../utils/bootstrap_cache_file';
+
+
+
 
 const BootstrapCommand = {
   description: 'Install dependencies and crosslink projects',
@@ -8812,87 +8812,32 @@ const BootstrapCommand = {
 
   async run(projects, projectGraph, {
     options,
-    kbn
+    kbn,
+    rootPath
   }) {
-    // Install bazelisk
-    // TODO: add file to version bazelisk
-    // 2 - verify if it is installed
-    // 3 - kbn clean to support this
+    // TODO: fix preinstall check to allow that command
+    // Get defined bazelisk version and install it if needed
+    const bazeliskVersionFileContent = await Object(_utils_fs__WEBPACK_IMPORTED_MODULE_1__["readFile"])(Object(path__WEBPACK_IMPORTED_MODULE_3__["resolve"])(rootPath, '.bazeliskversion'));
+    const bazeliskVersion = bazeliskVersionFileContent.toString().split('\n')[0];
+
+    if (!bazeliskVersion) {
+      _utils_log__WEBPACK_IMPORTED_MODULE_2__["log"].error('.bazeliskversion file do not contain any version set');
+    }
+
     const {
       stdout
     } = await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('yarn', ['global', 'list'], {
       stdio: 'pipe'
     });
 
-    if (!stdout.includes('@bazel/bazelisk@1.5.0')) {
-      await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('yarn', ['global', 'add', '@bazel/bazelisk@1.5.0'], {});
-    } // Run bazel to install dependencies and build packages
+    if (!stdout.includes(`@bazel/bazelisk@${bazeliskVersion}`)) {
+      await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('yarn', ['global', 'add', `@bazel/bazelisk@${bazeliskVersion}`], {});
+    } // Run bazel to sync and fetch workspace
 
 
-    await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('bazel', ['build', '//packages:build'], {}); // const batchedProjectsByWorkspace = topologicallyBatchProjects(projects, projectGraph, {
-    //   batchByWorkspace: true,
-    // });
-    // const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
-    //
-    // const extraArgs = [
-    //   ...(options['frozen-lockfile'] === true ? ['--frozen-lockfile'] : []),
-    //   ...(options['prefer-offline'] === true ? ['--prefer-offline'] : []),
-    // ];
-    //
-    // for (const batch of batchedProjectsByWorkspace) {
-    //   for (const project of batch) {
-    //     if (project.isWorkspaceProject) {
-    //       log.verbose(`Skipping workspace project: ${project.name}`);
-    //       continue;
-    //     }
-    //
-    //     if (project.hasDependencies()) {
-    //       await project.installDependencies({ extraArgs });
-    //     }
-    //   }
-    // }
-    //
-    // await linkProjectExecutables(projects, projectGraph);
-    //
-    // /**
-    //  * At the end of the bootstrapping process we call all `kbn:bootstrap` scripts
-    //  * in the list of projects. We do this because some projects need to be
-    //  * transpiled before they can be used. Ideally we shouldn't do this unless we
-    //  * have to, as it will slow down the bootstrapping process.
-    //  */
-    //
-    // const checksums = await getAllChecksums(kbn, log);
-    // const caches = new Map<Project, { file: BootstrapCacheFile; valid: boolean }>();
-    // let cachedProjectCount = 0;
-    //
-    // for (const project of projects.values()) {
-    //   if (project.hasScript('kbn:bootstrap')) {
-    //     const file = new BootstrapCacheFile(kbn, project, checksums);
-    //     const valid = options.cache && file.isValid();
-    //
-    //     if (valid) {
-    //       log.debug(`[${project.name}] cache up to date`);
-    //       cachedProjectCount += 1;
-    //     }
-    //
-    //     caches.set(project, { file, valid });
-    //   }
-    // }
-    //
-    // if (cachedProjectCount > 0) {
-    //   log.success(`${cachedProjectCount} bootstrap builds are cached`);
-    // }
-    //
-    // await parallelizeBatches(batchedProjects, async (project) => {
-    //   const cache = caches.get(project);
-    //   if (cache && !cache.valid) {
-    //     log.info(`[${project.name}] running [kbn:bootstrap] script`);
-    //     cache.file.delete();
-    //     await project.runScriptStreaming('kbn:bootstrap');
-    //     cache.file.write();
-    //     log.success(`[${project.name}] bootstrap complete`);
-    //   }
-    // });
+    await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('bazel', ['sync'], {}); // Run bazel to build packages
+
+    await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_0__["spawn"])('bazel', ['build', '//packages:build'], {});
   }
 
 };
@@ -12240,7 +12185,7 @@ function usage($0, p) {
 
 module.exports = function (args, opts) {
     if (!opts) opts = {};
-    
+
     var flags = { bools : {}, strings : {}, unknownFn: null };
 
     if (typeof opts['unknown'] === 'function') {
@@ -12254,7 +12199,7 @@ module.exports = function (args, opts) {
           flags.bools[key] = true;
       });
     }
-    
+
     var aliases = {};
     Object.keys(opts.alias || {}).forEach(function (key) {
         aliases[key] = [].concat(opts.alias[key]);
@@ -12273,12 +12218,12 @@ module.exports = function (args, opts) {
      });
 
     var defaults = opts['default'] || {};
-    
+
     var argv = { _ : [] };
     Object.keys(flags.bools).forEach(function (key) {
         setArg(key, defaults[key] === undefined ? false : defaults[key]);
     });
-    
+
     var notFlags = [];
 
     if (args.indexOf('--') !== -1) {
@@ -12300,7 +12245,7 @@ module.exports = function (args, opts) {
             ? Number(val) : val
         ;
         setKey(argv, key.split('.'), value);
-        
+
         (aliases[key] || []).forEach(function (x) {
             setKey(argv, x.split('.'), value);
         });
@@ -12324,7 +12269,7 @@ module.exports = function (args, opts) {
             o[key] = [ o[key], value ];
         }
     }
-    
+
     function aliasIsBoolean(key) {
       return aliases[key].some(function (x) {
           return flags.bools[x];
@@ -12333,7 +12278,7 @@ module.exports = function (args, opts) {
 
     for (var i = 0; i < args.length; i++) {
         var arg = args[i];
-        
+
         if (/^--.+=/.test(arg)) {
             // Using [\s\S] instead of . because js doesn't support the
             // 'dotall' regex modifier. See:
@@ -12370,29 +12315,29 @@ module.exports = function (args, opts) {
         }
         else if (/^-[^-]+/.test(arg)) {
             var letters = arg.slice(1,-1).split('');
-            
+
             var broken = false;
             for (var j = 0; j < letters.length; j++) {
                 var next = arg.slice(j+2);
-                
+
                 if (next === '-') {
                     setArg(letters[j], next, arg)
                     continue;
                 }
-                
+
                 if (/[A-Za-z]/.test(letters[j]) && /=/.test(next)) {
                     setArg(letters[j], next.split('=')[1], arg);
                     broken = true;
                     break;
                 }
-                
+
                 if (/[A-Za-z]/.test(letters[j])
                 && /-?\d+(\.\d*)?(e-?\d+)?$/.test(next)) {
                     setArg(letters[j], next, arg);
                     broken = true;
                     break;
                 }
-                
+
                 if (letters[j+1] && letters[j+1].match(/\W/)) {
                     setArg(letters[j], arg.slice(j+2), arg);
                     broken = true;
@@ -12402,7 +12347,7 @@ module.exports = function (args, opts) {
                     setArg(letters[j], flags.strings[letters[j]] ? '' : true, arg);
                 }
             }
-            
+
             var key = arg.slice(-1)[0];
             if (!broken && key !== '-') {
                 if (args[i+1] && !/^(-|--)[^-]/.test(args[i+1])
@@ -12432,17 +12377,17 @@ module.exports = function (args, opts) {
             }
         }
     }
-    
+
     Object.keys(defaults).forEach(function (key) {
         if (!hasKey(argv, key.split('.'))) {
             setKey(argv, key.split('.'), defaults[key]);
-            
+
             (aliases[key] || []).forEach(function (x) {
                 setKey(argv, x.split('.'), defaults[key]);
             });
         }
     });
-    
+
     if (opts['--']) {
         argv['--'] = new Array();
         notFlags.forEach(function(key) {
@@ -12548,14 +12493,1687 @@ const log = new Log();
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readFile", function() { return readFile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "chmod", function() { return chmod; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mkdirp", function() { return mkdirp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "unlink", function() { return unlink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDirectory", function() { return copyDirectory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isSymlink", function() { return isSymlink; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDirectory", function() { return isDirectory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFile", function() { return isFile; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createSymlink", function() { return createSymlink; });
+/* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(182);
+/* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cmd_shim__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(137);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(190);
+/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(ncp__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(111);
+/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_4__);
+/*
+ * Licensed to Elasticsearch B.V. under one or more contributor
+ * license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright
+ * ownership. Elasticsearch B.V. licenses this file to you under
+ * the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+
+
+
+
+const lstat = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.lstat);
+const readFile = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.readFile);
+const symlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.symlink);
+const chmod = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.chmod);
+const cmdShim = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(cmd_shim__WEBPACK_IMPORTED_MODULE_0___default.a);
+const mkdir = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.mkdir);
+const mkdirp = async path => await mkdir(path, {
+  recursive: true
+});
+const unlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.unlink);
+const copyDirectory = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(ncp__WEBPACK_IMPORTED_MODULE_2__["ncp"]);
+
+async function statTest(path, block) {
+  try {
+    return block(await lstat(path));
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      return false;
+    }
+
+    throw e;
+  }
+}
+/**
+ * Test if a path points to a symlink.
+ * @param path
+ */
+
+
+async function isSymlink(path) {
+  return await statTest(path, stats => stats.isSymbolicLink());
+}
+/**
+ * Test if a path points to a directory.
+ * @param path
+ */
+
+async function isDirectory(path) {
+  return await statTest(path, stats => stats.isDirectory());
+}
+/**
+ * Test if a path points to a regular file.
+ * @param path
+ */
+
+async function isFile(path) {
+  return await statTest(path, stats => stats.isFile());
+}
+/**
+ * Create a symlink at dest that points to src. Adapted from
+ * https://github.com/lerna/lerna/blob/2f1b87d9e2295f587e4ac74269f714271d8ed428/src/FileSystemUtilities.js#L103.
+ *
+ * @param src
+ * @param dest
+ * @param type 'dir', 'file', 'junction', or 'exec'. 'exec' on
+ *  windows will use the `cmd-shim` module since symlinks can't be used
+ *  for executable files on windows.
+ */
+
+async function createSymlink(src, dest, type) {
+  if (process.platform === 'win32') {
+    if (type === 'exec') {
+      await cmdShim(src, dest);
+    } else {
+      await forceCreate(src, dest, type);
+    }
+  } else {
+    const posixType = type === 'exec' ? 'file' : type;
+    const relativeSource = Object(path__WEBPACK_IMPORTED_MODULE_3__["relative"])(Object(path__WEBPACK_IMPORTED_MODULE_3__["dirname"])(dest), src);
+    await forceCreate(relativeSource, dest, posixType);
+  }
+}
+
+async function forceCreate(src, dest, type) {
+  try {
+    // If something exists at `dest` we need to remove it first.
+    await unlink(dest);
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  await symlink(src, dest, type);
+}
+
+/***/ }),
+/* 182 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// On windows, create a .cmd file.
+// Read the #! in the file to see what it uses.  The vast majority
+// of the time, this will be either:
+// "#!/usr/bin/env <prog> <args...>"
+// or:
+// "#!<prog> <args...>"
+//
+// Write a binroot/pkg.bin + ".cmd" file that has this line in it:
+// @<prog> <args...> %~dp0<target> %*
+
+module.exports = cmdShim
+cmdShim.ifExists = cmdShimIfExists
+
+var fs = __webpack_require__(183)
+
+var mkdir = __webpack_require__(188)
+  , path = __webpack_require__(4)
+  , toBatchSyntax = __webpack_require__(189)
+  , shebangExpr = /^#\!\s*(?:\/usr\/bin\/env)?\s*([^ \t]+=[^ \t]+\s+)*\s*([^ \t]+)(.*)$/
+
+function cmdShimIfExists (from, to, cb) {
+  fs.stat(from, function (er) {
+    if (er) return cb()
+    cmdShim(from, to, cb)
+  })
+}
+
+// Try to unlink, but ignore errors.
+// Any problems will surface later.
+function rm (path, cb) {
+  fs.unlink(path, function(er) {
+    cb()
+  })
+}
+
+function cmdShim (from, to, cb) {
+  fs.stat(from, function (er, stat) {
+    if (er)
+      return cb(er)
+
+    cmdShim_(from, to, cb)
+  })
+}
+
+function cmdShim_ (from, to, cb) {
+  var then = times(2, next, cb)
+  rm(to, then)
+  rm(to + ".cmd", then)
+
+  function next(er) {
+    writeShim(from, to, cb)
+  }
+}
+
+function writeShim (from, to, cb) {
+  // make a cmd file and a sh script
+  // First, check if the bin is a #! of some sort.
+  // If not, then assume it's something that'll be compiled, or some other
+  // sort of script, and just call it directly.
+  mkdir(path.dirname(to), function (er) {
+    if (er)
+      return cb(er)
+    fs.readFile(from, "utf8", function (er, data) {
+      if (er) return writeShim_(from, to, null, null, cb)
+      var firstLine = data.trim().split(/\r*\n/)[0]
+        , shebang = firstLine.match(shebangExpr)
+      if (!shebang) return writeShim_(from, to, null, null, null, cb)
+      var vars = shebang[1] || ""
+        , prog = shebang[2]
+        , args = shebang[3] || ""
+      return writeShim_(from, to, prog, args, vars, cb)
+    })
+  })
+}
+
+
+function writeShim_ (from, to, prog, args, variables, cb) {
+  var shTarget = path.relative(path.dirname(to), from)
+    , target = shTarget.split("/").join("\\")
+    , longProg
+    , shProg = prog && prog.split("\\").join("/")
+    , shLongProg
+    , pwshProg = shProg && "\"" + shProg + "$exe\""
+    , pwshLongProg
+  shTarget = shTarget.split("\\").join("/")
+  args = args || ""
+  variables = variables || ""
+  if (!prog) {
+    prog = "\"%~dp0\\" + target + "\""
+    shProg = "\"$basedir/" + shTarget + "\""
+    pwshProg = shProg
+    args = ""
+    target = ""
+    shTarget = ""
+  } else {
+    longProg = "\"%~dp0\\" + prog + ".exe\""
+    shLongProg = "\"$basedir/" + prog + "\""
+    pwshLongProg = "\"$basedir/" + prog + "$exe\""
+    target = "\"%~dp0\\" + target + "\""
+    shTarget = "\"$basedir/" + shTarget + "\""
+  }
+
+  // @SETLOCAL
+  //
+  // @IF EXIST "%~dp0\node.exe" (
+  //   @SET "_prog=%~dp0\node.exe"
+  // ) ELSE (
+  //   @SET "_prog=node"
+  //   @SET PATHEXT=%PATHEXT:;.JS;=;%
+  // )
+  //
+  // "%_prog%" "%~dp0\.\node_modules\npm\bin\npm-cli.js" %*
+  // @ENDLOCAL
+  var cmd
+  if (longProg) {
+    shLongProg = shLongProg.trim();
+    args = args.trim();
+    var variableDeclarationsAsBatch = toBatchSyntax.convertToSetCommands(variables)
+    cmd = "@SETLOCAL\r\n"
+        + variableDeclarationsAsBatch
+        + "\r\n"
+        + "@IF EXIST " + longProg + " (\r\n"
+        + "  @SET \"_prog=" + longProg.replace(/(^")|("$)/g, '') + "\"\r\n"
+        + ") ELSE (\r\n"
+        + "  @SET \"_prog=" + prog.replace(/(^")|("$)/g, '') + "\"\r\n"
+        + "  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n"
+        + ")\r\n"
+        + "\r\n"
+        +  "\"%_prog%\" " + args + " " + target + " %*\r\n"
+        + '@ENDLOCAL\r\n'
+  } else {
+    cmd = "@" + prog + " " + args + " " + target + " %*\r\n"
+  }
+
+  // #!/bin/sh
+  // basedir=`dirname "$0"`
+  //
+  // case `uname` in
+  //     *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;
+  // esac
+  //
+  // if [ -x "$basedir/node.exe" ]; then
+  //   "$basedir/node.exe" "$basedir/node_modules/npm/bin/npm-cli.js" "$@"
+  //   ret=$?
+  // else
+  //   node "$basedir/node_modules/npm/bin/npm-cli.js" "$@"
+  //   ret=$?
+  // fi
+  // exit $ret
+
+  var sh = "#!/bin/sh\n"
+
+  sh = sh
+      + "basedir=$(dirname \"$(echo \"$0\" | sed -e 's,\\\\,/,g')\")\n"
+      + "\n"
+      + "case `uname` in\n"
+      + "    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w \"$basedir\"`;;\n"
+      + "esac\n"
+      + "\n"
+
+  if (shLongProg) {
+    sh = sh
+       + "if [ -x "+shLongProg+" ]; then\n"
+       + "  " + variables + shLongProg + " " + args + " " + shTarget + " \"$@\"\n"
+       + "  ret=$?\n"
+       + "else \n"
+       + "  " + variables + shProg + " " + args + " " + shTarget + " \"$@\"\n"
+       + "  ret=$?\n"
+       + "fi\n"
+       + "exit $ret\n"
+  } else {
+    sh = sh
+       + shProg + " " + args + " " + shTarget + " \"$@\"\n"
+       + "exit $?\n"
+  }
+
+  // #!/usr/bin/env pwsh
+  // $basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
+  //
+  // $ret=0
+  // $exe = ""
+  // if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {
+  //   # Fix case when both the Windows and Linux builds of Node
+  //   # are installed in the same directory
+  //   $exe = ".exe"
+  // }
+  // if (Test-Path "$basedir/node") {
+  //   & "$basedir/node$exe" "$basedir/node_modules/npm/bin/npm-cli.js" $args
+  //   $ret=$LASTEXITCODE
+  // } else {
+  //   & "node$exe" "$basedir/node_modules/npm/bin/npm-cli.js" $args
+  //   $ret=$LASTEXITCODE
+  // }
+  // exit $ret
+  var pwsh = "#!/usr/bin/env pwsh\n"
+           + "$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent\n"
+           + "\n"
+           + "$exe=\"\"\n"
+           + "if ($PSVersionTable.PSVersion -lt \"6.0\" -or $IsWindows) {\n"
+           + "  # Fix case when both the Windows and Linux builds of Node\n"
+           + "  # are installed in the same directory\n"
+           + "  $exe=\".exe\"\n"
+           + "}\n"
+  if (shLongProg) {
+    pwsh = pwsh
+         + "$ret=0\n"
+         + "if (Test-Path " + pwshLongProg + ") {\n"
+         + "  & " + pwshLongProg + " " + args + " " + shTarget + " $args\n"
+         + "  $ret=$LASTEXITCODE\n"
+         + "} else {\n"
+         + "  & " + pwshProg + " " + args + " " + shTarget + " $args\n"
+         + "  $ret=$LASTEXITCODE\n"
+         + "}\n"
+         + "exit $ret\n"
+  } else {
+    pwsh = pwsh
+         + "& " + pwshProg + " " + args + " " + shTarget + " $args\n"
+         + "exit $LASTEXITCODE\n"
+  }
+
+  var then = times(3, next, cb)
+  fs.writeFile(to + ".ps1", pwsh, "utf8", then)
+  fs.writeFile(to + ".cmd", cmd, "utf8", then)
+  fs.writeFile(to, sh, "utf8", then)
+  function next () {
+    chmodShim(to, cb)
+  }
+}
+
+function chmodShim (to, cb) {
+  var then = times(2, cb, cb)
+  fs.chmod(to, "0755", then)
+  fs.chmod(to + ".cmd", "0755", then)
+  fs.chmod(to + ".ps1", "0755", then)
+}
+
+function times(n, ok, cb) {
+  var errState = null
+  return function(er) {
+    if (!errState) {
+      if (er)
+        cb(errState = er)
+      else if (--n === 0)
+        ok()
+    }
+  }
+}
+
+
+/***/ }),
+/* 183 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fs = __webpack_require__(137)
+var polyfills = __webpack_require__(184)
+var legacy = __webpack_require__(186)
+var clone = __webpack_require__(187)
+
+var util = __webpack_require__(111)
+
+/* istanbul ignore next - node 0.x polyfill */
+var gracefulQueue
+var previousSymbol
+
+/* istanbul ignore else - node 0.x polyfill */
+if (typeof Symbol === 'function' && typeof Symbol.for === 'function') {
+  gracefulQueue = Symbol.for('graceful-fs.queue')
+  // This is used in testing by future versions
+  previousSymbol = Symbol.for('graceful-fs.previous')
+} else {
+  gracefulQueue = '___graceful-fs.queue'
+  previousSymbol = '___graceful-fs.previous'
+}
+
+function noop () {}
+
+var debug = noop
+if (util.debuglog)
+  debug = util.debuglog('gfs4')
+else if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || ''))
+  debug = function() {
+    var m = util.format.apply(util, arguments)
+    m = 'GFS4: ' + m.split(/\n/).join('\nGFS4: ')
+    console.error(m)
+  }
+
+// Once time initialization
+if (!global[gracefulQueue]) {
+  // This queue can be shared by multiple loaded instances
+  var queue = []
+  Object.defineProperty(global, gracefulQueue, {
+    get: function() {
+      return queue
+    }
+  })
+
+  // Patch fs.close/closeSync to shared queue version, because we need
+  // to retry() whenever a close happens *anywhere* in the program.
+  // This is essential when multiple graceful-fs instances are
+  // in play at the same time.
+  fs.close = (function (fs$close) {
+    function close (fd, cb) {
+      return fs$close.call(fs, fd, function (err) {
+        // This function uses the graceful-fs shared queue
+        if (!err) {
+          retry()
+        }
+
+        if (typeof cb === 'function')
+          cb.apply(this, arguments)
+      })
+    }
+
+    Object.defineProperty(close, previousSymbol, {
+      value: fs$close
+    })
+    return close
+  })(fs.close)
+
+  fs.closeSync = (function (fs$closeSync) {
+    function closeSync (fd) {
+      // This function uses the graceful-fs shared queue
+      fs$closeSync.apply(fs, arguments)
+      retry()
+    }
+
+    Object.defineProperty(closeSync, previousSymbol, {
+      value: fs$closeSync
+    })
+    return closeSync
+  })(fs.closeSync)
+
+  if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || '')) {
+    process.on('exit', function() {
+      debug(global[gracefulQueue])
+      __webpack_require__(158).equal(global[gracefulQueue].length, 0)
+    })
+  }
+}
+
+module.exports = patch(clone(fs))
+if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs.__patched) {
+    module.exports = patch(fs)
+    fs.__patched = true;
+}
+
+function patch (fs) {
+  // Everything that references the open() function needs to be in here
+  polyfills(fs)
+  fs.gracefulify = patch
+
+  fs.createReadStream = createReadStream
+  fs.createWriteStream = createWriteStream
+  var fs$readFile = fs.readFile
+  fs.readFile = readFile
+  function readFile (path, options, cb) {
+    if (typeof options === 'function')
+      cb = options, options = null
+
+    return go$readFile(path, options, cb)
+
+    function go$readFile (path, options, cb) {
+      return fs$readFile(path, options, function (err) {
+        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
+          enqueue([go$readFile, [path, options, cb]])
+        else {
+          if (typeof cb === 'function')
+            cb.apply(this, arguments)
+          retry()
+        }
+      })
+    }
+  }
+
+  var fs$writeFile = fs.writeFile
+  fs.writeFile = writeFile
+  function writeFile (path, data, options, cb) {
+    if (typeof options === 'function')
+      cb = options, options = null
+
+    return go$writeFile(path, data, options, cb)
+
+    function go$writeFile (path, data, options, cb) {
+      return fs$writeFile(path, data, options, function (err) {
+        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
+          enqueue([go$writeFile, [path, data, options, cb]])
+        else {
+          if (typeof cb === 'function')
+            cb.apply(this, arguments)
+          retry()
+        }
+      })
+    }
+  }
+
+  var fs$appendFile = fs.appendFile
+  if (fs$appendFile)
+    fs.appendFile = appendFile
+  function appendFile (path, data, options, cb) {
+    if (typeof options === 'function')
+      cb = options, options = null
+
+    return go$appendFile(path, data, options, cb)
+
+    function go$appendFile (path, data, options, cb) {
+      return fs$appendFile(path, data, options, function (err) {
+        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
+          enqueue([go$appendFile, [path, data, options, cb]])
+        else {
+          if (typeof cb === 'function')
+            cb.apply(this, arguments)
+          retry()
+        }
+      })
+    }
+  }
+
+  var fs$readdir = fs.readdir
+  fs.readdir = readdir
+  function readdir (path, options, cb) {
+    var args = [path]
+    if (typeof options !== 'function') {
+      args.push(options)
+    } else {
+      cb = options
+    }
+    args.push(go$readdir$cb)
+
+    return go$readdir(args)
+
+    function go$readdir$cb (err, files) {
+      if (files && files.sort)
+        files.sort()
+
+      if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
+        enqueue([go$readdir, [args]])
+
+      else {
+        if (typeof cb === 'function')
+          cb.apply(this, arguments)
+        retry()
+      }
+    }
+  }
+
+  function go$readdir (args) {
+    return fs$readdir.apply(fs, args)
+  }
+
+  if (process.version.substr(0, 4) === 'v0.8') {
+    var legStreams = legacy(fs)
+    ReadStream = legStreams.ReadStream
+    WriteStream = legStreams.WriteStream
+  }
+
+  var fs$ReadStream = fs.ReadStream
+  if (fs$ReadStream) {
+    ReadStream.prototype = Object.create(fs$ReadStream.prototype)
+    ReadStream.prototype.open = ReadStream$open
+  }
+
+  var fs$WriteStream = fs.WriteStream
+  if (fs$WriteStream) {
+    WriteStream.prototype = Object.create(fs$WriteStream.prototype)
+    WriteStream.prototype.open = WriteStream$open
+  }
+
+  Object.defineProperty(fs, 'ReadStream', {
+    get: function () {
+      return ReadStream
+    },
+    set: function (val) {
+      ReadStream = val
+    },
+    enumerable: true,
+    configurable: true
+  })
+  Object.defineProperty(fs, 'WriteStream', {
+    get: function () {
+      return WriteStream
+    },
+    set: function (val) {
+      WriteStream = val
+    },
+    enumerable: true,
+    configurable: true
+  })
+
+  // legacy names
+  var FileReadStream = ReadStream
+  Object.defineProperty(fs, 'FileReadStream', {
+    get: function () {
+      return FileReadStream
+    },
+    set: function (val) {
+      FileReadStream = val
+    },
+    enumerable: true,
+    configurable: true
+  })
+  var FileWriteStream = WriteStream
+  Object.defineProperty(fs, 'FileWriteStream', {
+    get: function () {
+      return FileWriteStream
+    },
+    set: function (val) {
+      FileWriteStream = val
+    },
+    enumerable: true,
+    configurable: true
+  })
+
+  function ReadStream (path, options) {
+    if (this instanceof ReadStream)
+      return fs$ReadStream.apply(this, arguments), this
+    else
+      return ReadStream.apply(Object.create(ReadStream.prototype), arguments)
+  }
+
+  function ReadStream$open () {
+    var that = this
+    open(that.path, that.flags, that.mode, function (err, fd) {
+      if (err) {
+        if (that.autoClose)
+          that.destroy()
+
+        that.emit('error', err)
+      } else {
+        that.fd = fd
+        that.emit('open', fd)
+        that.read()
+      }
+    })
+  }
+
+  function WriteStream (path, options) {
+    if (this instanceof WriteStream)
+      return fs$WriteStream.apply(this, arguments), this
+    else
+      return WriteStream.apply(Object.create(WriteStream.prototype), arguments)
+  }
+
+  function WriteStream$open () {
+    var that = this
+    open(that.path, that.flags, that.mode, function (err, fd) {
+      if (err) {
+        that.destroy()
+        that.emit('error', err)
+      } else {
+        that.fd = fd
+        that.emit('open', fd)
+      }
+    })
+  }
+
+  function createReadStream (path, options) {
+    return new fs.ReadStream(path, options)
+  }
+
+  function createWriteStream (path, options) {
+    return new fs.WriteStream(path, options)
+  }
+
+  var fs$open = fs.open
+  fs.open = open
+  function open (path, flags, mode, cb) {
+    if (typeof mode === 'function')
+      cb = mode, mode = null
+
+    return go$open(path, flags, mode, cb)
+
+    function go$open (path, flags, mode, cb) {
+      return fs$open(path, flags, mode, function (err, fd) {
+        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
+          enqueue([go$open, [path, flags, mode, cb]])
+        else {
+          if (typeof cb === 'function')
+            cb.apply(this, arguments)
+          retry()
+        }
+      })
+    }
+  }
+
+  return fs
+}
+
+function enqueue (elem) {
+  debug('ENQUEUE', elem[0].name, elem[1])
+  global[gracefulQueue].push(elem)
+}
+
+function retry () {
+  var elem = global[gracefulQueue].shift()
+  if (elem) {
+    debug('RETRY', elem[0].name, elem[1])
+    elem[0].apply(null, elem[1])
+  }
+}
+
+
+/***/ }),
+/* 184 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var constants = __webpack_require__(185)
+
+var origCwd = process.cwd
+var cwd = null
+
+var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform
+
+process.cwd = function() {
+  if (!cwd)
+    cwd = origCwd.call(process)
+  return cwd
+}
+try {
+  process.cwd()
+} catch (er) {}
+
+var chdir = process.chdir
+process.chdir = function(d) {
+  cwd = null
+  chdir.call(process, d)
+}
+
+module.exports = patch
+
+function patch (fs) {
+  // (re-)implement some things that are known busted or missing.
+
+  // lchmod, broken prior to 0.6.2
+  // back-port the fix here.
+  if (constants.hasOwnProperty('O_SYMLINK') &&
+      process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
+    patchLchmod(fs)
+  }
+
+  // lutimes implementation, or no-op
+  if (!fs.lutimes) {
+    patchLutimes(fs)
+  }
+
+  // https://github.com/isaacs/node-graceful-fs/issues/4
+  // Chown should not fail on einval or eperm if non-root.
+  // It should not fail on enosys ever, as this just indicates
+  // that a fs doesn't support the intended operation.
+
+  fs.chown = chownFix(fs.chown)
+  fs.fchown = chownFix(fs.fchown)
+  fs.lchown = chownFix(fs.lchown)
+
+  fs.chmod = chmodFix(fs.chmod)
+  fs.fchmod = chmodFix(fs.fchmod)
+  fs.lchmod = chmodFix(fs.lchmod)
+
+  fs.chownSync = chownFixSync(fs.chownSync)
+  fs.fchownSync = chownFixSync(fs.fchownSync)
+  fs.lchownSync = chownFixSync(fs.lchownSync)
+
+  fs.chmodSync = chmodFixSync(fs.chmodSync)
+  fs.fchmodSync = chmodFixSync(fs.fchmodSync)
+  fs.lchmodSync = chmodFixSync(fs.lchmodSync)
+
+  fs.stat = statFix(fs.stat)
+  fs.fstat = statFix(fs.fstat)
+  fs.lstat = statFix(fs.lstat)
+
+  fs.statSync = statFixSync(fs.statSync)
+  fs.fstatSync = statFixSync(fs.fstatSync)
+  fs.lstatSync = statFixSync(fs.lstatSync)
+
+  // if lchmod/lchown do not exist, then make them no-ops
+  if (!fs.lchmod) {
+    fs.lchmod = function (path, mode, cb) {
+      if (cb) process.nextTick(cb)
+    }
+    fs.lchmodSync = function () {}
+  }
+  if (!fs.lchown) {
+    fs.lchown = function (path, uid, gid, cb) {
+      if (cb) process.nextTick(cb)
+    }
+    fs.lchownSync = function () {}
+  }
+
+  // on Windows, A/V software can lock the directory, causing this
+  // to fail with an EACCES or EPERM if the directory contains newly
+  // created files.  Try again on failure, for up to 60 seconds.
+
+  // Set the timeout this long because some Windows Anti-Virus, such as Parity
+  // bit9, may lock files for up to a minute, causing npm package install
+  // failures. Also, take care to yield the scheduler. Windows scheduling gives
+  // CPU to a busy looping process, which can cause the program causing the lock
+  // contention to be starved of CPU by node, so the contention doesn't resolve.
+  if (platform === "win32") {
+    fs.rename = (function (fs$rename) { return function (from, to, cb) {
+      var start = Date.now()
+      var backoff = 0;
+      fs$rename(from, to, function CB (er) {
+        if (er
+            && (er.code === "EACCES" || er.code === "EPERM")
+            && Date.now() - start < 60000) {
+          setTimeout(function() {
+            fs.stat(to, function (stater, st) {
+              if (stater && stater.code === "ENOENT")
+                fs$rename(from, to, CB);
+              else
+                cb(er)
+            })
+          }, backoff)
+          if (backoff < 100)
+            backoff += 10;
+          return;
+        }
+        if (cb) cb(er)
+      })
+    }})(fs.rename)
+  }
+
+  // if read() returns EAGAIN, then just try it again.
+  fs.read = (function (fs$read) {
+    function read (fd, buffer, offset, length, position, callback_) {
+      var callback
+      if (callback_ && typeof callback_ === 'function') {
+        var eagCounter = 0
+        callback = function (er, _, __) {
+          if (er && er.code === 'EAGAIN' && eagCounter < 10) {
+            eagCounter ++
+            return fs$read.call(fs, fd, buffer, offset, length, position, callback)
+          }
+          callback_.apply(this, arguments)
+        }
+      }
+      return fs$read.call(fs, fd, buffer, offset, length, position, callback)
+    }
+
+    // This ensures `util.promisify` works as it does for native `fs.read`.
+    read.__proto__ = fs$read
+    return read
+  })(fs.read)
+
+  fs.readSync = (function (fs$readSync) { return function (fd, buffer, offset, length, position) {
+    var eagCounter = 0
+    while (true) {
+      try {
+        return fs$readSync.call(fs, fd, buffer, offset, length, position)
+      } catch (er) {
+        if (er.code === 'EAGAIN' && eagCounter < 10) {
+          eagCounter ++
+          continue
+        }
+        throw er
+      }
+    }
+  }})(fs.readSync)
+
+  function patchLchmod (fs) {
+    fs.lchmod = function (path, mode, callback) {
+      fs.open( path
+             , constants.O_WRONLY | constants.O_SYMLINK
+             , mode
+             , function (err, fd) {
+        if (err) {
+          if (callback) callback(err)
+          return
+        }
+        // prefer to return the chmod error, if one occurs,
+        // but still try to close, and report closing errors if they occur.
+        fs.fchmod(fd, mode, function (err) {
+          fs.close(fd, function(err2) {
+            if (callback) callback(err || err2)
+          })
+        })
+      })
+    }
+
+    fs.lchmodSync = function (path, mode) {
+      var fd = fs.openSync(path, constants.O_WRONLY | constants.O_SYMLINK, mode)
+
+      // prefer to return the chmod error, if one occurs,
+      // but still try to close, and report closing errors if they occur.
+      var threw = true
+      var ret
+      try {
+        ret = fs.fchmodSync(fd, mode)
+        threw = false
+      } finally {
+        if (threw) {
+          try {
+            fs.closeSync(fd)
+          } catch (er) {}
+        } else {
+          fs.closeSync(fd)
+        }
+      }
+      return ret
+    }
+  }
+
+  function patchLutimes (fs) {
+    if (constants.hasOwnProperty("O_SYMLINK")) {
+      fs.lutimes = function (path, at, mt, cb) {
+        fs.open(path, constants.O_SYMLINK, function (er, fd) {
+          if (er) {
+            if (cb) cb(er)
+            return
+          }
+          fs.futimes(fd, at, mt, function (er) {
+            fs.close(fd, function (er2) {
+              if (cb) cb(er || er2)
+            })
+          })
+        })
+      }
+
+      fs.lutimesSync = function (path, at, mt) {
+        var fd = fs.openSync(path, constants.O_SYMLINK)
+        var ret
+        var threw = true
+        try {
+          ret = fs.futimesSync(fd, at, mt)
+          threw = false
+        } finally {
+          if (threw) {
+            try {
+              fs.closeSync(fd)
+            } catch (er) {}
+          } else {
+            fs.closeSync(fd)
+          }
+        }
+        return ret
+      }
+
+    } else {
+      fs.lutimes = function (_a, _b, _c, cb) { if (cb) process.nextTick(cb) }
+      fs.lutimesSync = function () {}
+    }
+  }
+
+  function chmodFix (orig) {
+    if (!orig) return orig
+    return function (target, mode, cb) {
+      return orig.call(fs, target, mode, function (er) {
+        if (chownErOk(er)) er = null
+        if (cb) cb.apply(this, arguments)
+      })
+    }
+  }
+
+  function chmodFixSync (orig) {
+    if (!orig) return orig
+    return function (target, mode) {
+      try {
+        return orig.call(fs, target, mode)
+      } catch (er) {
+        if (!chownErOk(er)) throw er
+      }
+    }
+  }
+
+
+  function chownFix (orig) {
+    if (!orig) return orig
+    return function (target, uid, gid, cb) {
+      return orig.call(fs, target, uid, gid, function (er) {
+        if (chownErOk(er)) er = null
+        if (cb) cb.apply(this, arguments)
+      })
+    }
+  }
+
+  function chownFixSync (orig) {
+    if (!orig) return orig
+    return function (target, uid, gid) {
+      try {
+        return orig.call(fs, target, uid, gid)
+      } catch (er) {
+        if (!chownErOk(er)) throw er
+      }
+    }
+  }
+
+  function statFix (orig) {
+    if (!orig) return orig
+    // Older versions of Node erroneously returned signed integers for
+    // uid + gid.
+    return function (target, options, cb) {
+      if (typeof options === 'function') {
+        cb = options
+        options = null
+      }
+      function callback (er, stats) {
+        if (stats) {
+          if (stats.uid < 0) stats.uid += 0x100000000
+          if (stats.gid < 0) stats.gid += 0x100000000
+        }
+        if (cb) cb.apply(this, arguments)
+      }
+      return options ? orig.call(fs, target, options, callback)
+        : orig.call(fs, target, callback)
+    }
+  }
+
+  function statFixSync (orig) {
+    if (!orig) return orig
+    // Older versions of Node erroneously returned signed integers for
+    // uid + gid.
+    return function (target, options) {
+      var stats = options ? orig.call(fs, target, options)
+        : orig.call(fs, target)
+      if (stats.uid < 0) stats.uid += 0x100000000
+      if (stats.gid < 0) stats.gid += 0x100000000
+      return stats;
+    }
+  }
+
+  // ENOSYS means that the fs doesn't support the op. Just ignore
+  // that, because it doesn't matter.
+  //
+  // if there's no getuid, or if getuid() is something other
+  // than 0, and the error is EINVAL or EPERM, then just ignore
+  // it.
+  //
+  // This specific case is a silent failure in cp, install, tar,
+  // and most other unix tools that manage permissions.
+  //
+  // When running as root, or if other types of errors are
+  // encountered, then it's strict.
+  function chownErOk (er) {
+    if (!er)
+      return true
+
+    if (er.code === "ENOSYS")
+      return true
+
+    var nonroot = !process.getuid || process.getuid() !== 0
+    if (nonroot) {
+      if (er.code === "EINVAL" || er.code === "EPERM")
+        return true
+    }
+
+    return false
+  }
+}
+
+
+/***/ }),
+/* 185 */
+/***/ (function(module, exports) {
+
+module.exports = require("constants");
+
+/***/ }),
+/* 186 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var Stream = __webpack_require__(129).Stream
+
+module.exports = legacy
+
+function legacy (fs) {
+  return {
+    ReadStream: ReadStream,
+    WriteStream: WriteStream
+  }
+
+  function ReadStream (path, options) {
+    if (!(this instanceof ReadStream)) return new ReadStream(path, options);
+
+    Stream.call(this);
+
+    var self = this;
+
+    this.path = path;
+    this.fd = null;
+    this.readable = true;
+    this.paused = false;
+
+    this.flags = 'r';
+    this.mode = 438; /*=0666*/
+    this.bufferSize = 64 * 1024;
+
+    options = options || {};
+
+    // Mixin options into this
+    var keys = Object.keys(options);
+    for (var index = 0, length = keys.length; index < length; index++) {
+      var key = keys[index];
+      this[key] = options[key];
+    }
+
+    if (this.encoding) this.setEncoding(this.encoding);
+
+    if (this.start !== undefined) {
+      if ('number' !== typeof this.start) {
+        throw TypeError('start must be a Number');
+      }
+      if (this.end === undefined) {
+        this.end = Infinity;
+      } else if ('number' !== typeof this.end) {
+        throw TypeError('end must be a Number');
+      }
+
+      if (this.start > this.end) {
+        throw new Error('start must be <= end');
+      }
+
+      this.pos = this.start;
+    }
+
+    if (this.fd !== null) {
+      process.nextTick(function() {
+        self._read();
+      });
+      return;
+    }
+
+    fs.open(this.path, this.flags, this.mode, function (err, fd) {
+      if (err) {
+        self.emit('error', err);
+        self.readable = false;
+        return;
+      }
+
+      self.fd = fd;
+      self.emit('open', fd);
+      self._read();
+    })
+  }
+
+  function WriteStream (path, options) {
+    if (!(this instanceof WriteStream)) return new WriteStream(path, options);
+
+    Stream.call(this);
+
+    this.path = path;
+    this.fd = null;
+    this.writable = true;
+
+    this.flags = 'w';
+    this.encoding = 'binary';
+    this.mode = 438; /*=0666*/
+    this.bytesWritten = 0;
+
+    options = options || {};
+
+    // Mixin options into this
+    var keys = Object.keys(options);
+    for (var index = 0, length = keys.length; index < length; index++) {
+      var key = keys[index];
+      this[key] = options[key];
+    }
+
+    if (this.start !== undefined) {
+      if ('number' !== typeof this.start) {
+        throw TypeError('start must be a Number');
+      }
+      if (this.start < 0) {
+        throw new Error('start must be >= zero');
+      }
+
+      this.pos = this.start;
+    }
+
+    this.busy = false;
+    this._queue = [];
+
+    if (this.fd === null) {
+      this._open = fs.open;
+      this._queue.push([this._open, this.path, this.flags, this.mode, undefined]);
+      this.flush();
+    }
+  }
+}
+
+
+/***/ }),
+/* 187 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+module.exports = clone
+
+function clone (obj) {
+  if (obj === null || typeof obj !== 'object')
+    return obj
+
+  if (obj instanceof Object)
+    var copy = { __proto__: obj.__proto__ }
+  else
+    var copy = Object.create(null)
+
+  Object.getOwnPropertyNames(obj).forEach(function (key) {
+    Object.defineProperty(copy, key, Object.getOwnPropertyDescriptor(obj, key))
+  })
+
+  return copy
+}
+
+
+/***/ }),
+/* 188 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var path = __webpack_require__(4);
+var fs = __webpack_require__(137);
+var _0777 = parseInt('0777', 8);
+
+module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
+
+function mkdirP (p, opts, f, made) {
+    if (typeof opts === 'function') {
+        f = opts;
+        opts = {};
+    }
+    else if (!opts || typeof opts !== 'object') {
+        opts = { mode: opts };
+    }
+
+    var mode = opts.mode;
+    var xfs = opts.fs || fs;
+
+    if (mode === undefined) {
+        mode = _0777 & (~process.umask());
+    }
+    if (!made) made = null;
+
+    var cb = f || function () {};
+    p = path.resolve(p);
+
+    xfs.mkdir(p, mode, function (er) {
+        if (!er) {
+            made = made || p;
+            return cb(null, made);
+        }
+        switch (er.code) {
+            case 'ENOENT':
+                if (path.dirname(p) === p) return cb(er);
+                mkdirP(path.dirname(p), opts, function (er, made) {
+                    if (er) cb(er, made);
+                    else mkdirP(p, opts, cb, made);
+                });
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                xfs.stat(p, function (er2, stat) {
+                    // if the stat fails, then that's super weird.
+                    // let the original error be the failure reason.
+                    if (er2 || !stat.isDirectory()) cb(er, made)
+                    else cb(null, made);
+                });
+                break;
+        }
+    });
+}
+
+mkdirP.sync = function sync (p, opts, made) {
+    if (!opts || typeof opts !== 'object') {
+        opts = { mode: opts };
+    }
+
+    var mode = opts.mode;
+    var xfs = opts.fs || fs;
+
+    if (mode === undefined) {
+        mode = _0777 & (~process.umask());
+    }
+    if (!made) made = null;
+
+    p = path.resolve(p);
+
+    try {
+        xfs.mkdirSync(p, mode);
+        made = made || p;
+    }
+    catch (err0) {
+        switch (err0.code) {
+            case 'ENOENT' :
+                made = sync(path.dirname(p), opts, made);
+                sync(p, opts, made);
+                break;
+
+            // In the case of any other error, just see if there's a dir
+            // there already.  If so, then hooray!  If not, then something
+            // is borked.
+            default:
+                var stat;
+                try {
+                    stat = xfs.statSync(p);
+                }
+                catch (err1) {
+                    throw err0;
+                }
+                if (!stat.isDirectory()) throw err0;
+                break;
+        }
+    }
+
+    return made;
+};
+
+
+/***/ }),
+/* 189 */
+/***/ (function(module, exports) {
+
+exports.replaceDollarWithPercentPair = replaceDollarWithPercentPair
+exports.convertToSetCommand = convertToSetCommand
+exports.convertToSetCommands = convertToSetCommands
+
+function convertToSetCommand(key, value) {
+    var line = ""
+    key = key || ""
+    key = key.trim()
+    value = value || ""
+    value = value.trim()
+    if(key && value && value.length > 0) {
+        line = "@SET " + key + "=" + replaceDollarWithPercentPair(value) + "\r\n"
+    }
+    return line
+}
+
+function extractVariableValuePairs(declarations) {
+    var pairs = {}
+    declarations.map(function(declaration) {
+        var split = declaration.split("=")
+        pairs[split[0]]=split[1]
+    })
+    return pairs
+}
+
+function convertToSetCommands(variableString) {
+    var variableValuePairs = extractVariableValuePairs(variableString.split(" "))
+    var variableDeclarationsAsBatch = ""
+    Object.keys(variableValuePairs).forEach(function (key) {
+        variableDeclarationsAsBatch += convertToSetCommand(key, variableValuePairs[key])
+    })
+    return variableDeclarationsAsBatch
+}
+
+function replaceDollarWithPercentPair(value) {
+    var dollarExpressions = /\$\{?([^\$@#\?\- \t{}:]+)\}?/g
+    var result = ""
+    var startIndex = 0
+    value = value || ""
+    do {
+        var match = dollarExpressions.exec(value)
+        if(match) {
+            var betweenMatches = value.substring(startIndex, match.index) || ""
+            result +=  betweenMatches + "%" + match[1] + "%"
+            startIndex = dollarExpressions.lastIndex
+        }
+    } while (dollarExpressions.lastIndex > 0)
+    result += value.substr(startIndex)
+    return result
+}
+
+
+
+
+/***/ }),
+/* 190 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var fs = __webpack_require__(137),
+    path = __webpack_require__(4);
+
+module.exports = ncp;
+ncp.ncp = ncp;
+
+function ncp (source, dest, options, callback) {
+  var cback = callback;
+
+  if (!callback) {
+    cback = options;
+    options = {};
+  }
+
+  var basePath = process.cwd(),
+      currentPath = path.resolve(basePath, source),
+      targetPath = path.resolve(basePath, dest),
+      filter = options.filter,
+      rename = options.rename,
+      transform = options.transform,
+      clobber = options.clobber !== false,
+      modified = options.modified,
+      dereference = options.dereference,
+      errs = null,
+      started = 0,
+      finished = 0,
+      running = 0,
+      limit = options.limit || ncp.limit || 16;
+
+  limit = (limit < 1) ? 1 : (limit > 512) ? 512 : limit;
+
+  startCopy(currentPath);
+
+  function startCopy(source) {
+    started++;
+    if (filter) {
+      if (filter instanceof RegExp) {
+        if (!filter.test(source)) {
+          return cb(true);
+        }
+      }
+      else if (typeof filter === 'function') {
+        if (!filter(source)) {
+          return cb(true);
+        }
+      }
+    }
+    return getStats(source);
+  }
+
+  function getStats(source) {
+    var stat = dereference ? fs.stat : fs.lstat;
+    if (running >= limit) {
+      return setImmediate(function () {
+        getStats(source);
+      });
+    }
+    running++;
+    stat(source, function (err, stats) {
+      var item = {};
+      if (err) {
+        return onError(err);
+      }
+
+      // We need to get the mode from the stats object and preserve it.
+      item.name = source;
+      item.mode = stats.mode;
+      item.mtime = stats.mtime; //modified time
+      item.atime = stats.atime; //access time
+
+      if (stats.isDirectory()) {
+        return onDir(item);
+      }
+      else if (stats.isFile()) {
+        return onFile(item);
+      }
+      else if (stats.isSymbolicLink()) {
+        // Symlinks don't really need to know about the mode.
+        return onLink(source);
+      }
+    });
+  }
+
+  function onFile(file) {
+    var target = file.name.replace(currentPath, targetPath);
+    if(rename) {
+      target =  rename(target);
+    }
+    isWritable(target, function (writable) {
+      if (writable) {
+        return copyFile(file, target);
+      }
+      if(clobber) {
+        rmFile(target, function () {
+          copyFile(file, target);
+        });
+      }
+      if (modified) {
+        var stat = dereference ? fs.stat : fs.lstat;
+        stat(target, function(err, stats) {
+            //if souce modified time greater to target modified time copy file
+            if (file.mtime.getTime()>stats.mtime.getTime())
+                copyFile(file, target);
+            else return cb();
+        });
+      }
+      else {
+        return cb();
+      }
+    });
+  }
+
+  function copyFile(file, target) {
+    var readStream = fs.createReadStream(file.name),
+        writeStream = fs.createWriteStream(target, { mode: file.mode });
+
+    readStream.on('error', onError);
+    writeStream.on('error', onError);
+
+    if(transform) {
+      transform(readStream, writeStream, file);
+    } else {
+      writeStream.on('open', function() {
+        readStream.pipe(writeStream);
+      });
+    }
+    writeStream.once('finish', function() {
+        if (modified) {
+            //target file modified date sync.
+            fs.utimesSync(target, file.atime, file.mtime);
+            cb();
+        }
+        else cb();
+    });
+  }
+
+  function rmFile(file, done) {
+    fs.unlink(file, function (err) {
+      if (err) {
+        return onError(err);
+      }
+      return done();
+    });
+  }
+
+  function onDir(dir) {
+    var target = dir.name.replace(currentPath, targetPath);
+    isWritable(target, function (writable) {
+      if (writable) {
+        return mkDir(dir, target);
+      }
+      copyDir(dir.name);
+    });
+  }
+
+  function mkDir(dir, target) {
+    fs.mkdir(target, dir.mode, function (err) {
+      if (err) {
+        return onError(err);
+      }
+      copyDir(dir.name);
+    });
+  }
+
+  function copyDir(dir) {
+    fs.readdir(dir, function (err, items) {
+      if (err) {
+        return onError(err);
+      }
+      items.forEach(function (item) {
+        startCopy(path.join(dir, item));
+      });
+      return cb();
+    });
+  }
+
+  function onLink(link) {
+    var target = link.replace(currentPath, targetPath);
+    fs.readlink(link, function (err, resolvedPath) {
+      if (err) {
+        return onError(err);
+      }
+      checkLink(resolvedPath, target);
+    });
+  }
+
+  function checkLink(resolvedPath, target) {
+    if (dereference) {
+      resolvedPath = path.resolve(basePath, resolvedPath);
+    }
+    isWritable(target, function (writable) {
+      if (writable) {
+        return makeLink(resolvedPath, target);
+      }
+      fs.readlink(target, function (err, targetDest) {
+        if (err) {
+          return onError(err);
+        }
+        if (dereference) {
+          targetDest = path.resolve(basePath, targetDest);
+        }
+        if (targetDest === resolvedPath) {
+          return cb();
+        }
+        return rmFile(target, function () {
+          makeLink(resolvedPath, target);
+        });
+      });
+    });
+  }
+
+  function makeLink(linkPath, target) {
+    fs.symlink(linkPath, target, function (err) {
+      if (err) {
+        return onError(err);
+      }
+      return cb();
+    });
+  }
+
+  function isWritable(path, done) {
+    fs.lstat(path, function (err) {
+      if (err) {
+        if (err.code === 'ENOENT') return done(true);
+        return done(false);
+      }
+      return done(false);
+    });
+  }
+
+  function onError(err) {
+    if (options.stopOnError) {
+      return cback(err);
+    }
+    else if (!errs && options.errs) {
+      errs = fs.createWriteStream(options.errs);
+    }
+    else if (!errs) {
+      errs = [];
+    }
+    if (typeof errs.write === 'undefined') {
+      errs.push(err);
+    }
+    else {
+      errs.write(err.stack + '\n\n');
+    }
+    return cb();
+  }
+
+  function cb(skipped) {
+    if (!skipped) running--;
+    finished++;
+    if ((started === finished) && (running === 0)) {
+      if (cback !== undefined ) {
+        return errs ? cback(errs) : cback(null);
+      }
+    }
+  }
+}
+
+
+
+
+/***/ }),
+/* 191 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "CleanCommand", function() { return CleanCommand; });
-/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(182);
+/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(192);
 /* harmony import */ var del__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(del__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var ora__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(287);
+/* harmony import */ var ora__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(292);
 /* harmony import */ var ora__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(ora__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _utils_fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(303);
+/* harmony import */ var _utils_fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(181);
 /* harmony import */ var _utils_log__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(180);
 /*
  * Licensed to Elasticsearch B.V. under one or more contributor
@@ -12651,21 +14269,21 @@ const CleanCommand = {
 };
 
 /***/ }),
-/* 182 */
+/* 192 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const {promisify} = __webpack_require__(111);
 const path = __webpack_require__(4);
-const globby = __webpack_require__(183);
-const isGlob = __webpack_require__(274);
-const slash = __webpack_require__(272);
-const gracefulFs = __webpack_require__(275);
-const isPathCwd = __webpack_require__(280);
-const isPathInside = __webpack_require__(281);
-const rimraf = __webpack_require__(282);
-const pMap = __webpack_require__(283);
+const globby = __webpack_require__(193);
+const isGlob = __webpack_require__(284);
+const slash = __webpack_require__(282);
+const gracefulFs = __webpack_require__(183);
+const isPathCwd = __webpack_require__(285);
+const isPathInside = __webpack_require__(286);
+const rimraf = __webpack_require__(287);
+const pMap = __webpack_require__(288);
 
 const rimrafP = promisify(rimraf);
 
@@ -12779,19 +14397,19 @@ module.exports.sync = (patterns, {force, dryRun, cwd = process.cwd(), ...options
 
 
 /***/ }),
-/* 183 */
+/* 193 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const fs = __webpack_require__(137);
-const arrayUnion = __webpack_require__(184);
-const merge2 = __webpack_require__(185);
-const glob = __webpack_require__(186);
-const fastGlob = __webpack_require__(199);
-const dirGlob = __webpack_require__(268);
-const gitignore = __webpack_require__(270);
-const {FilterStream, UniqueStream} = __webpack_require__(273);
+const arrayUnion = __webpack_require__(194);
+const merge2 = __webpack_require__(195);
+const glob = __webpack_require__(196);
+const fastGlob = __webpack_require__(209);
+const dirGlob = __webpack_require__(278);
+const gitignore = __webpack_require__(280);
+const {FilterStream, UniqueStream} = __webpack_require__(283);
 
 const DEFAULT_FILTER = () => false;
 
@@ -12964,7 +14582,7 @@ module.exports.gitignore = gitignore;
 
 
 /***/ }),
-/* 184 */
+/* 194 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12976,7 +14594,7 @@ module.exports = (...arguments_) => {
 
 
 /***/ }),
-/* 185 */
+/* 195 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13127,7 +14745,7 @@ function pauseStreams (streams, options) {
 
 
 /***/ }),
-/* 186 */
+/* 196 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Approach:
@@ -13173,21 +14791,21 @@ function pauseStreams (streams, options) {
 module.exports = glob
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
-var inherits = __webpack_require__(193)
+var inherits = __webpack_require__(203)
 var EE = __webpack_require__(160).EventEmitter
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
-var globSync = __webpack_require__(196)
-var common = __webpack_require__(197)
+var isAbsolute = __webpack_require__(205)
+var globSync = __webpack_require__(206)
+var common = __webpack_require__(207)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
-var inflight = __webpack_require__(198)
+var inflight = __webpack_require__(208)
 var util = __webpack_require__(111)
 var childrenIgnored = common.childrenIgnored
 var isIgnored = common.isIgnored
@@ -13923,7 +15541,7 @@ Glob.prototype._stat2 = function (f, abs, er, stat, cb) {
 
 
 /***/ }),
-/* 187 */
+/* 197 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = realpath
@@ -13939,7 +15557,7 @@ var origRealpathSync = fs.realpathSync
 
 var version = process.version
 var ok = /^v[0-5]\./.test(version)
-var old = __webpack_require__(188)
+var old = __webpack_require__(198)
 
 function newError (er) {
   return er && er.syscall === 'realpath' && (
@@ -13995,7 +15613,7 @@ function unmonkeypatch () {
 
 
 /***/ }),
-/* 188 */
+/* 198 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -14304,7 +15922,7 @@ exports.realpath = function realpath(p, cache, cb) {
 
 
 /***/ }),
-/* 189 */
+/* 199 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = minimatch
@@ -14316,7 +15934,7 @@ try {
 } catch (er) {}
 
 var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {}
-var expand = __webpack_require__(190)
+var expand = __webpack_require__(200)
 
 var plTypes = {
   '!': { open: '(?:(?!(?:', close: '))[^/]*?)'},
@@ -15233,11 +16851,11 @@ function regExpEscape (s) {
 
 
 /***/ }),
-/* 190 */
+/* 200 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var concatMap = __webpack_require__(191);
-var balanced = __webpack_require__(192);
+var concatMap = __webpack_require__(201);
+var balanced = __webpack_require__(202);
 
 module.exports = expandTop;
 
@@ -15440,7 +17058,7 @@ function expand(str, isTop) {
 
 
 /***/ }),
-/* 191 */
+/* 201 */
 /***/ (function(module, exports) {
 
 module.exports = function (xs, fn) {
@@ -15459,7 +17077,7 @@ var isArray = Array.isArray || function (xs) {
 
 
 /***/ }),
-/* 192 */
+/* 202 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15525,7 +17143,7 @@ function range(a, b, str) {
 
 
 /***/ }),
-/* 193 */
+/* 203 */
 /***/ (function(module, exports, __webpack_require__) {
 
 try {
@@ -15535,12 +17153,12 @@ try {
   module.exports = util.inherits;
 } catch (e) {
   /* istanbul ignore next */
-  module.exports = __webpack_require__(194);
+  module.exports = __webpack_require__(204);
 }
 
 
 /***/ }),
-/* 194 */
+/* 204 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -15573,7 +17191,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 195 */
+/* 205 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -15600,22 +17218,22 @@ module.exports.win32 = win32;
 
 
 /***/ }),
-/* 196 */
+/* 206 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = globSync
 globSync.GlobSync = GlobSync
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
-var Glob = __webpack_require__(186).Glob
+var Glob = __webpack_require__(196).Glob
 var util = __webpack_require__(111)
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
-var common = __webpack_require__(197)
+var isAbsolute = __webpack_require__(205)
+var common = __webpack_require__(207)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
@@ -16092,7 +17710,7 @@ GlobSync.prototype._makeAbs = function (f) {
 
 
 /***/ }),
-/* 197 */
+/* 207 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports.alphasort = alphasort
@@ -16110,8 +17728,8 @@ function ownProp (obj, field) {
 }
 
 var path = __webpack_require__(4)
-var minimatch = __webpack_require__(189)
-var isAbsolute = __webpack_require__(195)
+var minimatch = __webpack_require__(199)
+var isAbsolute = __webpack_require__(205)
 var Minimatch = minimatch.Minimatch
 
 function alphasorti (a, b) {
@@ -16338,7 +17956,7 @@ function childrenIgnored (self, path) {
 
 
 /***/ }),
-/* 198 */
+/* 208 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var wrappy = __webpack_require__(166)
@@ -16398,17 +18016,17 @@ function slice (args) {
 
 
 /***/ }),
-/* 199 */
+/* 209 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const taskManager = __webpack_require__(200);
-const async_1 = __webpack_require__(229);
-const stream_1 = __webpack_require__(264);
-const sync_1 = __webpack_require__(265);
-const settings_1 = __webpack_require__(267);
-const utils = __webpack_require__(201);
+const taskManager = __webpack_require__(210);
+const async_1 = __webpack_require__(239);
+const stream_1 = __webpack_require__(274);
+const sync_1 = __webpack_require__(275);
+const settings_1 = __webpack_require__(277);
+const utils = __webpack_require__(211);
 async function FastGlob(source, options) {
     assertPatternsInput(source);
     const works = getWorks(source, async_1.default, options);
@@ -16472,13 +18090,13 @@ module.exports = FastGlob;
 
 
 /***/ }),
-/* 200 */
+/* 210 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
+const utils = __webpack_require__(211);
 function generate(patterns, settings) {
     const positivePatterns = getPositivePatterns(patterns);
     const negativePatterns = getNegativePatternsAsPositive(patterns, settings.ignore);
@@ -16543,30 +18161,30 @@ exports.convertPatternGroupToTask = convertPatternGroupToTask;
 
 
 /***/ }),
-/* 201 */
+/* 211 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const array = __webpack_require__(202);
+const array = __webpack_require__(212);
 exports.array = array;
-const errno = __webpack_require__(203);
+const errno = __webpack_require__(213);
 exports.errno = errno;
-const fs = __webpack_require__(204);
+const fs = __webpack_require__(214);
 exports.fs = fs;
-const path = __webpack_require__(205);
+const path = __webpack_require__(215);
 exports.path = path;
-const pattern = __webpack_require__(206);
+const pattern = __webpack_require__(216);
 exports.pattern = pattern;
-const stream = __webpack_require__(227);
+const stream = __webpack_require__(237);
 exports.stream = stream;
-const string = __webpack_require__(228);
+const string = __webpack_require__(238);
 exports.string = string;
 
 
 /***/ }),
-/* 202 */
+/* 212 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16594,7 +18212,7 @@ exports.splitWhen = splitWhen;
 
 
 /***/ }),
-/* 203 */
+/* 213 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16607,7 +18225,7 @@ exports.isEnoentCodeError = isEnoentCodeError;
 
 
 /***/ }),
-/* 204 */
+/* 214 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16632,7 +18250,7 @@ exports.createDirentFromStats = createDirentFromStats;
 
 
 /***/ }),
-/* 205 */
+/* 215 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -16671,16 +18289,16 @@ exports.removeLeadingDotSegment = removeLeadingDotSegment;
 
 
 /***/ }),
-/* 206 */
+/* 216 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(4);
-const globParent = __webpack_require__(207);
-const micromatch = __webpack_require__(210);
-const picomatch = __webpack_require__(221);
+const globParent = __webpack_require__(217);
+const micromatch = __webpack_require__(220);
+const picomatch = __webpack_require__(231);
 const GLOBSTAR = '**';
 const ESCAPE_SYMBOL = '\\';
 const COMMON_GLOB_SYMBOLS_RE = /[*?]|^!/;
@@ -16790,13 +18408,13 @@ exports.matchAny = matchAny;
 
 
 /***/ }),
-/* 207 */
+/* 217 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var isGlob = __webpack_require__(208);
+var isGlob = __webpack_require__(218);
 var pathPosixDirname = __webpack_require__(4).posix.dirname;
 var isWin32 = __webpack_require__(121).platform() === 'win32';
 
@@ -16838,7 +18456,7 @@ module.exports = function globParent(str, opts) {
 
 
 /***/ }),
-/* 208 */
+/* 218 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -16848,7 +18466,7 @@ module.exports = function globParent(str, opts) {
  * Released under the MIT License.
  */
 
-var isExtglob = __webpack_require__(209);
+var isExtglob = __webpack_require__(219);
 var chars = { '{': '}', '(': ')', '[': ']'};
 var strictRegex = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
 var relaxedRegex = /\\(.)|(^!|[*?{}()[\]]|\(\?)/;
@@ -16892,7 +18510,7 @@ module.exports = function isGlob(str, options) {
 
 
 /***/ }),
-/* 209 */
+/* 219 */
 /***/ (function(module, exports) {
 
 /*!
@@ -16918,16 +18536,16 @@ module.exports = function isExtglob(str) {
 
 
 /***/ }),
-/* 210 */
+/* 220 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const util = __webpack_require__(111);
-const braces = __webpack_require__(211);
-const picomatch = __webpack_require__(221);
-const utils = __webpack_require__(224);
+const braces = __webpack_require__(221);
+const picomatch = __webpack_require__(231);
+const utils = __webpack_require__(234);
 const isEmptyString = val => typeof val === 'string' && (val === '' || val === './');
 
 /**
@@ -17392,16 +19010,16 @@ module.exports = micromatch;
 
 
 /***/ }),
-/* 211 */
+/* 221 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const stringify = __webpack_require__(212);
-const compile = __webpack_require__(214);
-const expand = __webpack_require__(218);
-const parse = __webpack_require__(219);
+const stringify = __webpack_require__(222);
+const compile = __webpack_require__(224);
+const expand = __webpack_require__(228);
+const parse = __webpack_require__(229);
 
 /**
  * Expand the given pattern or create a regex-compatible string.
@@ -17569,13 +19187,13 @@ module.exports = braces;
 
 
 /***/ }),
-/* 212 */
+/* 222 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const utils = __webpack_require__(213);
+const utils = __webpack_require__(223);
 
 module.exports = (ast, options = {}) => {
   let stringify = (node, parent = {}) => {
@@ -17608,7 +19226,7 @@ module.exports = (ast, options = {}) => {
 
 
 /***/ }),
-/* 213 */
+/* 223 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17727,14 +19345,14 @@ exports.flatten = (...args) => {
 
 
 /***/ }),
-/* 214 */
+/* 224 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fill = __webpack_require__(215);
-const utils = __webpack_require__(213);
+const fill = __webpack_require__(225);
+const utils = __webpack_require__(223);
 
 const compile = (ast, options = {}) => {
   let walk = (node, parent = {}) => {
@@ -17791,7 +19409,7 @@ module.exports = compile;
 
 
 /***/ }),
-/* 215 */
+/* 225 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -17805,7 +19423,7 @@ module.exports = compile;
 
 
 const util = __webpack_require__(111);
-const toRegexRange = __webpack_require__(216);
+const toRegexRange = __webpack_require__(226);
 
 const isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
 
@@ -18047,7 +19665,7 @@ module.exports = fill;
 
 
 /***/ }),
-/* 216 */
+/* 226 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18060,7 +19678,7 @@ module.exports = fill;
 
 
 
-const isNumber = __webpack_require__(217);
+const isNumber = __webpack_require__(227);
 
 const toRegexRange = (min, max, options) => {
   if (isNumber(min) === false) {
@@ -18342,7 +19960,7 @@ module.exports = toRegexRange;
 
 
 /***/ }),
-/* 217 */
+/* 227 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18367,15 +19985,15 @@ module.exports = function(num) {
 
 
 /***/ }),
-/* 218 */
+/* 228 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const fill = __webpack_require__(215);
-const stringify = __webpack_require__(212);
-const utils = __webpack_require__(213);
+const fill = __webpack_require__(225);
+const stringify = __webpack_require__(222);
+const utils = __webpack_require__(223);
 
 const append = (queue = '', stash = '', enclose = false) => {
   let result = [];
@@ -18487,13 +20105,13 @@ module.exports = expand;
 
 
 /***/ }),
-/* 219 */
+/* 229 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const stringify = __webpack_require__(212);
+const stringify = __webpack_require__(222);
 
 /**
  * Constants
@@ -18515,7 +20133,7 @@ const {
   CHAR_SINGLE_QUOTE, /* ' */
   CHAR_NO_BREAK_SPACE,
   CHAR_ZERO_WIDTH_NOBREAK_SPACE
-} = __webpack_require__(220);
+} = __webpack_require__(230);
 
 /**
  * parse
@@ -18827,7 +20445,7 @@ module.exports = parse;
 
 
 /***/ }),
-/* 220 */
+/* 230 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -18891,27 +20509,27 @@ module.exports = {
 
 
 /***/ }),
-/* 221 */
+/* 231 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-module.exports = __webpack_require__(222);
+module.exports = __webpack_require__(232);
 
 
 /***/ }),
-/* 222 */
+/* 232 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const path = __webpack_require__(4);
-const scan = __webpack_require__(223);
-const parse = __webpack_require__(226);
-const utils = __webpack_require__(224);
-const constants = __webpack_require__(225);
+const scan = __webpack_require__(233);
+const parse = __webpack_require__(236);
+const utils = __webpack_require__(234);
+const constants = __webpack_require__(235);
 const isObject = val => val && typeof val === 'object' && !Array.isArray(val);
 
 /**
@@ -19247,13 +20865,13 @@ module.exports = picomatch;
 
 
 /***/ }),
-/* 223 */
+/* 233 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const utils = __webpack_require__(224);
+const utils = __webpack_require__(234);
 const {
   CHAR_ASTERISK,             /* * */
   CHAR_AT,                   /* @ */
@@ -19270,7 +20888,7 @@ const {
   CHAR_RIGHT_CURLY_BRACE,    /* } */
   CHAR_RIGHT_PARENTHESES,    /* ) */
   CHAR_RIGHT_SQUARE_BRACKET  /* ] */
-} = __webpack_require__(225);
+} = __webpack_require__(235);
 
 const isPathSeparator = code => {
   return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
@@ -19637,7 +21255,7 @@ module.exports = scan;
 
 
 /***/ }),
-/* 224 */
+/* 234 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19650,7 +21268,7 @@ const {
   REGEX_REMOVE_BACKSLASH,
   REGEX_SPECIAL_CHARS,
   REGEX_SPECIAL_CHARS_GLOBAL
-} = __webpack_require__(225);
+} = __webpack_require__(235);
 
 exports.isObject = val => val !== null && typeof val === 'object' && !Array.isArray(val);
 exports.hasRegexChars = str => REGEX_SPECIAL_CHARS.test(str);
@@ -19708,7 +21326,7 @@ exports.wrapOutput = (input, state = {}, options = {}) => {
 
 
 /***/ }),
-/* 225 */
+/* 235 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -19894,14 +21512,14 @@ module.exports = {
 
 
 /***/ }),
-/* 226 */
+/* 236 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const constants = __webpack_require__(225);
-const utils = __webpack_require__(224);
+const constants = __webpack_require__(235);
+const utils = __webpack_require__(234);
 
 /**
  * Constants
@@ -20979,13 +22597,13 @@ module.exports = parse;
 
 
 /***/ }),
-/* 227 */
+/* 237 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const merge2 = __webpack_require__(185);
+const merge2 = __webpack_require__(195);
 function merge(streams) {
     const mergedStream = merge2(streams);
     streams.forEach((stream) => {
@@ -21002,7 +22620,7 @@ function propagateCloseEventToSources(streams) {
 
 
 /***/ }),
-/* 228 */
+/* 238 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21019,14 +22637,14 @@ exports.isEmpty = isEmpty;
 
 
 /***/ }),
-/* 229 */
+/* 239 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const stream_1 = __webpack_require__(230);
-const provider_1 = __webpack_require__(257);
+const stream_1 = __webpack_require__(240);
+const provider_1 = __webpack_require__(267);
 class ProviderAsync extends provider_1.default {
     constructor() {
         super(...arguments);
@@ -21054,16 +22672,16 @@ exports.default = ProviderAsync;
 
 
 /***/ }),
-/* 230 */
+/* 240 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = __webpack_require__(129);
-const fsStat = __webpack_require__(231);
-const fsWalk = __webpack_require__(236);
-const reader_1 = __webpack_require__(256);
+const fsStat = __webpack_require__(241);
+const fsWalk = __webpack_require__(246);
+const reader_1 = __webpack_require__(266);
 class ReaderStream extends reader_1.default {
     constructor() {
         super(...arguments);
@@ -21116,15 +22734,15 @@ exports.default = ReaderStream;
 
 
 /***/ }),
-/* 231 */
+/* 241 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const async = __webpack_require__(232);
-const sync = __webpack_require__(233);
-const settings_1 = __webpack_require__(234);
+const async = __webpack_require__(242);
+const sync = __webpack_require__(243);
+const settings_1 = __webpack_require__(244);
 exports.Settings = settings_1.default;
 function stat(path, optionsOrSettingsOrCallback, callback) {
     if (typeof optionsOrSettingsOrCallback === 'function') {
@@ -21147,7 +22765,7 @@ function getSettings(settingsOrOptions = {}) {
 
 
 /***/ }),
-/* 232 */
+/* 242 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21185,7 +22803,7 @@ function callSuccessCallback(callback, result) {
 
 
 /***/ }),
-/* 233 */
+/* 243 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21214,13 +22832,13 @@ exports.read = read;
 
 
 /***/ }),
-/* 234 */
+/* 244 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __webpack_require__(235);
+const fs = __webpack_require__(245);
 class Settings {
     constructor(_options = {}) {
         this._options = _options;
@@ -21237,7 +22855,7 @@ exports.default = Settings;
 
 
 /***/ }),
-/* 235 */
+/* 245 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21260,16 +22878,16 @@ exports.createFileSystemAdapter = createFileSystemAdapter;
 
 
 /***/ }),
-/* 236 */
+/* 246 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const async_1 = __webpack_require__(237);
-const stream_1 = __webpack_require__(252);
-const sync_1 = __webpack_require__(253);
-const settings_1 = __webpack_require__(255);
+const async_1 = __webpack_require__(247);
+const stream_1 = __webpack_require__(262);
+const sync_1 = __webpack_require__(263);
+const settings_1 = __webpack_require__(265);
 exports.Settings = settings_1.default;
 function walk(directory, optionsOrSettingsOrCallback, callback) {
     if (typeof optionsOrSettingsOrCallback === 'function') {
@@ -21299,13 +22917,13 @@ function getSettings(settingsOrOptions = {}) {
 
 
 /***/ }),
-/* 237 */
+/* 247 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const async_1 = __webpack_require__(238);
+const async_1 = __webpack_require__(248);
 class AsyncProvider {
     constructor(_root, _settings) {
         this._root = _root;
@@ -21336,17 +22954,17 @@ function callSuccessCallback(callback, entries) {
 
 
 /***/ }),
-/* 238 */
+/* 248 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const events_1 = __webpack_require__(160);
-const fsScandir = __webpack_require__(239);
-const fastq = __webpack_require__(248);
-const common = __webpack_require__(250);
-const reader_1 = __webpack_require__(251);
+const fsScandir = __webpack_require__(249);
+const fastq = __webpack_require__(258);
+const common = __webpack_require__(260);
+const reader_1 = __webpack_require__(261);
 class AsyncReader extends reader_1.default {
     constructor(_root, _settings) {
         super(_root, _settings);
@@ -21436,15 +23054,15 @@ exports.default = AsyncReader;
 
 
 /***/ }),
-/* 239 */
+/* 249 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const async = __webpack_require__(240);
-const sync = __webpack_require__(245);
-const settings_1 = __webpack_require__(246);
+const async = __webpack_require__(250);
+const sync = __webpack_require__(255);
+const settings_1 = __webpack_require__(256);
 exports.Settings = settings_1.default;
 function scandir(path, optionsOrSettingsOrCallback, callback) {
     if (typeof optionsOrSettingsOrCallback === 'function') {
@@ -21467,16 +23085,16 @@ function getSettings(settingsOrOptions = {}) {
 
 
 /***/ }),
-/* 240 */
+/* 250 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(231);
-const rpl = __webpack_require__(241);
-const constants_1 = __webpack_require__(242);
-const utils = __webpack_require__(243);
+const fsStat = __webpack_require__(241);
+const rpl = __webpack_require__(251);
+const constants_1 = __webpack_require__(252);
+const utils = __webpack_require__(253);
 function read(directory, settings, callback) {
     if (!settings.stats && constants_1.IS_SUPPORT_READDIR_WITH_FILE_TYPES) {
         return readdirWithFileTypes(directory, settings, callback);
@@ -21564,7 +23182,7 @@ function callSuccessCallback(callback, result) {
 
 
 /***/ }),
-/* 241 */
+/* 251 */
 /***/ (function(module, exports) {
 
 module.exports = runParallel
@@ -21618,7 +23236,7 @@ function runParallel (tasks, cb) {
 
 
 /***/ }),
-/* 242 */
+/* 252 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21638,18 +23256,18 @@ exports.IS_SUPPORT_READDIR_WITH_FILE_TYPES = IS_MATCHED_BY_MAJOR || IS_MATCHED_B
 
 
 /***/ }),
-/* 243 */
+/* 253 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = __webpack_require__(244);
+const fs = __webpack_require__(254);
 exports.fs = fs;
 
 
 /***/ }),
-/* 244 */
+/* 254 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21674,15 +23292,15 @@ exports.createDirentFromStats = createDirentFromStats;
 
 
 /***/ }),
-/* 245 */
+/* 255 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(231);
-const constants_1 = __webpack_require__(242);
-const utils = __webpack_require__(243);
+const fsStat = __webpack_require__(241);
+const constants_1 = __webpack_require__(252);
+const utils = __webpack_require__(253);
 function read(directory, settings) {
     if (!settings.stats && constants_1.IS_SUPPORT_READDIR_WITH_FILE_TYPES) {
         return readdirWithFileTypes(directory, settings);
@@ -21733,15 +23351,15 @@ exports.readdir = readdir;
 
 
 /***/ }),
-/* 246 */
+/* 256 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(4);
-const fsStat = __webpack_require__(231);
-const fs = __webpack_require__(247);
+const fsStat = __webpack_require__(241);
+const fs = __webpack_require__(257);
 class Settings {
     constructor(_options = {}) {
         this._options = _options;
@@ -21764,7 +23382,7 @@ exports.default = Settings;
 
 
 /***/ }),
-/* 247 */
+/* 257 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -21789,13 +23407,13 @@ exports.createFileSystemAdapter = createFileSystemAdapter;
 
 
 /***/ }),
-/* 248 */
+/* 258 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var reusify = __webpack_require__(249)
+var reusify = __webpack_require__(259)
 
 function fastqueue (context, worker, concurrency) {
   if (typeof context === 'function') {
@@ -21969,7 +23587,7 @@ module.exports = fastqueue
 
 
 /***/ }),
-/* 249 */
+/* 259 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22009,7 +23627,7 @@ module.exports = reusify
 
 
 /***/ }),
-/* 250 */
+/* 260 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22040,13 +23658,13 @@ exports.joinPathSegments = joinPathSegments;
 
 
 /***/ }),
-/* 251 */
+/* 261 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const common = __webpack_require__(250);
+const common = __webpack_require__(260);
 class Reader {
     constructor(_root, _settings) {
         this._root = _root;
@@ -22058,14 +23676,14 @@ exports.default = Reader;
 
 
 /***/ }),
-/* 252 */
+/* 262 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = __webpack_require__(129);
-const async_1 = __webpack_require__(238);
+const async_1 = __webpack_require__(248);
 class StreamProvider {
     constructor(_root, _settings) {
         this._root = _root;
@@ -22095,13 +23713,13 @@ exports.default = StreamProvider;
 
 
 /***/ }),
-/* 253 */
+/* 263 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const sync_1 = __webpack_require__(254);
+const sync_1 = __webpack_require__(264);
 class SyncProvider {
     constructor(_root, _settings) {
         this._root = _root;
@@ -22116,15 +23734,15 @@ exports.default = SyncProvider;
 
 
 /***/ }),
-/* 254 */
+/* 264 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsScandir = __webpack_require__(239);
-const common = __webpack_require__(250);
-const reader_1 = __webpack_require__(251);
+const fsScandir = __webpack_require__(249);
+const common = __webpack_require__(260);
+const reader_1 = __webpack_require__(261);
 class SyncReader extends reader_1.default {
     constructor() {
         super(...arguments);
@@ -22182,14 +23800,14 @@ exports.default = SyncReader;
 
 
 /***/ }),
-/* 255 */
+/* 265 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(4);
-const fsScandir = __webpack_require__(239);
+const fsScandir = __webpack_require__(249);
 class Settings {
     constructor(_options = {}) {
         this._options = _options;
@@ -22215,15 +23833,15 @@ exports.default = Settings;
 
 
 /***/ }),
-/* 256 */
+/* 266 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(4);
-const fsStat = __webpack_require__(231);
-const utils = __webpack_require__(201);
+const fsStat = __webpack_require__(241);
+const utils = __webpack_require__(211);
 class Reader {
     constructor(_settings) {
         this._settings = _settings;
@@ -22255,17 +23873,17 @@ exports.default = Reader;
 
 
 /***/ }),
-/* 257 */
+/* 267 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = __webpack_require__(4);
-const deep_1 = __webpack_require__(258);
-const entry_1 = __webpack_require__(261);
-const error_1 = __webpack_require__(262);
-const entry_2 = __webpack_require__(263);
+const deep_1 = __webpack_require__(268);
+const entry_1 = __webpack_require__(271);
+const error_1 = __webpack_require__(272);
+const entry_2 = __webpack_require__(273);
 class Provider {
     constructor(_settings) {
         this._settings = _settings;
@@ -22310,14 +23928,14 @@ exports.default = Provider;
 
 
 /***/ }),
-/* 258 */
+/* 268 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
-const partial_1 = __webpack_require__(259);
+const utils = __webpack_require__(211);
+const partial_1 = __webpack_require__(269);
 class DeepFilter {
     constructor(_settings, _micromatchOptions) {
         this._settings = _settings;
@@ -22371,13 +23989,13 @@ exports.default = DeepFilter;
 
 
 /***/ }),
-/* 259 */
+/* 269 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const matcher_1 = __webpack_require__(260);
+const matcher_1 = __webpack_require__(270);
 class PartialMatcher extends matcher_1.default {
     match(filepath) {
         const parts = filepath.split('/');
@@ -22416,13 +24034,13 @@ exports.default = PartialMatcher;
 
 
 /***/ }),
-/* 260 */
+/* 270 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
+const utils = __webpack_require__(211);
 class Matcher {
     constructor(_patterns, _settings, _micromatchOptions) {
         this._patterns = _patterns;
@@ -22473,13 +24091,13 @@ exports.default = Matcher;
 
 
 /***/ }),
-/* 261 */
+/* 271 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
+const utils = __webpack_require__(211);
 class EntryFilter {
     constructor(_settings, _micromatchOptions) {
         this._settings = _settings;
@@ -22535,13 +24153,13 @@ exports.default = EntryFilter;
 
 
 /***/ }),
-/* 262 */
+/* 272 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
+const utils = __webpack_require__(211);
 class ErrorFilter {
     constructor(_settings) {
         this._settings = _settings;
@@ -22557,13 +24175,13 @@ exports.default = ErrorFilter;
 
 
 /***/ }),
-/* 263 */
+/* 273 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils = __webpack_require__(201);
+const utils = __webpack_require__(211);
 class EntryTransformer {
     constructor(_settings) {
         this._settings = _settings;
@@ -22590,15 +24208,15 @@ exports.default = EntryTransformer;
 
 
 /***/ }),
-/* 264 */
+/* 274 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const stream_1 = __webpack_require__(129);
-const stream_2 = __webpack_require__(230);
-const provider_1 = __webpack_require__(257);
+const stream_2 = __webpack_require__(240);
+const provider_1 = __webpack_require__(267);
 class ProviderStream extends provider_1.default {
     constructor() {
         super(...arguments);
@@ -22628,14 +24246,14 @@ exports.default = ProviderStream;
 
 
 /***/ }),
-/* 265 */
+/* 275 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const sync_1 = __webpack_require__(266);
-const provider_1 = __webpack_require__(257);
+const sync_1 = __webpack_require__(276);
+const provider_1 = __webpack_require__(267);
 class ProviderSync extends provider_1.default {
     constructor() {
         super(...arguments);
@@ -22658,15 +24276,15 @@ exports.default = ProviderSync;
 
 
 /***/ }),
-/* 266 */
+/* 276 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const fsStat = __webpack_require__(231);
-const fsWalk = __webpack_require__(236);
-const reader_1 = __webpack_require__(256);
+const fsStat = __webpack_require__(241);
+const fsWalk = __webpack_require__(246);
+const reader_1 = __webpack_require__(266);
 class ReaderSync extends reader_1.default {
     constructor() {
         super(...arguments);
@@ -22708,7 +24326,7 @@ exports.default = ReaderSync;
 
 
 /***/ }),
-/* 267 */
+/* 277 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22767,13 +24385,13 @@ exports.default = Settings;
 
 
 /***/ }),
-/* 268 */
+/* 278 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const path = __webpack_require__(4);
-const pathType = __webpack_require__(269);
+const pathType = __webpack_require__(279);
 
 const getExtensions = extensions => extensions.length > 1 ? `{${extensions.join(',')}}` : extensions[0];
 
@@ -22849,7 +24467,7 @@ module.exports.sync = (input, options) => {
 
 
 /***/ }),
-/* 269 */
+/* 279 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22899,7 +24517,7 @@ exports.isSymlinkSync = isTypeSync.bind(null, 'lstatSync', 'isSymbolicLink');
 
 
 /***/ }),
-/* 270 */
+/* 280 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -22907,9 +24525,9 @@ exports.isSymlinkSync = isTypeSync.bind(null, 'lstatSync', 'isSymbolicLink');
 const {promisify} = __webpack_require__(111);
 const fs = __webpack_require__(137);
 const path = __webpack_require__(4);
-const fastGlob = __webpack_require__(199);
-const gitIgnore = __webpack_require__(271);
-const slash = __webpack_require__(272);
+const fastGlob = __webpack_require__(209);
+const gitIgnore = __webpack_require__(281);
+const slash = __webpack_require__(282);
 
 const DEFAULT_IGNORE = [
 	'**/node_modules/**',
@@ -23023,7 +24641,7 @@ module.exports.sync = options => {
 
 
 /***/ }),
-/* 271 */
+/* 281 */
 /***/ (function(module, exports) {
 
 // A simple implementation of make-array
@@ -23626,7 +25244,7 @@ if (
 
 
 /***/ }),
-/* 272 */
+/* 282 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23644,7 +25262,7 @@ module.exports = path => {
 
 
 /***/ }),
-/* 273 */
+/* 283 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23697,7 +25315,7 @@ module.exports = {
 
 
 /***/ }),
-/* 274 */
+/* 284 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*!
@@ -23707,7 +25325,7 @@ module.exports = {
  * Released under the MIT License.
  */
 
-var isExtglob = __webpack_require__(209);
+var isExtglob = __webpack_require__(219);
 var chars = { '{': '}', '(': ')', '[': ']'};
 var strictRegex = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
 var relaxedRegex = /\\(.)|(^!|[*?{}()[\]]|\(\?)/;
@@ -23751,863 +25369,7 @@ module.exports = function isGlob(str, options) {
 
 
 /***/ }),
-/* 275 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var fs = __webpack_require__(137)
-var polyfills = __webpack_require__(276)
-var legacy = __webpack_require__(278)
-var clone = __webpack_require__(279)
-
-var util = __webpack_require__(111)
-
-/* istanbul ignore next - node 0.x polyfill */
-var gracefulQueue
-var previousSymbol
-
-/* istanbul ignore else - node 0.x polyfill */
-if (typeof Symbol === 'function' && typeof Symbol.for === 'function') {
-  gracefulQueue = Symbol.for('graceful-fs.queue')
-  // This is used in testing by future versions
-  previousSymbol = Symbol.for('graceful-fs.previous')
-} else {
-  gracefulQueue = '___graceful-fs.queue'
-  previousSymbol = '___graceful-fs.previous'
-}
-
-function noop () {}
-
-var debug = noop
-if (util.debuglog)
-  debug = util.debuglog('gfs4')
-else if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || ''))
-  debug = function() {
-    var m = util.format.apply(util, arguments)
-    m = 'GFS4: ' + m.split(/\n/).join('\nGFS4: ')
-    console.error(m)
-  }
-
-// Once time initialization
-if (!global[gracefulQueue]) {
-  // This queue can be shared by multiple loaded instances
-  var queue = []
-  Object.defineProperty(global, gracefulQueue, {
-    get: function() {
-      return queue
-    }
-  })
-
-  // Patch fs.close/closeSync to shared queue version, because we need
-  // to retry() whenever a close happens *anywhere* in the program.
-  // This is essential when multiple graceful-fs instances are
-  // in play at the same time.
-  fs.close = (function (fs$close) {
-    function close (fd, cb) {
-      return fs$close.call(fs, fd, function (err) {
-        // This function uses the graceful-fs shared queue
-        if (!err) {
-          retry()
-        }
-
-        if (typeof cb === 'function')
-          cb.apply(this, arguments)
-      })
-    }
-
-    Object.defineProperty(close, previousSymbol, {
-      value: fs$close
-    })
-    return close
-  })(fs.close)
-
-  fs.closeSync = (function (fs$closeSync) {
-    function closeSync (fd) {
-      // This function uses the graceful-fs shared queue
-      fs$closeSync.apply(fs, arguments)
-      retry()
-    }
-
-    Object.defineProperty(closeSync, previousSymbol, {
-      value: fs$closeSync
-    })
-    return closeSync
-  })(fs.closeSync)
-
-  if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || '')) {
-    process.on('exit', function() {
-      debug(global[gracefulQueue])
-      __webpack_require__(158).equal(global[gracefulQueue].length, 0)
-    })
-  }
-}
-
-module.exports = patch(clone(fs))
-if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs.__patched) {
-    module.exports = patch(fs)
-    fs.__patched = true;
-}
-
-function patch (fs) {
-  // Everything that references the open() function needs to be in here
-  polyfills(fs)
-  fs.gracefulify = patch
-
-  fs.createReadStream = createReadStream
-  fs.createWriteStream = createWriteStream
-  var fs$readFile = fs.readFile
-  fs.readFile = readFile
-  function readFile (path, options, cb) {
-    if (typeof options === 'function')
-      cb = options, options = null
-
-    return go$readFile(path, options, cb)
-
-    function go$readFile (path, options, cb) {
-      return fs$readFile(path, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$readFile, [path, options, cb]])
-        else {
-          if (typeof cb === 'function')
-            cb.apply(this, arguments)
-          retry()
-        }
-      })
-    }
-  }
-
-  var fs$writeFile = fs.writeFile
-  fs.writeFile = writeFile
-  function writeFile (path, data, options, cb) {
-    if (typeof options === 'function')
-      cb = options, options = null
-
-    return go$writeFile(path, data, options, cb)
-
-    function go$writeFile (path, data, options, cb) {
-      return fs$writeFile(path, data, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$writeFile, [path, data, options, cb]])
-        else {
-          if (typeof cb === 'function')
-            cb.apply(this, arguments)
-          retry()
-        }
-      })
-    }
-  }
-
-  var fs$appendFile = fs.appendFile
-  if (fs$appendFile)
-    fs.appendFile = appendFile
-  function appendFile (path, data, options, cb) {
-    if (typeof options === 'function')
-      cb = options, options = null
-
-    return go$appendFile(path, data, options, cb)
-
-    function go$appendFile (path, data, options, cb) {
-      return fs$appendFile(path, data, options, function (err) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$appendFile, [path, data, options, cb]])
-        else {
-          if (typeof cb === 'function')
-            cb.apply(this, arguments)
-          retry()
-        }
-      })
-    }
-  }
-
-  var fs$readdir = fs.readdir
-  fs.readdir = readdir
-  function readdir (path, options, cb) {
-    var args = [path]
-    if (typeof options !== 'function') {
-      args.push(options)
-    } else {
-      cb = options
-    }
-    args.push(go$readdir$cb)
-
-    return go$readdir(args)
-
-    function go$readdir$cb (err, files) {
-      if (files && files.sort)
-        files.sort()
-
-      if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-        enqueue([go$readdir, [args]])
-
-      else {
-        if (typeof cb === 'function')
-          cb.apply(this, arguments)
-        retry()
-      }
-    }
-  }
-
-  function go$readdir (args) {
-    return fs$readdir.apply(fs, args)
-  }
-
-  if (process.version.substr(0, 4) === 'v0.8') {
-    var legStreams = legacy(fs)
-    ReadStream = legStreams.ReadStream
-    WriteStream = legStreams.WriteStream
-  }
-
-  var fs$ReadStream = fs.ReadStream
-  if (fs$ReadStream) {
-    ReadStream.prototype = Object.create(fs$ReadStream.prototype)
-    ReadStream.prototype.open = ReadStream$open
-  }
-
-  var fs$WriteStream = fs.WriteStream
-  if (fs$WriteStream) {
-    WriteStream.prototype = Object.create(fs$WriteStream.prototype)
-    WriteStream.prototype.open = WriteStream$open
-  }
-
-  Object.defineProperty(fs, 'ReadStream', {
-    get: function () {
-      return ReadStream
-    },
-    set: function (val) {
-      ReadStream = val
-    },
-    enumerable: true,
-    configurable: true
-  })
-  Object.defineProperty(fs, 'WriteStream', {
-    get: function () {
-      return WriteStream
-    },
-    set: function (val) {
-      WriteStream = val
-    },
-    enumerable: true,
-    configurable: true
-  })
-
-  // legacy names
-  var FileReadStream = ReadStream
-  Object.defineProperty(fs, 'FileReadStream', {
-    get: function () {
-      return FileReadStream
-    },
-    set: function (val) {
-      FileReadStream = val
-    },
-    enumerable: true,
-    configurable: true
-  })
-  var FileWriteStream = WriteStream
-  Object.defineProperty(fs, 'FileWriteStream', {
-    get: function () {
-      return FileWriteStream
-    },
-    set: function (val) {
-      FileWriteStream = val
-    },
-    enumerable: true,
-    configurable: true
-  })
-
-  function ReadStream (path, options) {
-    if (this instanceof ReadStream)
-      return fs$ReadStream.apply(this, arguments), this
-    else
-      return ReadStream.apply(Object.create(ReadStream.prototype), arguments)
-  }
-
-  function ReadStream$open () {
-    var that = this
-    open(that.path, that.flags, that.mode, function (err, fd) {
-      if (err) {
-        if (that.autoClose)
-          that.destroy()
-
-        that.emit('error', err)
-      } else {
-        that.fd = fd
-        that.emit('open', fd)
-        that.read()
-      }
-    })
-  }
-
-  function WriteStream (path, options) {
-    if (this instanceof WriteStream)
-      return fs$WriteStream.apply(this, arguments), this
-    else
-      return WriteStream.apply(Object.create(WriteStream.prototype), arguments)
-  }
-
-  function WriteStream$open () {
-    var that = this
-    open(that.path, that.flags, that.mode, function (err, fd) {
-      if (err) {
-        that.destroy()
-        that.emit('error', err)
-      } else {
-        that.fd = fd
-        that.emit('open', fd)
-      }
-    })
-  }
-
-  function createReadStream (path, options) {
-    return new fs.ReadStream(path, options)
-  }
-
-  function createWriteStream (path, options) {
-    return new fs.WriteStream(path, options)
-  }
-
-  var fs$open = fs.open
-  fs.open = open
-  function open (path, flags, mode, cb) {
-    if (typeof mode === 'function')
-      cb = mode, mode = null
-
-    return go$open(path, flags, mode, cb)
-
-    function go$open (path, flags, mode, cb) {
-      return fs$open(path, flags, mode, function (err, fd) {
-        if (err && (err.code === 'EMFILE' || err.code === 'ENFILE'))
-          enqueue([go$open, [path, flags, mode, cb]])
-        else {
-          if (typeof cb === 'function')
-            cb.apply(this, arguments)
-          retry()
-        }
-      })
-    }
-  }
-
-  return fs
-}
-
-function enqueue (elem) {
-  debug('ENQUEUE', elem[0].name, elem[1])
-  global[gracefulQueue].push(elem)
-}
-
-function retry () {
-  var elem = global[gracefulQueue].shift()
-  if (elem) {
-    debug('RETRY', elem[0].name, elem[1])
-    elem[0].apply(null, elem[1])
-  }
-}
-
-
-/***/ }),
-/* 276 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var constants = __webpack_require__(277)
-
-var origCwd = process.cwd
-var cwd = null
-
-var platform = process.env.GRACEFUL_FS_PLATFORM || process.platform
-
-process.cwd = function() {
-  if (!cwd)
-    cwd = origCwd.call(process)
-  return cwd
-}
-try {
-  process.cwd()
-} catch (er) {}
-
-var chdir = process.chdir
-process.chdir = function(d) {
-  cwd = null
-  chdir.call(process, d)
-}
-
-module.exports = patch
-
-function patch (fs) {
-  // (re-)implement some things that are known busted or missing.
-
-  // lchmod, broken prior to 0.6.2
-  // back-port the fix here.
-  if (constants.hasOwnProperty('O_SYMLINK') &&
-      process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
-    patchLchmod(fs)
-  }
-
-  // lutimes implementation, or no-op
-  if (!fs.lutimes) {
-    patchLutimes(fs)
-  }
-
-  // https://github.com/isaacs/node-graceful-fs/issues/4
-  // Chown should not fail on einval or eperm if non-root.
-  // It should not fail on enosys ever, as this just indicates
-  // that a fs doesn't support the intended operation.
-
-  fs.chown = chownFix(fs.chown)
-  fs.fchown = chownFix(fs.fchown)
-  fs.lchown = chownFix(fs.lchown)
-
-  fs.chmod = chmodFix(fs.chmod)
-  fs.fchmod = chmodFix(fs.fchmod)
-  fs.lchmod = chmodFix(fs.lchmod)
-
-  fs.chownSync = chownFixSync(fs.chownSync)
-  fs.fchownSync = chownFixSync(fs.fchownSync)
-  fs.lchownSync = chownFixSync(fs.lchownSync)
-
-  fs.chmodSync = chmodFixSync(fs.chmodSync)
-  fs.fchmodSync = chmodFixSync(fs.fchmodSync)
-  fs.lchmodSync = chmodFixSync(fs.lchmodSync)
-
-  fs.stat = statFix(fs.stat)
-  fs.fstat = statFix(fs.fstat)
-  fs.lstat = statFix(fs.lstat)
-
-  fs.statSync = statFixSync(fs.statSync)
-  fs.fstatSync = statFixSync(fs.fstatSync)
-  fs.lstatSync = statFixSync(fs.lstatSync)
-
-  // if lchmod/lchown do not exist, then make them no-ops
-  if (!fs.lchmod) {
-    fs.lchmod = function (path, mode, cb) {
-      if (cb) process.nextTick(cb)
-    }
-    fs.lchmodSync = function () {}
-  }
-  if (!fs.lchown) {
-    fs.lchown = function (path, uid, gid, cb) {
-      if (cb) process.nextTick(cb)
-    }
-    fs.lchownSync = function () {}
-  }
-
-  // on Windows, A/V software can lock the directory, causing this
-  // to fail with an EACCES or EPERM if the directory contains newly
-  // created files.  Try again on failure, for up to 60 seconds.
-
-  // Set the timeout this long because some Windows Anti-Virus, such as Parity
-  // bit9, may lock files for up to a minute, causing npm package install
-  // failures. Also, take care to yield the scheduler. Windows scheduling gives
-  // CPU to a busy looping process, which can cause the program causing the lock
-  // contention to be starved of CPU by node, so the contention doesn't resolve.
-  if (platform === "win32") {
-    fs.rename = (function (fs$rename) { return function (from, to, cb) {
-      var start = Date.now()
-      var backoff = 0;
-      fs$rename(from, to, function CB (er) {
-        if (er
-            && (er.code === "EACCES" || er.code === "EPERM")
-            && Date.now() - start < 60000) {
-          setTimeout(function() {
-            fs.stat(to, function (stater, st) {
-              if (stater && stater.code === "ENOENT")
-                fs$rename(from, to, CB);
-              else
-                cb(er)
-            })
-          }, backoff)
-          if (backoff < 100)
-            backoff += 10;
-          return;
-        }
-        if (cb) cb(er)
-      })
-    }})(fs.rename)
-  }
-
-  // if read() returns EAGAIN, then just try it again.
-  fs.read = (function (fs$read) {
-    function read (fd, buffer, offset, length, position, callback_) {
-      var callback
-      if (callback_ && typeof callback_ === 'function') {
-        var eagCounter = 0
-        callback = function (er, _, __) {
-          if (er && er.code === 'EAGAIN' && eagCounter < 10) {
-            eagCounter ++
-            return fs$read.call(fs, fd, buffer, offset, length, position, callback)
-          }
-          callback_.apply(this, arguments)
-        }
-      }
-      return fs$read.call(fs, fd, buffer, offset, length, position, callback)
-    }
-
-    // This ensures `util.promisify` works as it does for native `fs.read`.
-    read.__proto__ = fs$read
-    return read
-  })(fs.read)
-
-  fs.readSync = (function (fs$readSync) { return function (fd, buffer, offset, length, position) {
-    var eagCounter = 0
-    while (true) {
-      try {
-        return fs$readSync.call(fs, fd, buffer, offset, length, position)
-      } catch (er) {
-        if (er.code === 'EAGAIN' && eagCounter < 10) {
-          eagCounter ++
-          continue
-        }
-        throw er
-      }
-    }
-  }})(fs.readSync)
-
-  function patchLchmod (fs) {
-    fs.lchmod = function (path, mode, callback) {
-      fs.open( path
-             , constants.O_WRONLY | constants.O_SYMLINK
-             , mode
-             , function (err, fd) {
-        if (err) {
-          if (callback) callback(err)
-          return
-        }
-        // prefer to return the chmod error, if one occurs,
-        // but still try to close, and report closing errors if they occur.
-        fs.fchmod(fd, mode, function (err) {
-          fs.close(fd, function(err2) {
-            if (callback) callback(err || err2)
-          })
-        })
-      })
-    }
-
-    fs.lchmodSync = function (path, mode) {
-      var fd = fs.openSync(path, constants.O_WRONLY | constants.O_SYMLINK, mode)
-
-      // prefer to return the chmod error, if one occurs,
-      // but still try to close, and report closing errors if they occur.
-      var threw = true
-      var ret
-      try {
-        ret = fs.fchmodSync(fd, mode)
-        threw = false
-      } finally {
-        if (threw) {
-          try {
-            fs.closeSync(fd)
-          } catch (er) {}
-        } else {
-          fs.closeSync(fd)
-        }
-      }
-      return ret
-    }
-  }
-
-  function patchLutimes (fs) {
-    if (constants.hasOwnProperty("O_SYMLINK")) {
-      fs.lutimes = function (path, at, mt, cb) {
-        fs.open(path, constants.O_SYMLINK, function (er, fd) {
-          if (er) {
-            if (cb) cb(er)
-            return
-          }
-          fs.futimes(fd, at, mt, function (er) {
-            fs.close(fd, function (er2) {
-              if (cb) cb(er || er2)
-            })
-          })
-        })
-      }
-
-      fs.lutimesSync = function (path, at, mt) {
-        var fd = fs.openSync(path, constants.O_SYMLINK)
-        var ret
-        var threw = true
-        try {
-          ret = fs.futimesSync(fd, at, mt)
-          threw = false
-        } finally {
-          if (threw) {
-            try {
-              fs.closeSync(fd)
-            } catch (er) {}
-          } else {
-            fs.closeSync(fd)
-          }
-        }
-        return ret
-      }
-
-    } else {
-      fs.lutimes = function (_a, _b, _c, cb) { if (cb) process.nextTick(cb) }
-      fs.lutimesSync = function () {}
-    }
-  }
-
-  function chmodFix (orig) {
-    if (!orig) return orig
-    return function (target, mode, cb) {
-      return orig.call(fs, target, mode, function (er) {
-        if (chownErOk(er)) er = null
-        if (cb) cb.apply(this, arguments)
-      })
-    }
-  }
-
-  function chmodFixSync (orig) {
-    if (!orig) return orig
-    return function (target, mode) {
-      try {
-        return orig.call(fs, target, mode)
-      } catch (er) {
-        if (!chownErOk(er)) throw er
-      }
-    }
-  }
-
-
-  function chownFix (orig) {
-    if (!orig) return orig
-    return function (target, uid, gid, cb) {
-      return orig.call(fs, target, uid, gid, function (er) {
-        if (chownErOk(er)) er = null
-        if (cb) cb.apply(this, arguments)
-      })
-    }
-  }
-
-  function chownFixSync (orig) {
-    if (!orig) return orig
-    return function (target, uid, gid) {
-      try {
-        return orig.call(fs, target, uid, gid)
-      } catch (er) {
-        if (!chownErOk(er)) throw er
-      }
-    }
-  }
-
-  function statFix (orig) {
-    if (!orig) return orig
-    // Older versions of Node erroneously returned signed integers for
-    // uid + gid.
-    return function (target, options, cb) {
-      if (typeof options === 'function') {
-        cb = options
-        options = null
-      }
-      function callback (er, stats) {
-        if (stats) {
-          if (stats.uid < 0) stats.uid += 0x100000000
-          if (stats.gid < 0) stats.gid += 0x100000000
-        }
-        if (cb) cb.apply(this, arguments)
-      }
-      return options ? orig.call(fs, target, options, callback)
-        : orig.call(fs, target, callback)
-    }
-  }
-
-  function statFixSync (orig) {
-    if (!orig) return orig
-    // Older versions of Node erroneously returned signed integers for
-    // uid + gid.
-    return function (target, options) {
-      var stats = options ? orig.call(fs, target, options)
-        : orig.call(fs, target)
-      if (stats.uid < 0) stats.uid += 0x100000000
-      if (stats.gid < 0) stats.gid += 0x100000000
-      return stats;
-    }
-  }
-
-  // ENOSYS means that the fs doesn't support the op. Just ignore
-  // that, because it doesn't matter.
-  //
-  // if there's no getuid, or if getuid() is something other
-  // than 0, and the error is EINVAL or EPERM, then just ignore
-  // it.
-  //
-  // This specific case is a silent failure in cp, install, tar,
-  // and most other unix tools that manage permissions.
-  //
-  // When running as root, or if other types of errors are
-  // encountered, then it's strict.
-  function chownErOk (er) {
-    if (!er)
-      return true
-
-    if (er.code === "ENOSYS")
-      return true
-
-    var nonroot = !process.getuid || process.getuid() !== 0
-    if (nonroot) {
-      if (er.code === "EINVAL" || er.code === "EPERM")
-        return true
-    }
-
-    return false
-  }
-}
-
-
-/***/ }),
-/* 277 */
-/***/ (function(module, exports) {
-
-module.exports = require("constants");
-
-/***/ }),
-/* 278 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var Stream = __webpack_require__(129).Stream
-
-module.exports = legacy
-
-function legacy (fs) {
-  return {
-    ReadStream: ReadStream,
-    WriteStream: WriteStream
-  }
-
-  function ReadStream (path, options) {
-    if (!(this instanceof ReadStream)) return new ReadStream(path, options);
-
-    Stream.call(this);
-
-    var self = this;
-
-    this.path = path;
-    this.fd = null;
-    this.readable = true;
-    this.paused = false;
-
-    this.flags = 'r';
-    this.mode = 438; /*=0666*/
-    this.bufferSize = 64 * 1024;
-
-    options = options || {};
-
-    // Mixin options into this
-    var keys = Object.keys(options);
-    for (var index = 0, length = keys.length; index < length; index++) {
-      var key = keys[index];
-      this[key] = options[key];
-    }
-
-    if (this.encoding) this.setEncoding(this.encoding);
-
-    if (this.start !== undefined) {
-      if ('number' !== typeof this.start) {
-        throw TypeError('start must be a Number');
-      }
-      if (this.end === undefined) {
-        this.end = Infinity;
-      } else if ('number' !== typeof this.end) {
-        throw TypeError('end must be a Number');
-      }
-
-      if (this.start > this.end) {
-        throw new Error('start must be <= end');
-      }
-
-      this.pos = this.start;
-    }
-
-    if (this.fd !== null) {
-      process.nextTick(function() {
-        self._read();
-      });
-      return;
-    }
-
-    fs.open(this.path, this.flags, this.mode, function (err, fd) {
-      if (err) {
-        self.emit('error', err);
-        self.readable = false;
-        return;
-      }
-
-      self.fd = fd;
-      self.emit('open', fd);
-      self._read();
-    })
-  }
-
-  function WriteStream (path, options) {
-    if (!(this instanceof WriteStream)) return new WriteStream(path, options);
-
-    Stream.call(this);
-
-    this.path = path;
-    this.fd = null;
-    this.writable = true;
-
-    this.flags = 'w';
-    this.encoding = 'binary';
-    this.mode = 438; /*=0666*/
-    this.bytesWritten = 0;
-
-    options = options || {};
-
-    // Mixin options into this
-    var keys = Object.keys(options);
-    for (var index = 0, length = keys.length; index < length; index++) {
-      var key = keys[index];
-      this[key] = options[key];
-    }
-
-    if (this.start !== undefined) {
-      if ('number' !== typeof this.start) {
-        throw TypeError('start must be a Number');
-      }
-      if (this.start < 0) {
-        throw new Error('start must be >= zero');
-      }
-
-      this.pos = this.start;
-    }
-
-    this.busy = false;
-    this._queue = [];
-
-    if (this.fd === null) {
-      this._open = fs.open;
-      this._queue.push([this._open, this.path, this.flags, this.mode, undefined]);
-      this.flush();
-    }
-  }
-}
-
-
-/***/ }),
-/* 279 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-module.exports = clone
-
-function clone (obj) {
-  if (obj === null || typeof obj !== 'object')
-    return obj
-
-  if (obj instanceof Object)
-    var copy = { __proto__: obj.__proto__ }
-  else
-    var copy = Object.create(null)
-
-  Object.getOwnPropertyNames(obj).forEach(function (key) {
-    Object.defineProperty(copy, key, Object.getOwnPropertyDescriptor(obj, key))
-  })
-
-  return copy
-}
-
-
-/***/ }),
-/* 280 */
+/* 285 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24629,7 +25391,7 @@ module.exports = path_ => {
 
 
 /***/ }),
-/* 281 */
+/* 286 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -24657,7 +25419,7 @@ module.exports = (childPath, parentPath) => {
 
 
 /***/ }),
-/* 282 */
+/* 287 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const assert = __webpack_require__(158)
@@ -24665,7 +25427,7 @@ const path = __webpack_require__(4)
 const fs = __webpack_require__(137)
 let glob = undefined
 try {
-  glob = __webpack_require__(186)
+  glob = __webpack_require__(196)
 } catch (_err) {
   // treat glob as optional.
 }
@@ -25031,12 +25793,12 @@ rimraf.sync = rimrafSync
 
 
 /***/ }),
-/* 283 */
+/* 288 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const AggregateError = __webpack_require__(284);
+const AggregateError = __webpack_require__(289);
 
 module.exports = async (
 	iterable,
@@ -25119,13 +25881,13 @@ module.exports = async (
 
 
 /***/ }),
-/* 284 */
+/* 289 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const indentString = __webpack_require__(285);
-const cleanStack = __webpack_require__(286);
+const indentString = __webpack_require__(290);
+const cleanStack = __webpack_require__(291);
 
 const cleanInternalStack = stack => stack.replace(/\s+at .*aggregate-error\/index.js:\d+:\d+\)?/g, '');
 
@@ -25173,7 +25935,7 @@ module.exports = AggregateError;
 
 
 /***/ }),
-/* 285 */
+/* 290 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25215,7 +25977,7 @@ module.exports = (string, count = 1, options) => {
 
 
 /***/ }),
-/* 286 */
+/* 291 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25262,15 +26024,15 @@ module.exports = (stack, options) => {
 
 
 /***/ }),
-/* 287 */
+/* 292 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const chalk = __webpack_require__(288);
-const cliCursor = __webpack_require__(292);
-const cliSpinners = __webpack_require__(296);
-const logSymbols = __webpack_require__(298);
+const chalk = __webpack_require__(293);
+const cliCursor = __webpack_require__(297);
+const cliSpinners = __webpack_require__(301);
+const logSymbols = __webpack_require__(303);
 
 class Ora {
 	constructor(options) {
@@ -25417,16 +26179,16 @@ module.exports.promise = (action, options) => {
 
 
 /***/ }),
-/* 288 */
+/* 293 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const escapeStringRegexp = __webpack_require__(113);
-const ansiStyles = __webpack_require__(289);
-const stdoutColor = __webpack_require__(290).stdout;
+const ansiStyles = __webpack_require__(294);
+const stdoutColor = __webpack_require__(295).stdout;
 
-const template = __webpack_require__(291);
+const template = __webpack_require__(296);
 
 const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm');
 
@@ -25652,7 +26414,7 @@ module.exports.default = module.exports; // For TypeScript
 
 
 /***/ }),
-/* 289 */
+/* 294 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25825,7 +26587,7 @@ Object.defineProperty(module, 'exports', {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(115)(module)))
 
 /***/ }),
-/* 290 */
+/* 295 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -25967,7 +26729,7 @@ module.exports = {
 
 
 /***/ }),
-/* 291 */
+/* 296 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26102,12 +26864,12 @@ module.exports = (chalk, tmp) => {
 
 
 /***/ }),
-/* 292 */
+/* 297 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const restoreCursor = __webpack_require__(293);
+const restoreCursor = __webpack_require__(298);
 
 let hidden = false;
 
@@ -26148,12 +26910,12 @@ exports.toggle = (force, stream) => {
 
 
 /***/ }),
-/* 293 */
+/* 298 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const onetime = __webpack_require__(294);
+const onetime = __webpack_require__(299);
 const signalExit = __webpack_require__(157);
 
 module.exports = onetime(() => {
@@ -26164,12 +26926,12 @@ module.exports = onetime(() => {
 
 
 /***/ }),
-/* 294 */
+/* 299 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const mimicFn = __webpack_require__(295);
+const mimicFn = __webpack_require__(300);
 
 module.exports = (fn, opts) => {
 	// TODO: Remove this in v3
@@ -26210,7 +26972,7 @@ module.exports = (fn, opts) => {
 
 
 /***/ }),
-/* 295 */
+/* 300 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26226,27 +26988,27 @@ module.exports = (to, from) => {
 
 
 /***/ }),
-/* 296 */
+/* 301 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-module.exports = __webpack_require__(297);
+module.exports = __webpack_require__(302);
 
 
 /***/ }),
-/* 297 */
+/* 302 */
 /***/ (function(module) {
 
 module.exports = JSON.parse("{\"dots\":{\"interval\":80,\"frames\":[\"⠋\",\"⠙\",\"⠹\",\"⠸\",\"⠼\",\"⠴\",\"⠦\",\"⠧\",\"⠇\",\"⠏\"]},\"dots2\":{\"interval\":80,\"frames\":[\"⣾\",\"⣽\",\"⣻\",\"⢿\",\"⡿\",\"⣟\",\"⣯\",\"⣷\"]},\"dots3\":{\"interval\":80,\"frames\":[\"⠋\",\"⠙\",\"⠚\",\"⠞\",\"⠖\",\"⠦\",\"⠴\",\"⠲\",\"⠳\",\"⠓\"]},\"dots4\":{\"interval\":80,\"frames\":[\"⠄\",\"⠆\",\"⠇\",\"⠋\",\"⠙\",\"⠸\",\"⠰\",\"⠠\",\"⠰\",\"⠸\",\"⠙\",\"⠋\",\"⠇\",\"⠆\"]},\"dots5\":{\"interval\":80,\"frames\":[\"⠋\",\"⠙\",\"⠚\",\"⠒\",\"⠂\",\"⠂\",\"⠒\",\"⠲\",\"⠴\",\"⠦\",\"⠖\",\"⠒\",\"⠐\",\"⠐\",\"⠒\",\"⠓\",\"⠋\"]},\"dots6\":{\"interval\":80,\"frames\":[\"⠁\",\"⠉\",\"⠙\",\"⠚\",\"⠒\",\"⠂\",\"⠂\",\"⠒\",\"⠲\",\"⠴\",\"⠤\",\"⠄\",\"⠄\",\"⠤\",\"⠴\",\"⠲\",\"⠒\",\"⠂\",\"⠂\",\"⠒\",\"⠚\",\"⠙\",\"⠉\",\"⠁\"]},\"dots7\":{\"interval\":80,\"frames\":[\"⠈\",\"⠉\",\"⠋\",\"⠓\",\"⠒\",\"⠐\",\"⠐\",\"⠒\",\"⠖\",\"⠦\",\"⠤\",\"⠠\",\"⠠\",\"⠤\",\"⠦\",\"⠖\",\"⠒\",\"⠐\",\"⠐\",\"⠒\",\"⠓\",\"⠋\",\"⠉\",\"⠈\"]},\"dots8\":{\"interval\":80,\"frames\":[\"⠁\",\"⠁\",\"⠉\",\"⠙\",\"⠚\",\"⠒\",\"⠂\",\"⠂\",\"⠒\",\"⠲\",\"⠴\",\"⠤\",\"⠄\",\"⠄\",\"⠤\",\"⠠\",\"⠠\",\"⠤\",\"⠦\",\"⠖\",\"⠒\",\"⠐\",\"⠐\",\"⠒\",\"⠓\",\"⠋\",\"⠉\",\"⠈\",\"⠈\"]},\"dots9\":{\"interval\":80,\"frames\":[\"⢹\",\"⢺\",\"⢼\",\"⣸\",\"⣇\",\"⡧\",\"⡗\",\"⡏\"]},\"dots10\":{\"interval\":80,\"frames\":[\"⢄\",\"⢂\",\"⢁\",\"⡁\",\"⡈\",\"⡐\",\"⡠\"]},\"dots11\":{\"interval\":100,\"frames\":[\"⠁\",\"⠂\",\"⠄\",\"⡀\",\"⢀\",\"⠠\",\"⠐\",\"⠈\"]},\"dots12\":{\"interval\":80,\"frames\":[\"⢀⠀\",\"⡀⠀\",\"⠄⠀\",\"⢂⠀\",\"⡂⠀\",\"⠅⠀\",\"⢃⠀\",\"⡃⠀\",\"⠍⠀\",\"⢋⠀\",\"⡋⠀\",\"⠍⠁\",\"⢋⠁\",\"⡋⠁\",\"⠍⠉\",\"⠋⠉\",\"⠋⠉\",\"⠉⠙\",\"⠉⠙\",\"⠉⠩\",\"⠈⢙\",\"⠈⡙\",\"⢈⠩\",\"⡀⢙\",\"⠄⡙\",\"⢂⠩\",\"⡂⢘\",\"⠅⡘\",\"⢃⠨\",\"⡃⢐\",\"⠍⡐\",\"⢋⠠\",\"⡋⢀\",\"⠍⡁\",\"⢋⠁\",\"⡋⠁\",\"⠍⠉\",\"⠋⠉\",\"⠋⠉\",\"⠉⠙\",\"⠉⠙\",\"⠉⠩\",\"⠈⢙\",\"⠈⡙\",\"⠈⠩\",\"⠀⢙\",\"⠀⡙\",\"⠀⠩\",\"⠀⢘\",\"⠀⡘\",\"⠀⠨\",\"⠀⢐\",\"⠀⡐\",\"⠀⠠\",\"⠀⢀\",\"⠀⡀\"]},\"line\":{\"interval\":130,\"frames\":[\"-\",\"\\\\\",\"|\",\"/\"]},\"line2\":{\"interval\":100,\"frames\":[\"⠂\",\"-\",\"–\",\"—\",\"–\",\"-\"]},\"pipe\":{\"interval\":100,\"frames\":[\"┤\",\"┘\",\"┴\",\"└\",\"├\",\"┌\",\"┬\",\"┐\"]},\"simpleDots\":{\"interval\":400,\"frames\":[\".  \",\".. \",\"...\",\"   \"]},\"simpleDotsScrolling\":{\"interval\":200,\"frames\":[\".  \",\".. \",\"...\",\" ..\",\"  .\",\"   \"]},\"star\":{\"interval\":70,\"frames\":[\"✶\",\"✸\",\"✹\",\"✺\",\"✹\",\"✷\"]},\"star2\":{\"interval\":80,\"frames\":[\"+\",\"x\",\"*\"]},\"flip\":{\"interval\":70,\"frames\":[\"_\",\"_\",\"_\",\"-\",\"`\",\"`\",\"'\",\"´\",\"-\",\"_\",\"_\",\"_\"]},\"hamburger\":{\"interval\":100,\"frames\":[\"☱\",\"☲\",\"☴\"]},\"growVertical\":{\"interval\":120,\"frames\":[\"▁\",\"▃\",\"▄\",\"▅\",\"▆\",\"▇\",\"▆\",\"▅\",\"▄\",\"▃\"]},\"growHorizontal\":{\"interval\":120,\"frames\":[\"▏\",\"▎\",\"▍\",\"▌\",\"▋\",\"▊\",\"▉\",\"▊\",\"▋\",\"▌\",\"▍\",\"▎\"]},\"balloon\":{\"interval\":140,\"frames\":[\" \",\".\",\"o\",\"O\",\"@\",\"*\",\" \"]},\"balloon2\":{\"interval\":120,\"frames\":[\".\",\"o\",\"O\",\"°\",\"O\",\"o\",\".\"]},\"noise\":{\"interval\":100,\"frames\":[\"▓\",\"▒\",\"░\"]},\"bounce\":{\"interval\":120,\"frames\":[\"⠁\",\"⠂\",\"⠄\",\"⠂\"]},\"boxBounce\":{\"interval\":120,\"frames\":[\"▖\",\"▘\",\"▝\",\"▗\"]},\"boxBounce2\":{\"interval\":100,\"frames\":[\"▌\",\"▀\",\"▐\",\"▄\"]},\"triangle\":{\"interval\":50,\"frames\":[\"◢\",\"◣\",\"◤\",\"◥\"]},\"arc\":{\"interval\":100,\"frames\":[\"◜\",\"◠\",\"◝\",\"◞\",\"◡\",\"◟\"]},\"circle\":{\"interval\":120,\"frames\":[\"◡\",\"⊙\",\"◠\"]},\"squareCorners\":{\"interval\":180,\"frames\":[\"◰\",\"◳\",\"◲\",\"◱\"]},\"circleQuarters\":{\"interval\":120,\"frames\":[\"◴\",\"◷\",\"◶\",\"◵\"]},\"circleHalves\":{\"interval\":50,\"frames\":[\"◐\",\"◓\",\"◑\",\"◒\"]},\"squish\":{\"interval\":100,\"frames\":[\"╫\",\"╪\"]},\"toggle\":{\"interval\":250,\"frames\":[\"⊶\",\"⊷\"]},\"toggle2\":{\"interval\":80,\"frames\":[\"▫\",\"▪\"]},\"toggle3\":{\"interval\":120,\"frames\":[\"□\",\"■\"]},\"toggle4\":{\"interval\":100,\"frames\":[\"■\",\"□\",\"▪\",\"▫\"]},\"toggle5\":{\"interval\":100,\"frames\":[\"▮\",\"▯\"]},\"toggle6\":{\"interval\":300,\"frames\":[\"ဝ\",\"၀\"]},\"toggle7\":{\"interval\":80,\"frames\":[\"⦾\",\"⦿\"]},\"toggle8\":{\"interval\":100,\"frames\":[\"◍\",\"◌\"]},\"toggle9\":{\"interval\":100,\"frames\":[\"◉\",\"◎\"]},\"toggle10\":{\"interval\":100,\"frames\":[\"㊂\",\"㊀\",\"㊁\"]},\"toggle11\":{\"interval\":50,\"frames\":[\"⧇\",\"⧆\"]},\"toggle12\":{\"interval\":120,\"frames\":[\"☗\",\"☖\"]},\"toggle13\":{\"interval\":80,\"frames\":[\"=\",\"*\",\"-\"]},\"arrow\":{\"interval\":100,\"frames\":[\"←\",\"↖\",\"↑\",\"↗\",\"→\",\"↘\",\"↓\",\"↙\"]},\"arrow2\":{\"interval\":80,\"frames\":[\"⬆️ \",\"↗️ \",\"➡️ \",\"↘️ \",\"⬇️ \",\"↙️ \",\"⬅️ \",\"↖️ \"]},\"arrow3\":{\"interval\":120,\"frames\":[\"▹▹▹▹▹\",\"▸▹▹▹▹\",\"▹▸▹▹▹\",\"▹▹▸▹▹\",\"▹▹▹▸▹\",\"▹▹▹▹▸\"]},\"bouncingBar\":{\"interval\":80,\"frames\":[\"[    ]\",\"[=   ]\",\"[==  ]\",\"[=== ]\",\"[ ===]\",\"[  ==]\",\"[   =]\",\"[    ]\",\"[   =]\",\"[  ==]\",\"[ ===]\",\"[====]\",\"[=== ]\",\"[==  ]\",\"[=   ]\"]},\"bouncingBall\":{\"interval\":80,\"frames\":[\"( ●    )\",\"(  ●   )\",\"(   ●  )\",\"(    ● )\",\"(     ●)\",\"(    ● )\",\"(   ●  )\",\"(  ●   )\",\"( ●    )\",\"(●     )\"]},\"smiley\":{\"interval\":200,\"frames\":[\"😄 \",\"😝 \"]},\"monkey\":{\"interval\":300,\"frames\":[\"🙈 \",\"🙈 \",\"🙉 \",\"🙊 \"]},\"hearts\":{\"interval\":100,\"frames\":[\"💛 \",\"💙 \",\"💜 \",\"💚 \",\"❤️ \"]},\"clock\":{\"interval\":100,\"frames\":[\"🕐 \",\"🕑 \",\"🕒 \",\"🕓 \",\"🕔 \",\"🕕 \",\"🕖 \",\"🕗 \",\"🕘 \",\"🕙 \",\"🕚 \"]},\"earth\":{\"interval\":180,\"frames\":[\"🌍 \",\"🌎 \",\"🌏 \"]},\"moon\":{\"interval\":80,\"frames\":[\"🌑 \",\"🌒 \",\"🌓 \",\"🌔 \",\"🌕 \",\"🌖 \",\"🌗 \",\"🌘 \"]},\"runner\":{\"interval\":140,\"frames\":[\"🚶 \",\"🏃 \"]},\"pong\":{\"interval\":80,\"frames\":[\"▐⠂       ▌\",\"▐⠈       ▌\",\"▐ ⠂      ▌\",\"▐ ⠠      ▌\",\"▐  ⡀     ▌\",\"▐  ⠠     ▌\",\"▐   ⠂    ▌\",\"▐   ⠈    ▌\",\"▐    ⠂   ▌\",\"▐    ⠠   ▌\",\"▐     ⡀  ▌\",\"▐     ⠠  ▌\",\"▐      ⠂ ▌\",\"▐      ⠈ ▌\",\"▐       ⠂▌\",\"▐       ⠠▌\",\"▐       ⡀▌\",\"▐      ⠠ ▌\",\"▐      ⠂ ▌\",\"▐     ⠈  ▌\",\"▐     ⠂  ▌\",\"▐    ⠠   ▌\",\"▐    ⡀   ▌\",\"▐   ⠠    ▌\",\"▐   ⠂    ▌\",\"▐  ⠈     ▌\",\"▐  ⠂     ▌\",\"▐ ⠠      ▌\",\"▐ ⡀      ▌\",\"▐⠠       ▌\"]},\"shark\":{\"interval\":120,\"frames\":[\"▐|\\\\____________▌\",\"▐_|\\\\___________▌\",\"▐__|\\\\__________▌\",\"▐___|\\\\_________▌\",\"▐____|\\\\________▌\",\"▐_____|\\\\_______▌\",\"▐______|\\\\______▌\",\"▐_______|\\\\_____▌\",\"▐________|\\\\____▌\",\"▐_________|\\\\___▌\",\"▐__________|\\\\__▌\",\"▐___________|\\\\_▌\",\"▐____________|\\\\▌\",\"▐____________/|▌\",\"▐___________/|_▌\",\"▐__________/|__▌\",\"▐_________/|___▌\",\"▐________/|____▌\",\"▐_______/|_____▌\",\"▐______/|______▌\",\"▐_____/|_______▌\",\"▐____/|________▌\",\"▐___/|_________▌\",\"▐__/|__________▌\",\"▐_/|___________▌\",\"▐/|____________▌\"]},\"dqpb\":{\"interval\":100,\"frames\":[\"d\",\"q\",\"p\",\"b\"]},\"weather\":{\"interval\":100,\"frames\":[\"☀️ \",\"☀️ \",\"☀️ \",\"🌤 \",\"⛅️ \",\"🌥 \",\"☁️ \",\"🌧 \",\"🌨 \",\"🌧 \",\"🌨 \",\"🌧 \",\"🌨 \",\"⛈ \",\"🌨 \",\"🌧 \",\"🌨 \",\"☁️ \",\"🌥 \",\"⛅️ \",\"🌤 \",\"☀️ \",\"☀️ \"]},\"christmas\":{\"interval\":400,\"frames\":[\"🌲\",\"🎄\"]}}");
 
 /***/ }),
-/* 298 */
+/* 303 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-const chalk = __webpack_require__(299);
+const chalk = __webpack_require__(304);
 
 const isSupported = process.platform !== 'win32' || process.env.CI || process.env.TERM === 'xterm-256color';
 
@@ -26268,16 +27030,16 @@ module.exports = isSupported ? main : fallbacks;
 
 
 /***/ }),
-/* 299 */
+/* 304 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 const escapeStringRegexp = __webpack_require__(113);
-const ansiStyles = __webpack_require__(300);
-const stdoutColor = __webpack_require__(301).stdout;
+const ansiStyles = __webpack_require__(305);
+const stdoutColor = __webpack_require__(306).stdout;
 
-const template = __webpack_require__(302);
+const template = __webpack_require__(307);
 
 const isSimpleWindowsTerm = process.platform === 'win32' && !(process.env.TERM || '').toLowerCase().startsWith('xterm');
 
@@ -26503,7 +27265,7 @@ module.exports.default = module.exports; // For TypeScript
 
 
 /***/ }),
-/* 300 */
+/* 305 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26676,7 +27438,7 @@ Object.defineProperty(module, 'exports', {
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(115)(module)))
 
 /***/ }),
-/* 301 */
+/* 306 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26818,7 +27580,7 @@ module.exports = {
 
 
 /***/ }),
-/* 302 */
+/* 307 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -26950,823 +27712,6 @@ module.exports = (chalk, tmp) => {
 
 	return chunks.join('');
 };
-
-
-/***/ }),
-/* 303 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readFile", function() { return readFile; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "chmod", function() { return chmod; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mkdirp", function() { return mkdirp; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "unlink", function() { return unlink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDirectory", function() { return copyDirectory; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isSymlink", function() { return isSymlink; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isDirectory", function() { return isDirectory; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isFile", function() { return isFile; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createSymlink", function() { return createSymlink; });
-/* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(304);
-/* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cmd_shim__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(137);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(307);
-/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(ncp__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(111);
-/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_4__);
-/*
- * Licensed to Elasticsearch B.V. under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Elasticsearch B.V. licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
-
-
-
-
-const lstat = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.lstat);
-const readFile = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.readFile);
-const symlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.symlink);
-const chmod = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.chmod);
-const cmdShim = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(cmd_shim__WEBPACK_IMPORTED_MODULE_0___default.a);
-const mkdir = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.mkdir);
-const mkdirp = async path => await mkdir(path, {
-  recursive: true
-});
-const unlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.unlink);
-const copyDirectory = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(ncp__WEBPACK_IMPORTED_MODULE_2__["ncp"]);
-
-async function statTest(path, block) {
-  try {
-    return block(await lstat(path));
-  } catch (e) {
-    if (e.code === 'ENOENT') {
-      return false;
-    }
-
-    throw e;
-  }
-}
-/**
- * Test if a path points to a symlink.
- * @param path
- */
-
-
-async function isSymlink(path) {
-  return await statTest(path, stats => stats.isSymbolicLink());
-}
-/**
- * Test if a path points to a directory.
- * @param path
- */
-
-async function isDirectory(path) {
-  return await statTest(path, stats => stats.isDirectory());
-}
-/**
- * Test if a path points to a regular file.
- * @param path
- */
-
-async function isFile(path) {
-  return await statTest(path, stats => stats.isFile());
-}
-/**
- * Create a symlink at dest that points to src. Adapted from
- * https://github.com/lerna/lerna/blob/2f1b87d9e2295f587e4ac74269f714271d8ed428/src/FileSystemUtilities.js#L103.
- *
- * @param src
- * @param dest
- * @param type 'dir', 'file', 'junction', or 'exec'. 'exec' on
- *  windows will use the `cmd-shim` module since symlinks can't be used
- *  for executable files on windows.
- */
-
-async function createSymlink(src, dest, type) {
-  if (process.platform === 'win32') {
-    if (type === 'exec') {
-      await cmdShim(src, dest);
-    } else {
-      await forceCreate(src, dest, type);
-    }
-  } else {
-    const posixType = type === 'exec' ? 'file' : type;
-    const relativeSource = Object(path__WEBPACK_IMPORTED_MODULE_3__["relative"])(Object(path__WEBPACK_IMPORTED_MODULE_3__["dirname"])(dest), src);
-    await forceCreate(relativeSource, dest, posixType);
-  }
-}
-
-async function forceCreate(src, dest, type) {
-  try {
-    // If something exists at `dest` we need to remove it first.
-    await unlink(dest);
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      throw error;
-    }
-  }
-
-  await symlink(src, dest, type);
-}
-
-/***/ }),
-/* 304 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// On windows, create a .cmd file.
-// Read the #! in the file to see what it uses.  The vast majority
-// of the time, this will be either:
-// "#!/usr/bin/env <prog> <args...>"
-// or:
-// "#!<prog> <args...>"
-//
-// Write a binroot/pkg.bin + ".cmd" file that has this line in it:
-// @<prog> <args...> %~dp0<target> %*
-
-module.exports = cmdShim
-cmdShim.ifExists = cmdShimIfExists
-
-var fs = __webpack_require__(275)
-
-var mkdir = __webpack_require__(305)
-  , path = __webpack_require__(4)
-  , toBatchSyntax = __webpack_require__(306)
-  , shebangExpr = /^#\!\s*(?:\/usr\/bin\/env)?\s*([^ \t]+=[^ \t]+\s+)*\s*([^ \t]+)(.*)$/
-
-function cmdShimIfExists (from, to, cb) {
-  fs.stat(from, function (er) {
-    if (er) return cb()
-    cmdShim(from, to, cb)
-  })
-}
-
-// Try to unlink, but ignore errors.
-// Any problems will surface later.
-function rm (path, cb) {
-  fs.unlink(path, function(er) {
-    cb()
-  })
-}
-
-function cmdShim (from, to, cb) {
-  fs.stat(from, function (er, stat) {
-    if (er)
-      return cb(er)
-
-    cmdShim_(from, to, cb)
-  })
-}
-
-function cmdShim_ (from, to, cb) {
-  var then = times(2, next, cb)
-  rm(to, then)
-  rm(to + ".cmd", then)
-
-  function next(er) {
-    writeShim(from, to, cb)
-  }
-}
-
-function writeShim (from, to, cb) {
-  // make a cmd file and a sh script
-  // First, check if the bin is a #! of some sort.
-  // If not, then assume it's something that'll be compiled, or some other
-  // sort of script, and just call it directly.
-  mkdir(path.dirname(to), function (er) {
-    if (er)
-      return cb(er)
-    fs.readFile(from, "utf8", function (er, data) {
-      if (er) return writeShim_(from, to, null, null, cb)
-      var firstLine = data.trim().split(/\r*\n/)[0]
-        , shebang = firstLine.match(shebangExpr)
-      if (!shebang) return writeShim_(from, to, null, null, null, cb)
-      var vars = shebang[1] || ""
-        , prog = shebang[2]
-        , args = shebang[3] || ""
-      return writeShim_(from, to, prog, args, vars, cb)
-    })
-  })
-}
-
-
-function writeShim_ (from, to, prog, args, variables, cb) {
-  var shTarget = path.relative(path.dirname(to), from)
-    , target = shTarget.split("/").join("\\")
-    , longProg
-    , shProg = prog && prog.split("\\").join("/")
-    , shLongProg
-    , pwshProg = shProg && "\"" + shProg + "$exe\""
-    , pwshLongProg
-  shTarget = shTarget.split("\\").join("/")
-  args = args || ""
-  variables = variables || ""
-  if (!prog) {
-    prog = "\"%~dp0\\" + target + "\""
-    shProg = "\"$basedir/" + shTarget + "\""
-    pwshProg = shProg
-    args = ""
-    target = ""
-    shTarget = ""
-  } else {
-    longProg = "\"%~dp0\\" + prog + ".exe\""
-    shLongProg = "\"$basedir/" + prog + "\""
-    pwshLongProg = "\"$basedir/" + prog + "$exe\""
-    target = "\"%~dp0\\" + target + "\""
-    shTarget = "\"$basedir/" + shTarget + "\""
-  }
-
-  // @SETLOCAL
-  //
-  // @IF EXIST "%~dp0\node.exe" (
-  //   @SET "_prog=%~dp0\node.exe"
-  // ) ELSE (
-  //   @SET "_prog=node"
-  //   @SET PATHEXT=%PATHEXT:;.JS;=;%
-  // )
-  //
-  // "%_prog%" "%~dp0\.\node_modules\npm\bin\npm-cli.js" %*
-  // @ENDLOCAL
-  var cmd
-  if (longProg) {
-    shLongProg = shLongProg.trim();
-    args = args.trim();
-    var variableDeclarationsAsBatch = toBatchSyntax.convertToSetCommands(variables)
-    cmd = "@SETLOCAL\r\n"
-        + variableDeclarationsAsBatch
-        + "\r\n"
-        + "@IF EXIST " + longProg + " (\r\n"
-        + "  @SET \"_prog=" + longProg.replace(/(^")|("$)/g, '') + "\"\r\n"
-        + ") ELSE (\r\n"
-        + "  @SET \"_prog=" + prog.replace(/(^")|("$)/g, '') + "\"\r\n"
-        + "  @SET PATHEXT=%PATHEXT:;.JS;=;%\r\n"
-        + ")\r\n"
-        + "\r\n"
-        +  "\"%_prog%\" " + args + " " + target + " %*\r\n"
-        + '@ENDLOCAL\r\n'
-  } else {
-    cmd = "@" + prog + " " + args + " " + target + " %*\r\n"
-  }
-
-  // #!/bin/sh
-  // basedir=`dirname "$0"`
-  //
-  // case `uname` in
-  //     *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;
-  // esac
-  //
-  // if [ -x "$basedir/node.exe" ]; then
-  //   "$basedir/node.exe" "$basedir/node_modules/npm/bin/npm-cli.js" "$@"
-  //   ret=$?
-  // else
-  //   node "$basedir/node_modules/npm/bin/npm-cli.js" "$@"
-  //   ret=$?
-  // fi
-  // exit $ret
-
-  var sh = "#!/bin/sh\n"
-
-  sh = sh
-      + "basedir=$(dirname \"$(echo \"$0\" | sed -e 's,\\\\,/,g')\")\n"
-      + "\n"
-      + "case `uname` in\n"
-      + "    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w \"$basedir\"`;;\n"
-      + "esac\n"
-      + "\n"
-
-  if (shLongProg) {
-    sh = sh
-       + "if [ -x "+shLongProg+" ]; then\n"
-       + "  " + variables + shLongProg + " " + args + " " + shTarget + " \"$@\"\n"
-       + "  ret=$?\n"
-       + "else \n"
-       + "  " + variables + shProg + " " + args + " " + shTarget + " \"$@\"\n"
-       + "  ret=$?\n"
-       + "fi\n"
-       + "exit $ret\n"
-  } else {
-    sh = sh
-       + shProg + " " + args + " " + shTarget + " \"$@\"\n"
-       + "exit $?\n"
-  }
-
-  // #!/usr/bin/env pwsh
-  // $basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent
-  //
-  // $ret=0
-  // $exe = ""
-  // if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {
-  //   # Fix case when both the Windows and Linux builds of Node
-  //   # are installed in the same directory
-  //   $exe = ".exe"
-  // }
-  // if (Test-Path "$basedir/node") {
-  //   & "$basedir/node$exe" "$basedir/node_modules/npm/bin/npm-cli.js" $args
-  //   $ret=$LASTEXITCODE
-  // } else {
-  //   & "node$exe" "$basedir/node_modules/npm/bin/npm-cli.js" $args
-  //   $ret=$LASTEXITCODE
-  // }
-  // exit $ret
-  var pwsh = "#!/usr/bin/env pwsh\n"
-           + "$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent\n"
-           + "\n"
-           + "$exe=\"\"\n"
-           + "if ($PSVersionTable.PSVersion -lt \"6.0\" -or $IsWindows) {\n"
-           + "  # Fix case when both the Windows and Linux builds of Node\n"
-           + "  # are installed in the same directory\n"
-           + "  $exe=\".exe\"\n"
-           + "}\n"
-  if (shLongProg) {
-    pwsh = pwsh
-         + "$ret=0\n"
-         + "if (Test-Path " + pwshLongProg + ") {\n"
-         + "  & " + pwshLongProg + " " + args + " " + shTarget + " $args\n"
-         + "  $ret=$LASTEXITCODE\n"
-         + "} else {\n"
-         + "  & " + pwshProg + " " + args + " " + shTarget + " $args\n"
-         + "  $ret=$LASTEXITCODE\n"
-         + "}\n"
-         + "exit $ret\n"
-  } else {
-    pwsh = pwsh
-         + "& " + pwshProg + " " + args + " " + shTarget + " $args\n"
-         + "exit $LASTEXITCODE\n"
-  }
-
-  var then = times(3, next, cb)
-  fs.writeFile(to + ".ps1", pwsh, "utf8", then)
-  fs.writeFile(to + ".cmd", cmd, "utf8", then)
-  fs.writeFile(to, sh, "utf8", then)
-  function next () {
-    chmodShim(to, cb)
-  }
-}
-
-function chmodShim (to, cb) {
-  var then = times(2, cb, cb)
-  fs.chmod(to, "0755", then)
-  fs.chmod(to + ".cmd", "0755", then)
-  fs.chmod(to + ".ps1", "0755", then)
-}
-
-function times(n, ok, cb) {
-  var errState = null
-  return function(er) {
-    if (!errState) {
-      if (er)
-        cb(errState = er)
-      else if (--n === 0)
-        ok()
-    }
-  }
-}
-
-
-/***/ }),
-/* 305 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var path = __webpack_require__(4);
-var fs = __webpack_require__(137);
-var _0777 = parseInt('0777', 8);
-
-module.exports = mkdirP.mkdirp = mkdirP.mkdirP = mkdirP;
-
-function mkdirP (p, opts, f, made) {
-    if (typeof opts === 'function') {
-        f = opts;
-        opts = {};
-    }
-    else if (!opts || typeof opts !== 'object') {
-        opts = { mode: opts };
-    }
-    
-    var mode = opts.mode;
-    var xfs = opts.fs || fs;
-    
-    if (mode === undefined) {
-        mode = _0777 & (~process.umask());
-    }
-    if (!made) made = null;
-    
-    var cb = f || function () {};
-    p = path.resolve(p);
-    
-    xfs.mkdir(p, mode, function (er) {
-        if (!er) {
-            made = made || p;
-            return cb(null, made);
-        }
-        switch (er.code) {
-            case 'ENOENT':
-                if (path.dirname(p) === p) return cb(er);
-                mkdirP(path.dirname(p), opts, function (er, made) {
-                    if (er) cb(er, made);
-                    else mkdirP(p, opts, cb, made);
-                });
-                break;
-
-            // In the case of any other error, just see if there's a dir
-            // there already.  If so, then hooray!  If not, then something
-            // is borked.
-            default:
-                xfs.stat(p, function (er2, stat) {
-                    // if the stat fails, then that's super weird.
-                    // let the original error be the failure reason.
-                    if (er2 || !stat.isDirectory()) cb(er, made)
-                    else cb(null, made);
-                });
-                break;
-        }
-    });
-}
-
-mkdirP.sync = function sync (p, opts, made) {
-    if (!opts || typeof opts !== 'object') {
-        opts = { mode: opts };
-    }
-    
-    var mode = opts.mode;
-    var xfs = opts.fs || fs;
-    
-    if (mode === undefined) {
-        mode = _0777 & (~process.umask());
-    }
-    if (!made) made = null;
-
-    p = path.resolve(p);
-
-    try {
-        xfs.mkdirSync(p, mode);
-        made = made || p;
-    }
-    catch (err0) {
-        switch (err0.code) {
-            case 'ENOENT' :
-                made = sync(path.dirname(p), opts, made);
-                sync(p, opts, made);
-                break;
-
-            // In the case of any other error, just see if there's a dir
-            // there already.  If so, then hooray!  If not, then something
-            // is borked.
-            default:
-                var stat;
-                try {
-                    stat = xfs.statSync(p);
-                }
-                catch (err1) {
-                    throw err0;
-                }
-                if (!stat.isDirectory()) throw err0;
-                break;
-        }
-    }
-
-    return made;
-};
-
-
-/***/ }),
-/* 306 */
-/***/ (function(module, exports) {
-
-exports.replaceDollarWithPercentPair = replaceDollarWithPercentPair
-exports.convertToSetCommand = convertToSetCommand
-exports.convertToSetCommands = convertToSetCommands
-
-function convertToSetCommand(key, value) {
-    var line = ""
-    key = key || ""
-    key = key.trim()
-    value = value || ""
-    value = value.trim()
-    if(key && value && value.length > 0) {
-        line = "@SET " + key + "=" + replaceDollarWithPercentPair(value) + "\r\n"
-    }
-    return line
-}
-
-function extractVariableValuePairs(declarations) {
-    var pairs = {}
-    declarations.map(function(declaration) {
-        var split = declaration.split("=")
-        pairs[split[0]]=split[1]
-    })
-    return pairs
-}
-
-function convertToSetCommands(variableString) {
-    var variableValuePairs = extractVariableValuePairs(variableString.split(" "))
-    var variableDeclarationsAsBatch = ""
-    Object.keys(variableValuePairs).forEach(function (key) {
-        variableDeclarationsAsBatch += convertToSetCommand(key, variableValuePairs[key])
-    })
-    return variableDeclarationsAsBatch
-}
-
-function replaceDollarWithPercentPair(value) {
-    var dollarExpressions = /\$\{?([^\$@#\?\- \t{}:]+)\}?/g
-    var result = ""
-    var startIndex = 0
-    value = value || ""
-    do {
-        var match = dollarExpressions.exec(value)
-        if(match) {
-            var betweenMatches = value.substring(startIndex, match.index) || ""
-            result +=  betweenMatches + "%" + match[1] + "%"
-            startIndex = dollarExpressions.lastIndex
-        }
-    } while (dollarExpressions.lastIndex > 0)
-    result += value.substr(startIndex)
-    return result
-}
-
-
-
-
-/***/ }),
-/* 307 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var fs = __webpack_require__(137),
-    path = __webpack_require__(4);
-
-module.exports = ncp;
-ncp.ncp = ncp;
-
-function ncp (source, dest, options, callback) {
-  var cback = callback;
-
-  if (!callback) {
-    cback = options;
-    options = {};
-  }
-
-  var basePath = process.cwd(),
-      currentPath = path.resolve(basePath, source),
-      targetPath = path.resolve(basePath, dest),
-      filter = options.filter,
-      rename = options.rename,
-      transform = options.transform,
-      clobber = options.clobber !== false,
-      modified = options.modified,
-      dereference = options.dereference,
-      errs = null,
-      started = 0,
-      finished = 0,
-      running = 0,
-      limit = options.limit || ncp.limit || 16;
-
-  limit = (limit < 1) ? 1 : (limit > 512) ? 512 : limit;
-
-  startCopy(currentPath);
-  
-  function startCopy(source) {
-    started++;
-    if (filter) {
-      if (filter instanceof RegExp) {
-        if (!filter.test(source)) {
-          return cb(true);
-        }
-      }
-      else if (typeof filter === 'function') {
-        if (!filter(source)) {
-          return cb(true);
-        }
-      }
-    }
-    return getStats(source);
-  }
-
-  function getStats(source) {
-    var stat = dereference ? fs.stat : fs.lstat;
-    if (running >= limit) {
-      return setImmediate(function () {
-        getStats(source);
-      });
-    }
-    running++;
-    stat(source, function (err, stats) {
-      var item = {};
-      if (err) {
-        return onError(err);
-      }
-
-      // We need to get the mode from the stats object and preserve it.
-      item.name = source;
-      item.mode = stats.mode;
-      item.mtime = stats.mtime; //modified time
-      item.atime = stats.atime; //access time
-
-      if (stats.isDirectory()) {
-        return onDir(item);
-      }
-      else if (stats.isFile()) {
-        return onFile(item);
-      }
-      else if (stats.isSymbolicLink()) {
-        // Symlinks don't really need to know about the mode.
-        return onLink(source);
-      }
-    });
-  }
-
-  function onFile(file) {
-    var target = file.name.replace(currentPath, targetPath);
-    if(rename) {
-      target =  rename(target);
-    }
-    isWritable(target, function (writable) {
-      if (writable) {
-        return copyFile(file, target);
-      }
-      if(clobber) {
-        rmFile(target, function () {
-          copyFile(file, target);
-        });
-      }
-      if (modified) {
-        var stat = dereference ? fs.stat : fs.lstat;
-        stat(target, function(err, stats) {
-            //if souce modified time greater to target modified time copy file
-            if (file.mtime.getTime()>stats.mtime.getTime())
-                copyFile(file, target);
-            else return cb();
-        });
-      }
-      else {
-        return cb();
-      }
-    });
-  }
-
-  function copyFile(file, target) {
-    var readStream = fs.createReadStream(file.name),
-        writeStream = fs.createWriteStream(target, { mode: file.mode });
-    
-    readStream.on('error', onError);
-    writeStream.on('error', onError);
-    
-    if(transform) {
-      transform(readStream, writeStream, file);
-    } else {
-      writeStream.on('open', function() {
-        readStream.pipe(writeStream);
-      });
-    }
-    writeStream.once('finish', function() {
-        if (modified) {
-            //target file modified date sync.
-            fs.utimesSync(target, file.atime, file.mtime);
-            cb();
-        }
-        else cb();
-    });
-  }
-
-  function rmFile(file, done) {
-    fs.unlink(file, function (err) {
-      if (err) {
-        return onError(err);
-      }
-      return done();
-    });
-  }
-
-  function onDir(dir) {
-    var target = dir.name.replace(currentPath, targetPath);
-    isWritable(target, function (writable) {
-      if (writable) {
-        return mkDir(dir, target);
-      }
-      copyDir(dir.name);
-    });
-  }
-
-  function mkDir(dir, target) {
-    fs.mkdir(target, dir.mode, function (err) {
-      if (err) {
-        return onError(err);
-      }
-      copyDir(dir.name);
-    });
-  }
-
-  function copyDir(dir) {
-    fs.readdir(dir, function (err, items) {
-      if (err) {
-        return onError(err);
-      }
-      items.forEach(function (item) {
-        startCopy(path.join(dir, item));
-      });
-      return cb();
-    });
-  }
-
-  function onLink(link) {
-    var target = link.replace(currentPath, targetPath);
-    fs.readlink(link, function (err, resolvedPath) {
-      if (err) {
-        return onError(err);
-      }
-      checkLink(resolvedPath, target);
-    });
-  }
-
-  function checkLink(resolvedPath, target) {
-    if (dereference) {
-      resolvedPath = path.resolve(basePath, resolvedPath);
-    }
-    isWritable(target, function (writable) {
-      if (writable) {
-        return makeLink(resolvedPath, target);
-      }
-      fs.readlink(target, function (err, targetDest) {
-        if (err) {
-          return onError(err);
-        }
-        if (dereference) {
-          targetDest = path.resolve(basePath, targetDest);
-        }
-        if (targetDest === resolvedPath) {
-          return cb();
-        }
-        return rmFile(target, function () {
-          makeLink(resolvedPath, target);
-        });
-      });
-    });
-  }
-
-  function makeLink(linkPath, target) {
-    fs.symlink(linkPath, target, function (err) {
-      if (err) {
-        return onError(err);
-      }
-      return cb();
-    });
-  }
-
-  function isWritable(path, done) {
-    fs.lstat(path, function (err) {
-      if (err) {
-        if (err.code === 'ENOENT') return done(true);
-        return done(false);
-      }
-      return done(false);
-    });
-  }
-
-  function onError(err) {
-    if (options.stopOnError) {
-      return cback(err);
-    }
-    else if (!errs && options.errs) {
-      errs = fs.createWriteStream(options.errs);
-    }
-    else if (!errs) {
-      errs = [];
-    }
-    if (typeof errs.write === 'undefined') {
-      errs.push(err);
-    }
-    else { 
-      errs.write(err.stack + '\n\n');
-    }
-    return cb();
-  }
-
-  function cb(skipped) {
-    if (!skipped) running--;
-    finished++;
-    if ((started === finished) && (running === 0)) {
-      if (cback !== undefined ) {
-        return errs ? cback(errs) : cback(null);
-      }
-    }
-  }
-}
-
-
 
 
 /***/ }),
@@ -28192,21 +28137,21 @@ function includeTransitiveProjects(subsetOfProjects, allProjects, {
 module.exports = glob
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
 var inherits = __webpack_require__(313)
 var EE = __webpack_require__(160).EventEmitter
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
+var isAbsolute = __webpack_require__(205)
 var globSync = __webpack_require__(315)
 var common = __webpack_require__(316)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
-var inflight = __webpack_require__(198)
+var inflight = __webpack_require__(208)
 var util = __webpack_require__(111)
 var childrenIgnored = common.childrenIgnored
 var isIgnored = common.isIgnored
@@ -28997,14 +28942,14 @@ module.exports = globSync
 globSync.GlobSync = GlobSync
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
 var Glob = __webpack_require__(312).Glob
 var util = __webpack_require__(111)
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
+var isAbsolute = __webpack_require__(205)
 var common = __webpack_require__(316)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
@@ -29500,8 +29445,8 @@ function ownProp (obj, field) {
 }
 
 var path = __webpack_require__(4)
-var minimatch = __webpack_require__(189)
-var isAbsolute = __webpack_require__(195)
+var minimatch = __webpack_require__(199)
+var isAbsolute = __webpack_require__(205)
 var Minimatch = minimatch.Minimatch
 
 function alphasorti (a, b) {
@@ -36852,7 +36797,7 @@ function retry () {
 /* 364 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var constants = __webpack_require__(277)
+var constants = __webpack_require__(185)
 
 var origCwd = process.cwd
 var cwd = null
@@ -37851,7 +37796,7 @@ function retry () {
 /***/ (function(module, exports, __webpack_require__) {
 
 var fs = __webpack_require__(370)
-var constants = __webpack_require__(277)
+var constants = __webpack_require__(185)
 
 var origCwd = process.cwd
 var cwd = null
@@ -38435,7 +38380,7 @@ function legacy (fs) {
     // @return {number} The 32-bit hash
     MurmurHash3.prototype.result = function() {
         var k1, h1;
-        
+
         k1 = this.k1;
         h1 = this.h1;
 
@@ -39009,7 +38954,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var util__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(111);
 /* harmony import */ var util__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(381);
-/* harmony import */ var _fs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(303);
+/* harmony import */ var _fs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(181);
 /* harmony import */ var _package_json__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(318);
 /* harmony import */ var _projects__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(311);
 /*
@@ -45838,7 +45783,7 @@ class Kibana {
 
 "use strict";
 
-const minimatch = __webpack_require__(189);
+const minimatch = __webpack_require__(199);
 const arrayUnion = __webpack_require__(486);
 const arrayDiffer = __webpack_require__(487);
 const arrify = __webpack_require__(488);
@@ -45991,12 +45936,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "buildProductionProjects", function() { return buildProductionProjects; });
 /* harmony import */ var cpy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(492);
 /* harmony import */ var cpy__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cpy__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(182);
+/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(192);
 /* harmony import */ var del__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(del__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _config__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(381);
-/* harmony import */ var _utils_fs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(303);
+/* harmony import */ var _utils_fs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(181);
 /* harmony import */ var _utils_log__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(180);
 /* harmony import */ var _utils_package_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(318);
 /* harmony import */ var _utils_projects__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(311);
@@ -46669,21 +46614,21 @@ if ('Set' in global) {
 module.exports = glob
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
 var inherits = __webpack_require__(500)
 var EE = __webpack_require__(160).EventEmitter
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
+var isAbsolute = __webpack_require__(205)
 var globSync = __webpack_require__(502)
 var common = __webpack_require__(503)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
 var setopts = common.setopts
 var ownProp = common.ownProp
-var inflight = __webpack_require__(198)
+var inflight = __webpack_require__(208)
 var util = __webpack_require__(111)
 var childrenIgnored = common.childrenIgnored
 var isIgnored = common.isIgnored
@@ -47474,14 +47419,14 @@ module.exports = globSync
 globSync.GlobSync = GlobSync
 
 var fs = __webpack_require__(137)
-var rp = __webpack_require__(187)
-var minimatch = __webpack_require__(189)
+var rp = __webpack_require__(197)
+var minimatch = __webpack_require__(199)
 var Minimatch = minimatch.Minimatch
 var Glob = __webpack_require__(499).Glob
 var util = __webpack_require__(111)
 var path = __webpack_require__(4)
 var assert = __webpack_require__(158)
-var isAbsolute = __webpack_require__(195)
+var isAbsolute = __webpack_require__(205)
 var common = __webpack_require__(503)
 var alphasort = common.alphasort
 var alphasorti = common.alphasorti
@@ -47977,8 +47922,8 @@ function ownProp (obj, field) {
 }
 
 var path = __webpack_require__(4)
-var minimatch = __webpack_require__(189)
-var isAbsolute = __webpack_require__(195)
+var minimatch = __webpack_require__(199)
+var isAbsolute = __webpack_require__(205)
 var Minimatch = minimatch.Minimatch
 
 function alphasorti (a, b) {
@@ -48630,7 +48575,7 @@ module.exports = function globParent(str) {
  * Licensed under the MIT License.
  */
 
-var isExtglob = __webpack_require__(209);
+var isExtglob = __webpack_require__(219);
 
 module.exports = function isGlob(str) {
   if (typeof str !== 'string' || str === '') {
@@ -48811,7 +48756,7 @@ module.exports.win32 = win32;
  * Released under the MIT License.
  */
 
-var isExtglob = __webpack_require__(209);
+var isExtglob = __webpack_require__(219);
 var chars = { '{': '}', '(': ')', '[': ']'};
 
 module.exports = function isGlob(str, options) {
@@ -50377,7 +50322,7 @@ module.exports = function kindOf(val) {
   if (type === '[object Symbol]') {
     return 'symbol';
   }
-  
+
   if (type === '[object Map Iterator]') {
     return 'mapiterator';
   }
@@ -50390,7 +50335,7 @@ module.exports = function kindOf(val) {
   if (type === '[object Array Iterator]') {
     return 'arrayiterator';
   }
-  
+
   // typed arrays
   if (type === '[object Int8Array]') {
     return 'int8array';
@@ -58076,7 +58021,7 @@ module.exports = function kindOf(val) {
   if (type === '[object Symbol]') {
     return 'symbol';
   }
-  
+
   if (type === '[object Map Iterator]') {
     return 'mapiterator';
   }
@@ -58089,7 +58034,7 @@ module.exports = function kindOf(val) {
   if (type === '[object Array Iterator]') {
     return 'arrayiterator';
   }
-  
+
   // typed arrays
   if (type === '[object Int8Array]') {
     return 'int8array';
@@ -64689,13 +64634,13 @@ var types = parse.types;
 module.exports = function (re, opts) {
     if (!opts) opts = {};
     var replimit = opts.limit === undefined ? 25 : opts.limit;
-    
+
     if (isRegExp(re)) re = re.source;
     else if (typeof re !== 'string') re = String(re);
-    
+
     try { re = parse(re) }
     catch (err) { return false }
-    
+
     var reps = 0;
     return (function walk (node, starHeight) {
         if (node.type === types.REPETITION) {
@@ -64704,7 +64649,7 @@ module.exports = function (re, opts) {
             if (starHeight > 1) return false;
             if (reps > replimit) return false;
         }
-        
+
         if (node.options) {
             for (var i = 0, len = node.options.length; i < len; i++) {
                 var ok = walk({ stack: node.options[i] }, starHeight);
@@ -64713,12 +64658,12 @@ module.exports = function (re, opts) {
         }
         var stack = node.stack || (node.value && node.value.stack);
         if (!stack) return true;
-        
+
         for (var i = 0; i < stack.length; i++) {
             var ok = walk(stack[i], starHeight);
             if (!ok) return false;
         }
-        
+
         return true;
     })(re, 0);
 };
@@ -73227,7 +73172,7 @@ exports.flatten = flatten;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var merge2 = __webpack_require__(185);
+var merge2 = __webpack_require__(195);
 /**
  * Merge multiple streams and propagate their errors into one stream in parallel.
  */
@@ -74134,7 +74079,7 @@ module.exports = input => {
  * Released under the MIT License.
  */
 
-var isExtglob = __webpack_require__(209);
+var isExtglob = __webpack_require__(219);
 var chars = { '{': '}', '(': ')', '[': ']'};
 var strictRegex = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
 var relaxedRegex = /\\(.)|(^!|[*?{}()[\]]|\(\?)/;
@@ -74792,7 +74737,7 @@ if (typeof Object.create === 'function') {
 "use strict";
 
 const {promisify} = __webpack_require__(111);
-const fs = __webpack_require__(275);
+const fs = __webpack_require__(183);
 const makeDir = __webpack_require__(722);
 const pEvent = __webpack_require__(714);
 const CpFileError = __webpack_require__(717);

@@ -2,7 +2,7 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
   name = "build",
-  srcs = glob([
-    "elastic-datemath:build",
-  ])
+  srcs = [
+    "//packages/elastic-datemath:build",
+  ],
 )
