@@ -49,7 +49,6 @@ npm-debug.log*
 .ci/pipeline-library/build/
 .gradle
 bazel-*
-resolved.bzl
 
 # apm plugin
 /x-pack/plugins/apm/tsconfig.json
