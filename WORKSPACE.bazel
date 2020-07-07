@@ -40,6 +40,8 @@ yarn_install(
       "//:.yarnrc",
       "//:preinstall_check.js",
     ],
+    symlink_node_modules = True,
+    quiet = True,
 )
 
 # Install all Bazel dependencies needed for npm packages that supply Bazel rules

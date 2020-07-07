@@ -44,7 +44,8 @@ export const BootstrapCommand: ICommand = {
     }
 
     // Run bazel to sync and fetch workspace
-    await spawn('bazel', ['sync'], {});
+    // await spawn('bazel', ['sync'], {});
+    await spawn('bazel', ['run', '@nodejs//:yarn'], {});
 
     // Run bazel to build packages
     await spawn('bazel', ['build', '//packages:build'], {});

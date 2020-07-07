@@ -8,7 +8,7 @@
     "kbn:watch": "tsc --watch"
   },
   "dependencies": {
-    "@kbn/dev-utils": "1.0.0",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
     "axios": "^0.19.2",
     "cheerio": "0.22.0",
     "dedent": "^0.7.0",

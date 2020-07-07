@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
-    "@kbn/i18n": "1.0.0",
+    "@kbn/i18n": "link:../kbn-i18n",
     "lodash": "^4.17.15",
     "uuid": "3.3.2"
   },
@@ -19,8 +19,8 @@
     "@babel/core": "^7.10.2",
     "@babel/plugin-transform-modules-commonjs": "^7.10.1",
     "@babel/plugin-transform-runtime": "^7.10.1",
-    "@kbn/babel-preset": "1.0.0",
-    "@kbn/dev-utils": "1.0.0",
+    "@kbn/babel-preset": "link:../kbn-babel-preset",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
     "babel-loader": "^8.0.6",
     "copy-webpack-plugin": "^6.0.2",
     "css-loader": "^3.4.2",

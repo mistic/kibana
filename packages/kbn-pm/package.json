@@ -32,7 +32,7 @@
     "@types/strong-log-transformer": "^1.0.0",
     "@types/tempy": "^0.2.0",
     "@types/write-pkg": "^3.1.0",
-    "@kbn/dev-utils": "1.0.0",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
     "@yarnpkg/lockfile": "^1.1.0",
     "babel-loader": "^8.0.6",
     "chalk": "^2.4.2",

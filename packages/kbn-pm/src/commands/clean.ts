@@ -21,6 +21,7 @@ import del from 'del';
 import ora from 'ora';
 import { join, relative } from 'path';
 
+import { spawn } from '../utils/child_process';
 import { isDirectory } from '../utils/fs';
 import { log } from '../utils/log';
 import { ICommand } from './';
@@ -55,8 +56,11 @@ export const CleanCommand: ICommand = {
       }
     }
 
+    // Delete bazel cache
+    await spawn('bazel', ['clean', '--expunge'], {});
+
     if (toDelete.length === 0) {
-      log.success('Nothing to delete');
+      // log.success('Nothing to delete');
     } else {
       /**
        * In order to avoid patterns like `/build` in packages from accidentally

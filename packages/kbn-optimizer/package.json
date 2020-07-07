@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@babel/cli": "^7.10.1",
-    "@kbn/babel-preset": "1.0.0",
-    "@kbn/dev-utils": "1.0.0",
-    "@kbn/ui-shared-deps": "1.0.0",
+    "@kbn/babel-preset": "link:../kbn-babel-preset",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
+    "@kbn/ui-shared-deps": "link:../kbn-ui-shared-deps",
     "@types/compression-webpack-plugin": "^2.0.2",
     "@types/estree": "^0.0.44",
     "@types/loader-utils": "^1.1.3",

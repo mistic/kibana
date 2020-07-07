@@ -13,8 +13,8 @@
     "monaco-editor": "~0.17.0"
   },
   "devDependencies": {
-    "@kbn/babel-preset": "1.0.0",
-    "@kbn/dev-utils": "1.0.0",
+    "@kbn/babel-preset": "link:../kbn-babel-preset",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
     "babel-loader": "^8.0.6",
     "css-loader": "^3.4.2",
     "del": "^5.1.0",

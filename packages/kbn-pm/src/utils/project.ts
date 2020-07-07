@@ -117,23 +117,23 @@ export class Project {
       return;
     }
 
-    let problemMsg;
-    if (isLinkDependency(versionInPackageJson) && dependentProjectIsInWorkspace) {
-      problemMsg = `but should be using a workspace`;
-    } else if (isLinkDependency(versionInPackageJson)) {
-      problemMsg = `using 'link:', but the path is wrong`;
-    } else {
-      problemMsg = `but it's not using the local package`;
-    }
-
-    throw new CliError(
-      `[${this.name}] depends on [${project.name}] ${problemMsg}. Update its package.json to the expected value below.`,
-      {
-        actual: `"${project.name}": "${versionInPackageJson}"`,
-        expected: `"${project.name}": "${expectedVersionInPackageJson}"`,
-        package: `${this.name} (${this.packageJsonLocation})`,
-      }
-    );
+    // let problemMsg;
+    // if (isLinkDependency(versionInPackageJson) && dependentProjectIsInWorkspace) {
+    //   problemMsg = `but should be using a workspace`;
+    // } else if (isLinkDependency(versionInPackageJson)) {
+    //   problemMsg = `using 'link:', but the path is wrong`;
+    // } else {
+    //   problemMsg = `but it's not using the local package`;
+    // }
+    //
+    // throw new CliError(
+    //   `[${this.name}] depends on [${project.name}] ${problemMsg}. Update its package.json to the expected value below.`,
+    //   {
+    //     actual: `"${project.name}": "${versionInPackageJson}"`,
+    //     expected: `"${project.name}": "${expectedVersionInPackageJson}"`,
+    //     package: `${this.name} (${this.packageJsonLocation})`,
+    //   }
+    // );
   }
 
   public getBuildConfig(): BuildConfig {

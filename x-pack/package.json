@@ -32,13 +32,13 @@
   },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^4.1.0",
-    "@kbn/dev-utils": "1.0.0",
-    "@kbn/es": "1.0.0",
-    "@kbn/expect": "1.0.0",
-    "@kbn/plugin-helpers": "9.0.2",
-    "@kbn/storybook": "1.0.0",
-    "@kbn/test": "1.0.0",
-    "@kbn/utility-types": "1.0.0",
+    "@kbn/dev-utils": "link:../packages/kbn-dev-utils",
+    "@kbn/es": "link:../packages/kbn-es",
+    "@kbn/expect": "link:../packages/kbn-expect",
+    "@kbn/plugin-helpers": "link:../packages/kbn-plugin-helpers",
+    "@kbn/storybook": "link:../packages/kbn-storybook",
+    "@kbn/test": "link:../packages/kbn-test",
+    "@kbn/utility-types": "link:../packages/kbn-utility-types",
     "@storybook/addon-actions": "^5.2.6",
     "@storybook/addon-console": "^1.2.1",
     "@storybook/addon-knobs": "^5.2.6",
@@ -194,18 +194,18 @@
     "@babel/register": "^7.10.1",
     "@babel/runtime": "^7.10.2",
     "@elastic/apm-rum-react": "^1.1.2",
-    "@elastic/datemath": "5.0.3",
+    "@elastic/datemath": "link:../packages/elastic-datemath",
     "@elastic/ems-client": "7.9.3",
     "@elastic/eui": "24.1.0",
     "@elastic/filesaver": "1.1.2",
     "@elastic/maki": "6.3.0",
     "@elastic/node-crypto": "1.2.1",
     "@elastic/numeral": "^2.5.0",
-    "@kbn/babel-preset": "1.0.0",
-    "@kbn/config-schema": "1.0.0",
-    "@kbn/i18n": "1.0.0",
-    "@kbn/interpreter": "1.0.0",
-    "@kbn/ui-framework": "1.0.0",
+    "@kbn/babel-preset": "link:../packages/kbn-babel-preset",
+    "@kbn/config-schema": "link:../packages/kbn-config-schema",
+    "@kbn/i18n": "link:../packages/kbn-i18n",
+    "@kbn/interpreter": "link:../packages/kbn-interpreter",
+    "@kbn/ui-framework": "link:../packages/kbn-ui-framework",
     "@mapbox/geojson-rewind": "^0.4.1",
     "@mapbox/mapbox-gl-draw": "^1.1.2",
     "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
@@ -375,12 +375,5 @@
   },
   "engines": {
     "yarn": "^1.21.1"
-  },
-  "workspaces": {
-    "nohoist": [
-      "mochawesome",
-      "mochawesome-merge",
-      "cypress-multi-reporters"
-    ]
   }
 }

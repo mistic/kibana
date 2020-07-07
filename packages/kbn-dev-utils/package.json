@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "typescript": "3.9.5",
-    "@kbn/expect": "1.0.0",
+    "@kbn/expect": "link:../kbn-expect",
     "chance": "1.0.18"
   }
 }

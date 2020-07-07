@@ -11,8 +11,8 @@
   },
   "devDependencies": {
     "lodash": "npm:@elastic/lodash@3.10.1-kibana4",
-    "@kbn/dev-utils": "1.0.0",
-    "@kbn/utility-types": "1.0.0",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
+    "@kbn/utility-types": "link:../kbn-utility-types",
     "@types/normalize-path": "^3.0.0",
     "normalize-path": "^3.0.0",
     "@types/lodash": "^3.10.1",

@@ -15,8 +15,8 @@
   },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
-    "@kbn/dev-utils": "1.0.0",
-    "@kbn/babel-preset": "1.0.0",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
+    "@kbn/babel-preset": "link:../kbn-babel-preset",
     "typescript": "3.9.5"
   }
 }

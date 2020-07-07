@@ -4,8 +4,8 @@
   "private": true,
   "license": "Apache-2.0",
   "dependencies": {
-    "@kbn/babel-preset": "1.0.0",
-    "@kbn/dev-utils": "1.0.0",
+    "@kbn/babel-preset": "link:../kbn-babel-preset",
+    "@kbn/dev-utils": "link:../kbn-dev-utils",
     "@storybook/addon-actions": "^5.2.8",
     "@storybook/addon-console": "^1.2.1",
     "@storybook/addon-info": "^5.2.8",
