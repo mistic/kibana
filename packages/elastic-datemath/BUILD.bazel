@@ -1,6 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
 
 filegroup(
     name = "src",
@@ -9,10 +10,18 @@ filegroup(
     ]),
 )
 
+copy_to_bin(
+    name = "package_json",
+    srcs = [
+      "package.json"
+    ]
+)
+
 babel(
     name = "build",
     data = [
         ":src",
+        ":package_json",
         ".babelrc",
         "@npm//@babel/preset-env",
         "@npm//babel-plugin-add-module-exports",

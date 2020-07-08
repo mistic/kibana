@@ -114,7 +114,7 @@
     "@elastic/apm-rum": "^5.2.0",
     "@elastic/apm-rum-react": "^1.1.2",
     "@elastic/charts": "19.7.0",
-    "@elastic/datemath": "link:packages/kbn-babel-preset",
+    "@elastic/datemath": "link:packages/elastic-datemath",
     "@elastic/ems-client": "7.9.3",
     "@elastic/eui": "24.1.0",
     "@elastic/filesaver": "1.1.2",
