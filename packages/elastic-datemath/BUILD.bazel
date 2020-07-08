@@ -35,3 +35,13 @@ babel(
         "--copy-files"
     ],
 )
+
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+pkg_npm(
+    name = "node_module",
+    srcs = ["package.json"],
+    deps = [":build"],
+    package_name = "@aba/my_pk"
+    # substitutions = {"//internal/": "//"},
+)
