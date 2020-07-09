@@ -109,13 +109,6 @@
       "test/interpreter_functional/plugins/*",
       "x-pack/test/functional_with_es_ssl/fixtures/plugins/*",
       "x-pack/test/plugin_api_integration/plugins/*"
-    ],
-    "nohoist": [
-      "**/@types/*",
-      "**/@types/*/**",
-      "**/grunt-*",
-      "**/grunt-*/**",
-      "x-pack/typescript"
     ]
   },
   "dependencies": {

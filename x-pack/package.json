@@ -375,12 +375,5 @@
   },
   "engines": {
     "yarn": "^1.21.1"
-  },
-  "workspaces": {
-    "nohoist": [
-      "mochawesome",
-      "mochawesome-merge",
-      "cypress-multi-reporters"
-    ]
   }
 }
