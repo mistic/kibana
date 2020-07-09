@@ -40,6 +40,6 @@
     "typescript": "3.9.5"
   },
   "peerDependencies": {
-    "@kbn/babel-preset": "1.0.0"
+    "@kbn/babel-preset": "link:../kbn-babel-preset"
   }
 }
