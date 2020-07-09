@@ -19,15 +19,17 @@
 
 import globby from 'globby';
 import cpy from 'cpy';
+import del from 'del'
 import { basename, resolve } from 'path';
 import { existsSync, chmodSync } from 'fs';
 import { REPO_ROOT } from '@kbn/dev-utils';
 import { ICommand } from './';
 import { spawn } from '../utils/child_process';
-import { readFile, unlink } from '../utils/fs';
+import { readFile } from '../utils/fs';
 import { log } from '../utils/log';
 import { topologicallyBatchProjects } from '../utils/projects';
 import { parallelizeBatches } from '../utils/parallelize';
+import { linkProjectExecutables } from '../utils/link_project_executables';
 
 export const BootstrapCommand: ICommand = {
   description: 'Install dependencies and crosslink projects',
@@ -49,10 +51,14 @@ export const BootstrapCommand: ICommand = {
       await spawn('yarn', ['global', 'add', `@bazel/bazelisk@${bazeliskVersion}`], {});
     }
 
-    await spawn('bazel', ['run', '@nodejs//:yarn'], {});
     // Run bazel to build packages
+    // await spawn('bazel', ['run', '@nodejs//:yarn'], {});
     await spawn('bazel', ['build', '//packages:build'], {});
 
+    // TODO: Do we want to keep supporting this?
+    await linkProjectExecutables(projects, projectGraph);
+
+    // TODO: That runs kbn:bootstrap tasks. Do we want to support it?
     const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
     await parallelizeBatches(batchedProjects, async (project) => {
       const bazelDistProject = resolve(
@@ -66,7 +72,7 @@ export const BootstrapCommand: ICommand = {
         paths.forEach((path) => chmodSync(path, 0o755));
 
         if (existsSync(project.targetLocation)) {
-          await unlink(project.targetLocation);
+          await del(project.targetLocation);
         }
 
         await cpy(paths, project.targetLocation);
