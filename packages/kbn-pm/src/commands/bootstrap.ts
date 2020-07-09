@@ -17,11 +17,17 @@
  * under the License.
  */
 
-import { resolve } from 'path';
+import globby from 'globby';
+import cpy from 'cpy';
+import { basename, resolve } from 'path';
+import { existsSync, chmodSync } from 'fs';
+import { REPO_ROOT } from '@kbn/dev-utils';
 import { ICommand } from './';
 import { spawn } from '../utils/child_process';
-import { readFile } from '../utils/fs';
+import { readFile, unlink } from '../utils/fs';
 import { log } from '../utils/log';
+import { topologicallyBatchProjects } from '../utils/projects';
+import { parallelizeBatches } from '../utils/parallelize';
 
 export const BootstrapCommand: ICommand = {
   description: 'Install dependencies and crosslink projects',
@@ -43,11 +49,34 @@ export const BootstrapCommand: ICommand = {
       await spawn('yarn', ['global', 'add', `@bazel/bazelisk@${bazeliskVersion}`], {});
     }
 
-    // Run bazel to sync and fetch workspace
-    // await spawn('bazel', ['sync'], {});
     await spawn('bazel', ['run', '@nodejs//:yarn'], {});
-
     // Run bazel to build packages
     await spawn('bazel', ['build', '//packages:build'], {});
+
+    const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
+    await parallelizeBatches(batchedProjects, async (project) => {
+      const bazelDistProject = resolve(
+        REPO_ROOT,
+        'bazel-dist/bin/packages',
+        basename(project.path),
+        'target'
+      );
+      if (project.path.includes('packages') && existsSync(bazelDistProject)) {
+        const paths = await globby([`${bazelDistProject}/**/*`]);
+        paths.forEach((path) => chmodSync(path, 0o755));
+
+        if (existsSync(project.targetLocation)) {
+          await unlink(project.targetLocation);
+        }
+
+        await cpy(paths, project.targetLocation);
+      }
+
+      if (project.isWorkspaceRoot) {
+        log.info(`[${project.name}] running [kbn:bootstrap] script`);
+        await project.runScriptStreaming('kbn:bootstrap');
+        log.success(`[${project.name}] bootstrap complete`);
+      }
+    });
   },
 };

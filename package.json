@@ -98,6 +98,26 @@
     "**/deepmerge": "^4.2.2",
     "**/fast-deep-equal": "^3.1.1"
   },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "x-pack",
+      "x-pack/plugins/*",
+      "x-pack/legacy/plugins/*",
+      "examples/*",
+      "test/plugin_functional/plugins/*",
+      "test/interpreter_functional/plugins/*",
+      "x-pack/test/functional_with_es_ssl/fixtures/plugins/*",
+      "x-pack/test/plugin_api_integration/plugins/*"
+    ],
+    "nohoist": [
+      "**/@types/*",
+      "**/@types/*/**",
+      "**/grunt-*",
+      "**/grunt-*/**",
+      "x-pack/typescript"
+    ]
+  },
   "dependencies": {
     "@babel/core": "^7.10.2",
     "@babel/plugin-proposal-class-properties": "^7.10.1",
@@ -635,6 +655,7 @@
     "cheerio": "0.22.0",
     "chromedriver": "^83.0.0",
     "clean-webpack-plugin": "^3.0.0",
+    "cmd-shim": "^2.1.0",
     "copy-webpack-plugin": "^6.0.2",
     "cpy": "^8.0.0",
     "cypress": "4.5.0",

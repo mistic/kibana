@@ -18,10 +18,10 @@ copy_to_bin(
 )
 
 babel(
-    name = "build",
+    name = "target",
     data = [
         ":src",
-        ":package_json",
+        # ":package_json",
         ".babelrc",
         "@npm//@babel/preset-env",
         "@npm//babel-plugin-add-module-exports",
@@ -39,9 +39,6 @@ babel(
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
 pkg_npm(
-    name = "node_module",
-    srcs = ["package.json"],
-    deps = [":build"],
-    package_name = "@aba/my_pk"
-    # substitutions = {"//internal/": "//"},
+    name = "npm_module",
+    deps = [":target"]
 )

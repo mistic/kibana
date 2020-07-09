@@ -3,6 +3,6 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
   name = "build",
   srcs = [
-    "//packages/elastic-datemath:build",
+    "//packages/elastic-datemath:target",
   ],
 )
