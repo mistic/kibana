@@ -18,14 +18,13 @@
  */
 
 import globby from 'globby';
-import cpy from 'cpy';
-import del from 'del'
+import del from 'del';
 import { basename, resolve } from 'path';
 import { existsSync, chmodSync } from 'fs';
 import { REPO_ROOT } from '@kbn/dev-utils';
 import { ICommand } from './';
 import { spawn } from '../utils/child_process';
-import { readFile } from '../utils/fs';
+import { readFile, copyDirectory } from '../utils/fs';
 import { log } from '../utils/log';
 import { topologicallyBatchProjects } from '../utils/projects';
 import { parallelizeBatches } from '../utils/parallelize';
@@ -68,14 +67,15 @@ export const BootstrapCommand: ICommand = {
         'npm_module/target'
       );
       if (project.path.includes('packages') && existsSync(bazelDistProjectTarget)) {
-        const paths = await globby([`${bazelDistProjectTarget}/**/*`]);
+        const paths = await globby([`${bazelDistProjectTarget}/**/*`], { expandDirectories: true, onlyFiles: false });
+        paths.push(bazelDistProjectTarget);
         paths.forEach((path) => chmodSync(path, 0o755));
 
         if (existsSync(project.targetLocation)) {
           await del(project.targetLocation);
         }
 
-        await cpy(paths, project.targetLocation);
+        await copyDirectory(bazelDistProjectTarget, project.targetLocation);
       }
 
       if (project.isWorkspaceRoot) {
