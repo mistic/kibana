@@ -16,9 +16,6 @@
     "babel-plugin-add-module-exports": "^1.0.2",
     "moment": "^2.24.0"
   },
-  "dependencies": {
-    "tslib": "^2.0.0"
-  },
   "peerDependencies": {
     "moment": "^2.24.0"
   }

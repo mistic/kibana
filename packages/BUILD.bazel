@@ -1,8 +1,12 @@
 package(default_visibility = ["//visibility:public"])
 
+# Call :target for each package
 filegroup(
   name = "build",
   srcs = [
-    "//packages/elastic-datemath:target",
+    "//:tsconfig.json",
+    "//packages/elastic-datemath:npm_module",
+    "//packages/kbn-expect:npm_module",
+    "//packages/kbn-dev-utils:npm_module",
   ],
 )

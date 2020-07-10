@@ -1,0 +1,15 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [
+      "package.json",
+      "LICENSE.txt",
+      "expect.js",
+      "expect.js.d.ts"
+    ],
+    package_name = "@kbn/expect"
+)
+

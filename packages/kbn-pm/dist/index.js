@@ -8890,10 +8890,10 @@ const BootstrapCommand = {
 
     const batchedProjects = Object(_utils_projects__WEBPACK_IMPORTED_MODULE_9__["topologicallyBatchProjects"])(projects, projectGraph);
     await Object(_utils_parallelize__WEBPACK_IMPORTED_MODULE_10__["parallelizeBatches"])(batchedProjects, async project => {
-      const bazelDistProject = Object(path__WEBPACK_IMPORTED_MODULE_3__["resolve"])(_kbn_dev_utils__WEBPACK_IMPORTED_MODULE_5__["REPO_ROOT"], 'bazel-dist/bin/packages', Object(path__WEBPACK_IMPORTED_MODULE_3__["basename"])(project.path), 'target');
+      const bazelDistProjectTarget = Object(path__WEBPACK_IMPORTED_MODULE_3__["resolve"])(_kbn_dev_utils__WEBPACK_IMPORTED_MODULE_5__["REPO_ROOT"], 'bazel-dist/bin/packages', Object(path__WEBPACK_IMPORTED_MODULE_3__["basename"])(project.path), 'npm_module/target');
 
-      if (project.path.includes('packages') && Object(fs__WEBPACK_IMPORTED_MODULE_4__["existsSync"])(bazelDistProject)) {
-        const paths = await globby__WEBPACK_IMPORTED_MODULE_0___default()([`${bazelDistProject}/**/*`]);
+      if (project.path.includes('packages') && Object(fs__WEBPACK_IMPORTED_MODULE_4__["existsSync"])(bazelDistProjectTarget)) {
+        const paths = await globby__WEBPACK_IMPORTED_MODULE_0___default()([`${bazelDistProjectTarget}/**/*`]);
         paths.forEach(path => Object(fs__WEBPACK_IMPORTED_MODULE_4__["chmodSync"])(path, 0o755));
 
         if (Object(fs__WEBPACK_IMPORTED_MODULE_4__["existsSync"])(project.targetLocation)) {

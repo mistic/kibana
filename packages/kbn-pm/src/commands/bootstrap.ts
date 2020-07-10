@@ -61,14 +61,14 @@ export const BootstrapCommand: ICommand = {
     // TODO: That runs kbn:bootstrap tasks. Do we want to support it?
     const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
     await parallelizeBatches(batchedProjects, async (project) => {
-      const bazelDistProject = resolve(
+      const bazelDistProjectTarget = resolve(
         REPO_ROOT,
         'bazel-dist/bin/packages',
         basename(project.path),
-        'target'
+        'npm_module/target'
       );
-      if (project.path.includes('packages') && existsSync(bazelDistProject)) {
-        const paths = await globby([`${bazelDistProject}/**/*`]);
+      if (project.path.includes('packages') && existsSync(bazelDistProjectTarget)) {
+        const paths = await globby([`${bazelDistProjectTarget}/**/*`]);
         paths.forEach((path) => chmodSync(path, 0o755));
 
         if (existsSync(project.targetLocation)) {

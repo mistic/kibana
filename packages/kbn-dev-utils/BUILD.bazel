@@ -1,0 +1,87 @@
+package(default_visibility = ["//visibility:public"])
+
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+filegroup(
+    name = "src",
+    srcs = glob([
+        "src/*.ts",
+    ],
+      exclude = [".test.*"],
+    ),
+)
+
+SRCS = glob(
+    [
+        "src/**/*.ts",
+    ],
+    exclude = ["test*.*"],
+)
+
+filegroup(
+    name = "certs",
+    srcs = glob([
+        "certs/**/*",
+    ]),
+)
+
+filegroup(
+    name = "tooling_log",
+    srcs = glob([
+        "tooling_log/**/*",
+    ]),
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+ts_project(
+    name = "target",
+    declaration = True,
+    tsconfig = "//packages/kbn-dev-utils:tsconfig.json",
+    srcs = SRCS,
+    args = [],
+    deps = [
+        "@npm//axios",
+        "@npm//chalk",
+        "@npm//dedent",
+        "@npm//execa",
+        "@npm//exit-hook",
+        "@npm//getopts",
+        "@npm//load-json-file",
+        "@npm//moment",
+        "@npm//rxjs",
+        "@npm//tree-kill",
+        "@npm//tslib",
+        "@npm//typescript",
+        "@npm//@kbn/expect",
+        "@npm//chance",
+        "@npm//normalize-path",
+        "@npm//@types/normalize-path",
+        "@npm//@types/dedent",
+        "@npm//@types/node",
+        "@npm//@types/flot",
+        "@npm//@types/jest",
+        "@npm//@types/react",
+        "@npm//jest-styled-components",
+        "@npm//@types/testing-library__jest-dom"
+    ],
+    extends = ["//:tsconfig.json"],
+    declaration_map = True,
+    outdir = "target"
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json", ":certs", ":tooling_log" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/dev-utils"
+)
