@@ -1,6 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@npm//@babel/cli:index.bzl", "babel")
 load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
