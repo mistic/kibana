@@ -2,15 +2,16 @@ load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
 SRCS = [
     "package.json",
-    "LICENSE.txt",
-    "expect.js",
-    "expect.js.d.ts",
+    "common_babel_parser_options.js",
+    "common_preset.js",
+    "istanbul_preset.js",
+    "node_preset.js",
+    "webpack_preset.js",
 ]
 
 pkg_npm(
     name = "npm_module",
     srcs = SRCS,
-    package_name = "@kbn/expect",
+    package_name = "@kbn/babel-preset",
     visibility = ["//visibility:public"],
 )
-

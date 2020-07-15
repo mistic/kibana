@@ -1,12 +1,12 @@
-package(default_visibility = ["//visibility:public"])
-
 # Call :target for each package
 filegroup(
   name = "build",
   srcs = [
     "//:tsconfig.json",
     "//packages/elastic-datemath:npm_module",
-    "//packages/kbn-expect:npm_module",
+    "//packages/eslint-config-kibana:npm_module",
+     "//packages/kbn-babel-preset:npm_module",
     "//packages/kbn-dev-utils:npm_module",
+    "//packages/kbn-expect:npm_module",
   ],
 )

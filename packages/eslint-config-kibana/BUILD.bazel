@@ -1,0 +1,20 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = [
+    "package.json",
+    ".npmignore",
+    ".eslintrc.js",
+    "javascript.js",
+    "jest.js",
+    "react.js",
+    "restricted_globals.js",
+    "typescript.js",
+]
+
+pkg_npm(
+    name = "npm_module",
+    srcs = SRCS,
+    package_name = "@elastic/eslint-config-kibana",
+    visibility = ["//visibility:public"],
+)
+

@@ -1,5 +1,3 @@
-package(default_visibility = ["//visibility:public"])
-
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
@@ -39,6 +37,7 @@ pkg_npm(
     deps = [
         ":target",
     ],
-    package_name = "@elastic/datemath"
+    package_name = "@elastic/datemath",
+    visibility = ["//visibility:public"],
 )
 
