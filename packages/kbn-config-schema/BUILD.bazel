@@ -1,0 +1,53 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "types/joi.d.ts",
+        "src/**/*.ts",
+    ],
+    exclude = ["test*.*"],
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+ts_project(
+    name = "target",
+    declaration = True,
+    tsconfig = "//packages/kbn-config-schema:tsconfig.json",
+    srcs = SRCS,
+    args = [],
+    deps = [
+        "@npm//typescript",
+        "@npm//tsd",
+        "@npm//lodash",
+        "@npm//joi",
+        "@npm//moment",
+        "@npm//type-detect",
+        "@npm//@types/jest",
+        "@npm//@types/joi",
+        "@npm//@types/lodash",
+        "@npm//@types/node",
+        "@npm//@types/type-detect",
+    ],
+    extends = ["//:tsconfig.json"],
+    declaration_map = True,
+    declarationdir = "target/types",
+    outdir = "target/out",
+    rootdir = "src",
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/config-schema",
+    visibility = ["//visibility:public"],
+)

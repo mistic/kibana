@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "./target/types",
+    "rootDir": "src",
     "outDir": "./target/out",
     "stripInternal": true,
     "declarationMap": true,

@@ -67,7 +67,10 @@ export const BootstrapCommand: ICommand = {
         'npm_module/target'
       );
       if (project.path.includes('packages') && existsSync(bazelDistProjectTarget)) {
-        const paths = await globby([`${bazelDistProjectTarget}/**/*`], { expandDirectories: true, onlyFiles: false });
+        const paths = await globby([`${bazelDistProjectTarget}/**/*`], {
+          expandDirectories: true,
+          onlyFiles: false,
+        });
         paths.push(bazelDistProjectTarget);
         paths.forEach((path) => chmodSync(path, 0o755));
 
