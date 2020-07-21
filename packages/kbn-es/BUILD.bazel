@@ -1,0 +1,21 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+      "package.json",
+      "tsconfig.json",
+      "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/integration_tests/**",
+        "**/__fixtures__/**",
+    ],
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = SRCS,
+    package_name = "@kbn/es",
+    visibility = ["//visibility:public"],
+)

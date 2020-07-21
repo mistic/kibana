@@ -8,6 +8,13 @@ filegroup(
     "//packages/kbn-babel-preset:npm_module",
     "//packages/kbn-config-schema:npm_module",
     "//packages/kbn-dev-utils:npm_module",
+    "//packages/kbn-es:npm_module",
+    "//packages/kbn-eslint-import-resolver-kibana:npm_module",
+    "//packages/kbn-eslint-plugin-eslint:npm_module",
     "//packages/kbn-expect:npm_module",
+    "//packages/kbn-plugin-generator:npm_module",
+    "//packages/kbn-spec-to-console:npm_module",
+    "//packages/kbn-storybook:npm_module",
+    "//packages/kbn-test-subj-selector:npm_module",
   ],
 )

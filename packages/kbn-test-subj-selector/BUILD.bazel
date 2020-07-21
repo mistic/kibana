@@ -1,0 +1,17 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+      "package.json",
+      "tsconfig.json",
+      "index.js",
+      "index.d.ts",
+    ],
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = SRCS,
+    package_name = "@kbn/test-subj-selector",
+    visibility = ["//visibility:public"],
+)
