@@ -1,0 +1,49 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = ["**/*.test.*"],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        ".babelrc",
+        "@npm//@kbn/babel-preset",
+        "@npm//@babel/parser",
+        "@npm//@babel/traverse",
+        "@npm//lodash",
+    ],
+    output_dir = True,
+    args = [
+        "$(locations :src)",
+        "--out-dir",
+        "$(@D)",
+        "--copy-files"
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/babel-code-parser",
+    visibility = ["//visibility:public"],
+)
+

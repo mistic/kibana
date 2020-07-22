@@ -1,5 +1,6 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+load("@build_bazel_rules_nodejs//internal/npm_install:node_module_library.bzl", "node_module_library")
 
 SRCS = glob(
     [
@@ -66,11 +67,18 @@ alias(
     actual = "target"
 )
 
+filegroup(
+    name = "target_types",
+    srcs = [":target"],
+    output_group = "types",
+)
+
 pkg_npm(
     name = "npm_module",
     srcs = [ "package.json", ":certs", ":tooling_log" ],
     deps = [
         ":target",
+        ":target_types",
     ],
     package_name = "@kbn/dev-utils",
     visibility = ["//visibility:public"],

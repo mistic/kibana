@@ -1,0 +1,93 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/README.md",
+        "**/integration_tests/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "bin",
+    srcs = glob([
+        "bin/**/*",
+    ]),
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+ts_project(
+    name = "target",
+    declaration = True,
+    source_map = True,
+    tsconfig = "//packages/kbn-plugin-helpers:tsconfig.json",
+    srcs = SRCS,
+    args = [],
+    deps = [
+        "@npm//@babel/core",
+        "@npm//argv-split",
+        "@npm//commander",
+        "@npm//del",
+        "@npm//execa",
+        "@npm//globby",
+        "@npm//gulp-babel",
+        "@npm//gulp-rename",
+        "@npm//gulp-zip",
+        "@npm//inquirer",
+        "@npm//minimatch",
+        "@npm//node-sass",
+        "@npm//through2",
+        "@npm//through2-map",
+        "@npm//tslib",
+        "@npm//typescript",
+        "@npm//vinyl",
+        "@npm//vinyl-fs",
+        "@npm//@kbn/babel-preset",
+        "@npm//@types/globby",
+        "@npm//@types/gulp-rename",
+        "@npm//@types/gulp-zip",
+        "@npm//@types/inquirer",
+        "@npm//@types/minimatch",
+        "@npm//@types/node-sass",
+        "@npm//@types/through2",
+        "@npm//@types/through2-map",
+        "@npm//@types/vinyl",
+        "@npm//@types/vinyl-fs",
+        "@npm//@types/flot",
+        "@npm//@types/jest",
+        "@npm//@types/react",
+        "@npm//jest-styled-components",
+        "@npm//@types/testing-library__jest-dom",
+    ],
+    extends = ["//:tsconfig.json"],
+    out_dir = "target",
+    root_dir = "src",
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+filegroup(
+    name = "target_types",
+    srcs = [":target"],
+    output_group = "types",
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json", ":bin" ],
+    deps = [
+        ":target",
+        ":target_types",
+    ],
+    package_name = "@kbn/plugin-helpers",
+    visibility = ["//visibility:public"],
+)

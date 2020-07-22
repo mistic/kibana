@@ -3,10 +3,9 @@ load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
 SRCS = glob(
     [
-        "types/joi.d.ts",
-        "src/**/*.ts",
+        "test-d/**/*.ts",
+        "index.ts"
     ],
-    exclude = ["test*.*"],
 )
 
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
@@ -14,27 +13,20 @@ exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 ts_project(
     name = "target",
     declaration = True,
-    tsconfig = "//packages/kbn-config-schema:tsconfig.json",
+    tsconfig = "//packages/kbn-utility-types:tsconfig.json",
     srcs = SRCS,
     args = [],
     deps = [
-        "@npm//typescript",
+        "@npm//utility-types",
+        "@npm//del-cli",
         "@npm//tsd",
-        "@npm//lodash",
-        "@npm//joi",
-        "@npm//moment",
-        "@npm//type-detect",
         "@npm//@types/jest",
-        "@npm//@types/joi",
-        "@npm//@types/lodash",
         "@npm//@types/node",
-        "@npm//@types/type-detect",
     ],
     extends = ["//:tsconfig.json"],
     declaration_map = True,
-    declaration_dir = "target/types",
-    out_dir = "target/out",
-    root_dir = "src",
+    out_dir = "target",
+    declaration_dir = "target"
 )
 
 alias(
@@ -55,6 +47,6 @@ pkg_npm(
         ":target",
         ":target_types",
     ],
-    package_name = "@kbn/config-schema",
+    package_name = "@kbn/utility-types",
     visibility = ["//visibility:public"],
 )

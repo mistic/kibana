@@ -43,7 +43,7 @@ const extensions = FORMATS.map((f) => f.extension);
 
 export function runReleaseNotesCli() {
   run(
-    async ({ flags, log }) => {
+    async ({ flags, log }: any) => {
       const token = flags.token;
       if (!token || typeof token !== 'string') {
         throw createFlagError('--token must be defined');

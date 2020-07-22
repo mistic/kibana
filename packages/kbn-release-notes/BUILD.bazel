@@ -3,8 +3,7 @@ load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
 SRCS = glob(
     [
-        "types/joi.d.ts",
-        "src/**/*.ts",
+        "src/**/*",
     ],
     exclude = ["test*.*"],
 )
@@ -14,27 +13,34 @@ exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 ts_project(
     name = "target",
     declaration = True,
-    tsconfig = "//packages/kbn-config-schema:tsconfig.json",
+    source_map = True,
+    tsconfig = "//packages/kbn-release-notes:tsconfig.json",
     srcs = SRCS,
     args = [],
     deps = [
+        "@npm//axios",
+        "@npm//cheerio",
+        "@npm//dedent",
+        "@npm//graphql",
+        "@npm//graphql-tag",
+        "@npm//terminal-link",
+        "@npm//markdown-it",
         "@npm//typescript",
-        "@npm//tsd",
-        "@npm//lodash",
-        "@npm//joi",
-        "@npm//moment",
-        "@npm//type-detect",
+        "@npm//tslib",
+        "@npm//@kbn/dev-utils",
+        "@npm//@types/cheerio",
+        "@npm//@types/dedent",
+        "@npm//@types/flot",
+        "@npm//@types/graphql",
         "@npm//@types/jest",
-        "@npm//@types/joi",
-        "@npm//@types/lodash",
+        "@npm//@types/markdown-it",
         "@npm//@types/node",
-        "@npm//@types/type-detect",
+        "@npm//@types/react",
+        "@npm//jest-styled-components",
+        "@npm//@types/testing-library__jest-dom",
     ],
     extends = ["//:tsconfig.json"],
-    declaration_map = True,
-    declaration_dir = "target/types",
-    out_dir = "target/out",
-    root_dir = "src",
+    out_dir = "target",
 )
 
 alias(
@@ -55,6 +61,6 @@ pkg_npm(
         ":target",
         ":target_types",
     ],
-    package_name = "@kbn/config-schema",
+    package_name = "@kbn/release-notes",
     visibility = ["//visibility:public"],
 )
