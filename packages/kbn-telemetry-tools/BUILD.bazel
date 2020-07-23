@@ -1,0 +1,62 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__fixture__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        "babel.config.js",
+        "@npm//lodash",
+        "@npm//@kbn/babel-preset",
+        "@npm//@kbn/dev-utils",
+        "@npm//@kbn/utility-types",
+        "@npm//normalize-path",
+        "@npm//moment",
+        "@npm//typescript",
+        "@npm//@types/lodash",
+        "@npm//@types/normalize-path",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--config-file",
+        "./$(location babel.config.js)",
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts",
+        "--source-maps=inline",
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/telemetry-tools",
+    visibility = ["//visibility:public"],
+)
+

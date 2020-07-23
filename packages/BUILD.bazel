@@ -18,6 +18,7 @@ filegroup(
     "//packages/kbn-release-notes:npm_module",
     "//packages/kbn-spec-to-console:npm_module",
     "//packages/kbn-storybook:npm_module",
+    "//packages/kbn-telemetry-tools:npm_module",
     "//packages/kbn-test-subj-selector:npm_module",
     "//packages/kbn-utility-types:npm_module",
   ],
