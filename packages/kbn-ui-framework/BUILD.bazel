@@ -1,0 +1,91 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm", "copy_to_bin")
+
+SRCS = glob(
+    [
+        "src/**/*",
+        "components/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+filegroup(
+    name = "dist",
+    srcs = glob([
+        "dist/**/*",
+    ]),
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        "@npm//@kbn/babel-preset",
+        "@npm//classnames",
+        "@npm//focus-trap-react",
+        "@npm//lodash",
+        "@npm//prop-types",
+        "@npm//react",
+        "@npm//react-ace",
+        "@npm//react-color",
+        "@npm//tabbable",
+        "@npm//uuid",
+        "@npm//@babel/core",
+        "@npm//@elastic/eui",
+        "@npm//core-js"
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)/src",
+        "--copy-files",
+        "--no-babelrc",
+        "--presets=@kbn/babel-preset/webpack_preset"
+    ],
+)
+
+[babel(
+    name = "target_%s" % target_name,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--config-file",
+        "./$(execpath .babelrc.js)",
+        "--verbose",
+        "--env-name",
+        env,
+    ],
+    data = [
+        ".babelrc.js",
+        ":srcs",
+    ] + babel_deps,
+    output_dir = True,
+) for target_name in ["src", "components"]]
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+copy_to_bin("test", [":dist"])
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target", ":test"
+    ],
+    package_name = "@kbn/ui-framework",
+    visibility = ["//visibility:public"],
+)
+

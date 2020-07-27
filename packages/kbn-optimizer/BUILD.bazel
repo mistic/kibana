@@ -1,0 +1,94 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__fixtures__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        "babel.config.js",
+        "@npm//@kbn/babel-preset",
+        "@npm//@kbn/dev-utils",
+        "@npm//@kbn/ui-shared-deps",
+        "@npm//acorn",
+        "@npm//acorn-walk",
+        "@npm//autoprefixer",
+        "@npm//babel-loader",
+        "@npm//clean-webpack-plugin",
+        "@npm//compression-webpack-plugin",
+        "@npm//cpy",
+        "@npm//css-loader",
+        "@npm//del",
+        "@npm//execa",
+        "@npm//file-loader",
+        "@npm//istanbul-instrumenter-loader",
+        "@npm//jest-diff",
+        "@npm//json-stable-stringify",
+        "@npm//loader-utils",
+        "@npm//node-sass",
+        "@npm//normalize-path",
+        "@npm//postcss-loader",
+        "@npm//raw-loader",
+        "@npm//resolve-url-loader",
+        "@npm//rxjs",
+        "@npm//sass-loader",
+        "@npm//style-loader",
+        "@npm//terser-webpack-plugin",
+        "@npm//tinymath",
+        "@npm//url-loader",
+        "@npm//val-loader",
+        "@npm//watchpack",
+        "@npm//webpack",
+        "@npm//webpack-merge",
+        "@npm//@types/compression-webpack-plugin",
+        "@npm//@types/estree",
+        "@npm//@types/loader-utils",
+        "@npm//@types/watchpack",
+        "@npm//@types/webpack",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--config-file",
+        "./$(location babel.config.js)",
+        "--out-dir",
+        "$(@D)",
+        "--copy-files",
+        "--extensions",
+        ".ts",
+        "--ignore",
+        "*.test.ts",
+        "--source-maps=inline",
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/optimizer",
+    visibility = ["//visibility:public"],
+)
+

@@ -1,0 +1,81 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__tests__/**",
+        "**/__fixture__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        "babel.config.js",
+        "@npm//@kbn/babel-preset",
+        "@npm//@kbn/dev-utils",
+        "@npm//diff",
+        "@npm//chalk",
+        "@npm//dedent",
+        "@npm//del",
+        "@npm//exit-hook",
+        "@npm//getopts",
+        "@npm//glob",
+        "@npm//joi",
+        "@npm//lodash",
+        "@npm//parse-link-header",
+        "@npm//puppeteer",
+        "@npm//rxjs",
+        "@npm//strip-ansi",
+        "@npm//tar-fs",
+        "@npm//tmp",
+        "@npm//xml2js",
+        "@npm//zlib",
+        "@npm//@types/joi",
+        "@npm//@types/lodash",
+        "@npm//@types/parse-link-header",
+        "@npm//@types/puppeteer",
+        "@npm//@types/strip-ansi",
+        "@npm//@types/xml2js",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--config-file",
+        "./$(location babel.config.js)",
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts,.js,.tsx",
+        "--ignore",
+        "*.test.js,**/__tests__/**",
+        "--source-maps=inline",
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/test",
+    visibility = ["//visibility:public"],
+)
+
