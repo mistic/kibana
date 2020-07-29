@@ -13,21 +13,21 @@ SRCS = glob(
 )
 
 filegroup(
-    name = "src",
+    name = "src_files",
     srcs = SRCS,
 )
 
 filegroup(
-    name = "dist",
+    name = "dist_files",
     srcs = glob([
         "dist/**/*",
     ]),
 )
 
 babel(
-    name = "target",
+    name = "src",
     data = [
-        ":src",
+        ":src_files",
         "@npm//@kbn/babel-preset",
         "@npm//classnames",
         "@npm//focus-trap-react",
@@ -53,39 +53,32 @@ babel(
     ],
 )
 
-[babel(
-    name = "target_%s" % target_name,
-    args = [
-        "./%s/src" % package_name(),
-        "--out-dir",
-        "$(@D)",
-        "--config-file",
-        "./$(execpath .babelrc.js)",
-        "--verbose",
-        "--env-name",
-        env,
+filegroup(
+    name = "target_files",
+    srcs = [
+        ":src_files",
+        ":dist_files"
     ],
-    data = [
-        ".babelrc.js",
-        ":srcs",
-    ] + babel_deps,
-    output_dir = True,
-) for target_name in ["src", "components"]]
+)
 
 alias(
     name = "es5",
-    actual = "target"
+    actual = "target_files"
 )
 
-copy_to_bin("test", [":dist"])
+pkg_npm(
+    name = "target",
+    deps = [
+        ":target_files",
+    ],
+)
 
 pkg_npm(
     name = "npm_module",
     srcs = [ "package.json" ],
     deps = [
-        ":target", ":test"
+        ":target",
     ],
     package_name = "@kbn/ui-framework",
     visibility = ["//visibility:public"],
 )
-
