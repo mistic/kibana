@@ -1,0 +1,102 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/README.md",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+SRC_NPM_DEPS = [
+    "@npm//@kbn/babel-preset",
+    "@npm//@kbn/dev-utils",
+    "@npm//babel-loader",
+    "@npm//css-loader",
+    "@npm//del",
+    "@npm//monaco-editor",
+    "@npm//raw-loader",
+    "@npm//regenerator-runtime",
+    "@npm//supports-color",
+    "@npm//typescript",
+    "@npm//webpack",
+]
+
+webpack(
+    name = "webpack_files",
+    data = SRC_NPM_DEPS + [
+        ":src",
+        ":webpack.config.js",
+    ],
+    outs = ["public/xjson.editor.worker.js"],
+    args = [
+        "--config",
+        "$(location webpack.config.js)",
+        "--env.prod",
+        "-o",
+        "$(@D)/xjson.editor.worker.js",
+    ],
+)
+
+ts_project(
+    name = "tsc_files",
+    declaration = True,
+    source_map = True,
+    tsconfig = "//packages/kbn-monaco:tsconfig.json",
+    srcs = SRCS,
+    args = [],
+    deps = SRC_NPM_DEPS + [
+        "@npm//@types/jest",
+        "@npm//@types/node",
+    ],
+    extends = ["//:tsconfig.json"],
+    root_dir = "src",
+)
+
+filegroup(
+    name = "tsc_files_types",
+    srcs = [":tsc_files"],
+    output_group = "types",
+)
+
+filegroup(
+    name = "target_files",
+    srcs = [
+        ":webpack_files",
+        ":tsc_files",
+        ":tsc_files_types",
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target_files"
+)
+
+pkg_npm(
+    name = "target",
+    deps = [
+        ":target_files",
+    ],
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/monaco",
+    visibility = ["//visibility:public"],
+)

@@ -1,4 +1,4 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 
 SRCS = glob(

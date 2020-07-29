@@ -13,6 +13,7 @@ filegroup(
     "//packages/kbn-eslint-import-resolver-kibana:npm_module",
     "//packages/kbn-eslint-plugin-eslint:npm_module",
     "//packages/kbn-expect:npm_module",
+    "//packages/kbn-monaco:npm_module",
     # "//packages/kbn-optimizer:npm_module",
     "//packages/kbn-plugin-generator:npm_module",
     "//packages/kbn-plugin-helpers:npm_module",
