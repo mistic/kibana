@@ -1,0 +1,163 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__fixtures__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+SRCS_TS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.js",
+        "**/*.test.*",
+        "**/__fixtures__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+TYPES = glob(
+    [
+        "types/**/*",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+filegroup(
+    name = "angular",
+    srcs = glob([
+        "angular/**/*",
+    ]),
+)
+
+filegroup(
+    name = "react",
+    srcs = glob([
+        "react/**/*",
+    ]),
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+SRC_NPM_DEPS = [
+    "@npm//@babel/core",
+    "@npm//@kbn/babel-preset",
+    "@npm//@kbn/dev-utils",
+    "@npm//babel-loader",
+    "@npm//del",
+    "@npm//getopts",
+    "@npm//intl-format-cache",
+    "@npm//intl-messageformat",
+    "@npm//intl-relativeformat",
+    "@npm//prop-types",
+    "@npm//react",
+    "@npm//react-intl",
+    "@npm//supports-color",
+]
+
+babel(
+    name = "web",
+    data = SRC_NPM_DEPS + [
+        ":src",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts,.js,.tsx",
+        "--copy-files",
+        "--no-babelrc",
+        "--presets=@kbn/babel-preset/webpack_preset"
+    ],
+)
+
+babel(
+    name = "node",
+    data = SRC_NPM_DEPS + [
+        ":src",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts,.js,.tsx",
+        "--copy-files",
+        "--no-babelrc",
+        "--presets=@kbn/babel-preset/node_preset"
+    ],
+)
+
+ts_project(
+    name = "tsc",
+    declaration = True,
+    emit_declaration_only = True,
+    tsconfig = "//packages/kbn-i18n:tsconfig.json",
+    srcs = SRCS_TS + TYPES,
+    args = ["--emitDeclarationOnly"],
+    deps = SRC_NPM_DEPS + [
+        "@npm//typescript",
+        "@npm//@types/angular",
+        "@npm//@types/intl-relativeformat",
+        "@npm//@types/jest",
+        "@npm//@types/react",
+        "@npm//@types/react-intl",
+    ],
+    extends = ["//:tsconfig.json"],
+    root_dir = "src",
+    out_dir = "types",
+)
+
+filegroup(
+    name = "tsc_types",
+    srcs = [":tsc"],
+    output_group = "types",
+)
+
+filegroup(
+    name = "target_files",
+    srcs = [
+        ":web",
+        ":node",
+        ":tsc_types"
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target_files"
+)
+
+pkg_npm(
+    name = "target",
+    deps = [
+        ":target_files",
+    ],
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json", ":angular", ":react"],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/i18n",
+    visibility = ["//visibility:public"],
+)

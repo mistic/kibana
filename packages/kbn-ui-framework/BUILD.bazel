@@ -57,7 +57,8 @@ filegroup(
     name = "target_files",
     srcs = [
         ":src_files",
-        ":dist_files"
+        ":dist_files",
+        "package.json"
     ],
 )
 

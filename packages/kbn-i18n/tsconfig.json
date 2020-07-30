@@ -12,6 +12,7 @@
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "./target/types",
+    "emitDeclarationOnly":  true,
     "types": [
       "jest",
       "node"

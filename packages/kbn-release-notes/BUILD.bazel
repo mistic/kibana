@@ -41,6 +41,7 @@ ts_project(
     ],
     extends = ["//:tsconfig.json"],
     out_dir = "target",
+    root_dir = "src",
 )
 
 alias(

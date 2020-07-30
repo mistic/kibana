@@ -46,6 +46,7 @@ webpack(
         "--env.prod",
         "-o",
         "$(@D)/xjson.editor.worker.js",
+        "--display=minimal"
     ],
 )
 
