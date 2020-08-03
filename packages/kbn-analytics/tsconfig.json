@@ -5,6 +5,7 @@
     "declarationDir": "./target/types",
     "stripInternal": true,
     "declarationMap": true,
+    "emitDeclarationOnly":  true,
     "types": [
       "jest",
       "node"

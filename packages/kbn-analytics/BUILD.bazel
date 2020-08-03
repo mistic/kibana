@@ -1,0 +1,126 @@
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__fixtures__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
+
+SRC_NPM_DEPS = [
+    "@npm//@babel/plugin-proposal-class-properties",
+    "@npm//@kbn/babel-preset",
+    "@npm//@kbn/dev-utils",
+    "@npm//moment-timezone",
+    "@npm//typescript",
+]
+
+babel(
+    name = "web",
+    data = SRC_NPM_DEPS + [
+        ":src",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts,.js,.tsx",
+        "--copy-files",
+        "--source-maps",
+        "inline",
+        "--no-babelrc",
+        "--presets=@kbn/babel-preset/webpack_preset",
+        "--plugins=@babel/plugin-proposal-class-properties"
+    ],
+)
+
+babel(
+    name = "node",
+    data = SRC_NPM_DEPS + [
+        ":src",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--extensions",
+        ".ts,.js,.tsx",
+        "--copy-files",
+        "--source-maps",
+        "inline",
+        "--no-babelrc",
+        "--presets=@kbn/babel-preset/node_preset",
+        "--plugins=@babel/plugin-proposal-class-properties"
+    ],
+)
+
+ts_project(
+    name = "tsc",
+    declaration = True,
+    emit_declaration_only = True,
+    declaration_map = True,
+    tsconfig = "//packages/kbn-analytics:tsconfig.json",
+    srcs = SRCS,
+    args = ["--emitDeclarationOnly"],
+    deps = SRC_NPM_DEPS + [
+        "@npm//@types/jest",
+        "@npm//@types/moment-timezone",
+        "@npm//@types/node",
+    ],
+    extends = ["//:tsconfig.json"],
+    root_dir = "src",
+    out_dir = "types",
+)
+
+filegroup(
+    name = "tsc_types",
+    srcs = [":tsc"],
+    output_group = "types",
+)
+
+filegroup(
+    name = "target_files",
+    srcs = [
+        ":web",
+        ":node",
+        ":tsc_types"
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target_files"
+)
+
+pkg_npm(
+    name = "target",
+    deps = [
+        ":target_files",
+    ],
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/analytics",
+    visibility = ["//visibility:public"],
+)
