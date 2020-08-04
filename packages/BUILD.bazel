@@ -15,6 +15,7 @@ filegroup(
     "//packages/kbn-eslint-plugin-eslint:npm_module",
     "//packages/kbn-expect:npm_module",
     "//packages/kbn-i18n:npm_module",
+    "//packages/kbn-interpreter:npm_module",
     "//packages/kbn-monaco:npm_module",
     "//packages/kbn-optimizer:npm_module",
     "//packages/kbn-plugin-generator:npm_module",

@@ -1,0 +1,80 @@
+load("@npm//@babel/cli:index.bzl", "babel")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+
+SRCS = glob(
+    [
+        "src/**/*",
+    ],
+    exclude = [
+        "**/*.test.*",
+        "**/__fixtures__/**",
+        "**/__snapshots__/**",
+    ],
+)
+
+filegroup(
+    name = "src",
+    srcs = SRCS,
+)
+
+filegroup(
+    name = "common",
+    srcs = glob([
+        "common/**/*",
+    ]),
+)
+
+babel(
+    name = "target",
+    data = [
+        ":src",
+        ".babelrc",
+        "@npm//@babel/runtime",
+        "@npm//@kbn/i18n",
+        "@npm//lodash",
+        "@npm//uuid",
+        "@npm//@babel/core",
+        "@npm//@babel/plugin-transform-modules-commonjs",
+        "@npm//@babel/plugin-transform-runtime",
+        "@npm//@kbn/babel-preset",
+        "@npm//@kbn/dev-utils",
+        "@npm//babel-loader",
+        "@npm//copy-webpack-plugin",
+        "@npm//css-loader",
+        "@npm//del",
+        "@npm//getopts",
+        "@npm//pegjs",
+        "@npm//sass-loader",
+        "@npm//style-loader",
+        "@npm//supports-color",
+        "@npm//url-loader",
+        "@npm//webpack",
+        "@npm//webpack-cli",
+    ],
+    output_dir = True,
+    args = [
+        "./%s/src" % package_name(),
+        "--out-dir",
+        "$(@D)",
+        "--copy-files",
+        "--ignore",
+        "*.test.js",
+        "--source-maps=inline",
+    ],
+)
+
+alias(
+    name = "es5",
+    actual = "target"
+)
+
+pkg_npm(
+    name = "npm_module",
+    srcs = [ "package.json", ":common" ],
+    deps = [
+        ":target",
+    ],
+    package_name = "@kbn/interpreter",
+    visibility = ["//visibility:public"],
+)
+
