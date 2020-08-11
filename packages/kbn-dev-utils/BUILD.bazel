@@ -97,14 +97,15 @@ js_library(
 )
 
 
-###
+###B
 # That first one is probably working because the linking is being done by
 # js_library above and not by the pkg_npm it self.
 # However it only work anyways in use with the patched local version of pkg_npm + ts_project
 ###
 
 #pkg_npm(
-#    name = "npm_module_working",
+#    # "npm_module_working"
+#    name = "npm_module",
 #    deps = [
 #        ":kbn-dev-utils",
 #    ],
@@ -113,8 +114,13 @@ js_library(
 #)
 
 #pkg_npm(
-#    name = "npm_module_not_working",
-#    srcs = [ ":raw_workspace_files" ],
+#    # "npm_module_not_working"
+#    name = "npm_module",
+#    srcs = [
+#        "package.json",
+#        ":certs",
+#        ":tooling_log"
+#    ],
 #    deps = [
 #        ":target",
 #        ":target_types",
