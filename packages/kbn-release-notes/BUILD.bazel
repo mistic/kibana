@@ -1,7 +1,7 @@
 #load("@npm//@bazel/typescript:index.bzl", "ts_project")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
-#load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
 
 SRCS = glob(
     [
@@ -20,6 +20,7 @@ ts_project(
     srcs = SRCS,
     args = [],
     deps = [
+        "//packages/kbn-dev-utils",
         "@npm//axios",
         "@npm//cheerio",
         "@npm//dedent",
@@ -29,7 +30,6 @@ ts_project(
         "@npm//markdown-it",
         "@npm//typescript",
         "@npm//tslib",
-        "//packages/kbn-dev-utils",
         "@npm//@types/cheerio",
         "@npm//@types/dedent",
         "@npm//@types/flot",

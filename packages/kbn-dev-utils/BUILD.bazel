@@ -1,8 +1,8 @@
 load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
-#load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
 load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 #load("@npm//@bazel/typescript:index.bzl", "ts_project")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
 
 load("@npm//typescript:index.bzl", "tsc")
@@ -96,18 +96,25 @@ js_library(
     visibility = ["//visibility:public"],
 )
 
-pkg_npm(
-    name = "npm_module",
-    deps = [
-        ":kbn-dev-utils",
-    ],
-    # package_name = "@kbn/dev-utils",
-    visibility = ["//visibility:public"],
-)
+
+###
+# That first one is probably working because the linking is being done by
+# js_library above and not by the pkg_npm it self.
+# However it only work anyways in use with the patched local version of pkg_npm + ts_project
+###
 
 #pkg_npm(
-#    name = "npm_module",
-#    srcs = [ "package.json", ":certs", ":tooling_log" ],
+#    name = "npm_module_working",
+#    deps = [
+#        ":kbn-dev-utils",
+#    ],
+#    # package_name = "@kbn/dev-utils",
+#    visibility = ["//visibility:public"],
+#)
+
+#pkg_npm(
+#    name = "npm_module_not_working",
+#    srcs = [ ":raw_workspace_files" ],
 #    deps = [
 #        ":target",
 #        ":target_types",
