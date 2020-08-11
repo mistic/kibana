@@ -1,5 +1,12 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
+load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
+#load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
+
+load("@npm//typescript:index.bzl", "tsc")
+
 
 SRCS = glob(
     [
@@ -72,9 +79,15 @@ filegroup(
     output_group = "types",
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json", ":certs", ":tooling_log" ],
+copy_to_bin("raw_workspace_files", [
+    "package.json",
+    ":certs",
+    ":tooling_log"
+])
+
+js_library(
+    name = "kbn-dev-utils",
+    srcs = [ ":raw_workspace_files" ],
     deps = [
         ":target",
         ":target_types",
@@ -82,3 +95,23 @@ pkg_npm(
     package_name = "@kbn/dev-utils",
     visibility = ["//visibility:public"],
 )
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-dev-utils",
+    ],
+    # package_name = "@kbn/dev-utils",
+    visibility = ["//visibility:public"],
+)
+
+#pkg_npm(
+#    name = "npm_module",
+#    srcs = [ "package.json", ":certs", ":tooling_log" ],
+#    deps = [
+#        ":target",
+#        ":target_types",
+#    ],
+#    package_name = "@kbn/dev-utils",
+#    visibility = ["//visibility:public"],
+#)
