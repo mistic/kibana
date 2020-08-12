@@ -103,15 +103,15 @@ js_library(
 # However it only work anyways in use with the patched local version of pkg_npm + ts_project
 ###
 
-#pkg_npm(
-#    # "npm_module_working"
-#    name = "npm_module",
-#    deps = [
-#        ":kbn-dev-utils",
-#    ],
-#    # package_name = "@kbn/dev-utils",
-#    visibility = ["//visibility:public"],
-#)
+pkg_npm(
+    # "npm_module_working"
+    name = "npm_module",
+    deps = [
+        ":kbn-dev-utils",
+    ],
+    # package_name = "@kbn/dev-utils",
+    visibility = ["//visibility:public"],
+)
 
 #pkg_npm(
 #    # "npm_module_not_working"
