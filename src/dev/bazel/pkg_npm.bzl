@@ -6,7 +6,7 @@ If all users of your library code use Bazel, they should just add your library
 to the `deps` of one of their targets.
 """
 
-load("@build_bazel_rules_nodejs//:providers.bzl", "DeclarationInfo", "JSNamedModuleInfo", "LinkablePackageInfo", "NodeContextInfo")
+load("@build_bazel_rules_nodejs//:providers.bzl", "DeclarationInfo", "JSModuleInfo", "JSNamedModuleInfo", "LinkablePackageInfo", "NodeContextInfo")
 
 _DOC = """The pkg_npm rule creates a directory containing a publishable npm artifact.
 
@@ -244,7 +244,6 @@ def _create_npm_scripts(ctx, package_dir):
 
 def _pkg_npm(ctx):
     deps_files_depsets = []
-    declarations_depsets = [depset([s for s in ctx.files.srcs if s.path.endswith(".d.ts")])]
 
     for dep in ctx.attr.deps:
         # Collect whatever is in the "data"
@@ -254,14 +253,12 @@ def _pkg_npm(ctx):
         deps_files_depsets.append(dep.files)
 
         # All direct & transitive JavaScript-producing deps
-        # TODO: switch to JSModuleInfo when it is available
-        if JSNamedModuleInfo in dep:
-            deps_files_depsets.append(dep[JSNamedModuleInfo].sources)
+        if JSModuleInfo in dep:
+            deps_files_depsets.append(dep[JSModuleInfo].sources)
 
         # Include all transitive declerations
         if DeclarationInfo in dep:
             deps_files_depsets.append(dep[DeclarationInfo].transitive_declarations)
-            declarations_depsets.append(dep[DeclarationInfo].transitive_declarations)
 
     # Note: to_list() should be called once per rule!
     deps_files = depset(transitive = deps_files_depsets).to_list()
@@ -283,8 +280,6 @@ def _pkg_npm(ctx):
             path = package_dir.path,
             files = package_dir_depset,
         ))
-    if len(declarations_depsets) > 0:
-        result.append(DeclarationInfo(transitive_declarations = depset(transitive = declarations_depsets)))
 
     return result
 
