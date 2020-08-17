@@ -1,12 +1,10 @@
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
 load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
 load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
 load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
-#load("@npm//@bazel/typescript:index.bzl", "ts_project")
-#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
-load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
-
-load("@npm//typescript:index.bzl", "tsc")
-
 
 SRCS = glob(
     [
@@ -38,6 +36,7 @@ ts_project(
     srcs = SRCS,
     args = [],
     deps = [
+        "//packages/kbn-expect",
         "@npm//axios",
         "@npm//chalk",
         "@npm//dedent",
@@ -50,7 +49,6 @@ ts_project(
         "@npm//tree-kill",
         "@npm//tslib",
         "@npm//typescript",
-        "@npm//@kbn/expect",
         "@npm//chance",
         "@npm//normalize-path",
         "@npm//@types/normalize-path",
@@ -94,35 +92,10 @@ js_library(
     visibility = ["//visibility:public"],
 )
 
-
-###B
-# That first one is probably working because the linking is being done by
-# js_library above and not by the pkg_npm it self.
-# However it only work anyways in use with the patched local version of pkg_npm + ts_project
-###
-
 pkg_npm(
-    # "npm_module_working"
     name = "npm_module",
     deps = [
         ":kbn-dev-utils",
     ],
-    # package_name = "@kbn/dev-utils",
     visibility = ["//visibility:public"],
 )
-
-#pkg_npm(
-#    # "npm_module_not_working"
-#    name = "npm_module",
-#    srcs = [
-#        "package.json",
-#        ":certs",
-#        ":tooling_log"
-#    ],
-#    deps = [
-#        ":target",
-#        ":target_types",
-#    ],
-#    package_name = "@kbn/dev-utils",
-#    visibility = ["//visibility:public"],
-#)

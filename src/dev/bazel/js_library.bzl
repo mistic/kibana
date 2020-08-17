@@ -28,7 +28,11 @@ load(
     "js_module_info",
     "js_named_module_info",
 )
-load("@build_bazel_rules_nodejs//third_party/github.com/bazelbuild/bazel-skylib:rules/private/copy_file_private.bzl", "copy_bash", "copy_cmd")
+load(
+    "@build_bazel_rules_nodejs//third_party/github.com/bazelbuild/bazel-skylib:rules/private/copy_file_private.bzl",
+    "copy_bash",
+    "copy_cmd",
+)
 
 _AMD_NAMES_DOC = """Mapping from require module names to global variables.
 This allows devmode JS sources to load unnamed UMD bundles from third-party libraries."""
@@ -60,22 +64,32 @@ def write_amd_names_shim(actions, amd_names_shim, targets):
     actions.write(amd_names_shim, amd_names_shim_content)
 
 def _impl(ctx):
-    files = ctx.files.srcs + ctx.files.named_module_srcs
+    input_files = ctx.files.srcs + ctx.files.named_module_srcs
+    all_files = []
     typings = []
     js_files = []
+    named_module_files = []
     include_npm_package_info = False
 
-    for file in files:
-        src = file
-        if src.is_source and not src.path.startswith("external/"):
-            dst = ctx.actions.declare_file(src.basename, sibling = src)
+    for idx, f in enumerate(input_files):
+        file = f
+
+        # copy files into bin if needed
+        if file.is_source and not file.path.startswith("external/"):
+            dst = ctx.actions.declare_file(file.basename, sibling = file)
             if ctx.attr.is_windows:
-                copy_cmd(ctx, src, dst)
+                copy_cmd(ctx, file, dst)
             else:
-                copy_bash(ctx, src, dst)
+                copy_bash(ctx, file, dst)
+
+            # re-assign file to the one now copied into the bin folder
             file = dst
+
+        # register js files
         if file.basename.endswith(".js") or file.basename.endswith(".js.map") or file.basename.endswith(".json"):
             js_files.append(file)
+
+        # register typings
         if (
             (
                 file.path.endswith(".d.ts") or
@@ -90,6 +104,11 @@ def _impl(ctx):
             len(file.path.split("/node_modules/")) < 3 and file.path.find("/node_modules/typescript/lib/lib.") == -1
         ):
             typings.append(file)
+
+        # auto detect if it entirely an npm package
+        #
+        # NOTE: it probably can be removed once we support node_modules from more than
+        # a single workspace
         if file.is_source and file.path.startswith("external/"):
             # We cannot always expose the NpmPackageInfo as the linker
             # only allow us to reference node modules from a single workspace at a time.
@@ -98,15 +117,22 @@ def _impl(ctx):
             # workspace which indicates we should include the provider.
             include_npm_package_info = True
 
-    files_depset = depset(files)
+        # ctx.files.named_module_srcs are merged after ctx.files.srcs
+        if idx >= len(ctx.files.srcs):
+            named_module_files.append(file)
+
+        # every single file on bin should be added here
+        all_files.append(file)
+
+    files_depset = depset(all_files)
     js_files_depset = depset(js_files)
-    named_module_srcs_depset = depset(ctx.files.named_module_srcs)
+    named_module_files_depset = depset(named_module_files)
     typings_depset = depset(typings)
 
     files_depsets = [files_depset]
     npm_sources_depsets = [files_depset]
     direct_sources_depsets = [files_depset]
-    direct_named_module_srcs_depsets = [named_module_srcs_depset]
+    direct_named_module_sources_depsets = [named_module_files_depset]
     typings_depsets = [typings_depset]
     js_files_depsets = [js_files_depset]
 
@@ -118,7 +144,7 @@ def _impl(ctx):
                 js_files_depsets.append(dep[JSModuleInfo].direct_sources)
                 direct_sources_depsets.append(dep[JSModuleInfo].direct_sources)
             if JSNamedModuleInfo in dep:
-                direct_named_module_srcs_depsets.append(dep[JSNamedModuleInfo].direct_sources)
+                direct_named_module_sources_depsets.append(dep[JSNamedModuleInfo].direct_sources)
                 direct_sources_depsets.append(dep[JSNamedModuleInfo].direct_sources)
             if DeclarationInfo in dep:
                 typings_depsets.append(dep[DeclarationInfo].declarations)
@@ -130,7 +156,7 @@ def _impl(ctx):
         DefaultInfo(
             files = depset(transitive = files_depsets),
             runfiles = ctx.runfiles(
-                files = files,
+                files = all_files,
                 transitive_files = depset(transitive = files_depsets),
             ),
         ),
@@ -140,7 +166,7 @@ def _impl(ctx):
             deps = ctx.attr.deps,
         ),
         js_named_module_info(
-            sources = depset(transitive = direct_named_module_srcs_depsets),
+            sources = depset(transitive = direct_named_module_sources_depsets),
             deps = ctx.attr.deps,
         ),
     ]
