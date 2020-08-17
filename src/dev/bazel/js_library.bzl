@@ -14,17 +14,21 @@
 
 """js_library can be used to expose and share any library package.
 
-DO NOT USE - this is not fully designed and work in progress.
+DO NOT USE - this is not fully designed yet and it is a work in progress.
 """
 
 load(
     "@build_bazel_rules_nodejs//:providers.bzl",
+    "DeclarationInfo",
+    "JSModuleInfo",
+    "JSNamedModuleInfo",
     "LinkablePackageInfo",
     "NpmPackageInfo",
     "declaration_info",
     "js_module_info",
     "js_named_module_info",
 )
+load("@build_bazel_rules_nodejs//third_party/github.com/bazelbuild/bazel-skylib:rules/private/copy_file_private.bzl", "copy_bash", "copy_cmd")
 
 _AMD_NAMES_DOC = """Mapping from require module names to global variables.
 This allows devmode JS sources to load unnamed UMD bundles from third-party libraries."""
@@ -56,12 +60,20 @@ def write_amd_names_shim(actions, amd_names_shim, targets):
     actions.write(amd_names_shim, amd_names_shim_content)
 
 def _impl(ctx):
-    files = ctx.files.srcs
+    files = ctx.files.srcs + ctx.files.named_module_srcs
     typings = []
     js_files = []
     include_npm_package_info = False
 
     for file in files:
+        src = file
+        if src.is_source and not src.path.startswith("external/"):
+            dst = ctx.actions.declare_file(src.basename, sibling = src)
+            if ctx.attr.is_windows:
+                copy_cmd(ctx, src, dst)
+            else:
+                copy_bash(ctx, src, dst)
+            file = dst
         if file.basename.endswith(".js") or file.basename.endswith(".js.map") or file.basename.endswith(".json"):
             js_files.append(file)
         if (
@@ -70,12 +82,12 @@ def _impl(ctx):
                 file.path.endswith(".d.ts.map") or
                 # package.json may be required to resolve "typings" key
                 file.path.endswith("/package.json")
-            )
+            ) and
             # exclude eg. external/npm/node_modules/protobufjs/node_modules/@types/node/index.d.ts
             # these would be duplicates of the typings provided directly in another dependency.
             # also exclude all /node_modules/typescript/lib/lib.*.d.ts files as these are determined by
             # the tsconfig "lib" attribute
-            and len(file.path.split("/node_modules/")) < 3 and file.path.find("/node_modules/typescript/lib/lib.") == -1
+            len(file.path.split("/node_modules/")) < 3 and file.path.find("/node_modules/typescript/lib/lib.") == -1
         ):
             typings.append(file)
         if file.is_source and file.path.startswith("external/"):
@@ -90,32 +102,45 @@ def _impl(ctx):
     js_files_depset = depset(js_files)
     named_module_srcs_depset = depset(ctx.files.named_module_srcs)
     typings_depset = depset(typings)
-    sources_depsets = [files_depset]
-    transitive_files_depsets = [files_depset]
+
+    files_depsets = [files_depset]
+    npm_sources_depsets = [files_depset]
+    direct_sources_depsets = [files_depset]
+    direct_named_module_srcs_depsets = [named_module_srcs_depset]
+    typings_depsets = [typings_depset]
+    js_files_depsets = [js_files_depset]
 
     for dep in ctx.attr.deps:
         if NpmPackageInfo in dep:
-            sources_depsets.append(dep[NpmPackageInfo].sources)
-        elif DefaultInfo in dep:
-            transitive_files_depsets.append(dep[DefaultInfo].files)
-
-    transitive_sources = depset(transitive = sources_depsets)
+            npm_sources_depsets.append(dep[NpmPackageInfo].sources)
+        else:
+            if JSModuleInfo in dep:
+                js_files_depsets.append(dep[JSModuleInfo].direct_sources)
+                direct_sources_depsets.append(dep[JSModuleInfo].direct_sources)
+            if JSNamedModuleInfo in dep:
+                direct_named_module_srcs_depsets.append(dep[JSNamedModuleInfo].direct_sources)
+                direct_sources_depsets.append(dep[JSNamedModuleInfo].direct_sources)
+            if DeclarationInfo in dep:
+                typings_depsets.append(dep[DeclarationInfo].declarations)
+                direct_sources_depsets.append(dep[DeclarationInfo].declarations)
+            if DefaultInfo in dep:
+                files_depsets.append(dep[DefaultInfo].files)
 
     providers = [
         DefaultInfo(
-            files = depset(transitive = transitive_files_depsets),
+            files = depset(transitive = files_depsets),
             runfiles = ctx.runfiles(
-                files = ctx.files.srcs,
-                transitive_files = depset(transitive = transitive_files_depsets)
+                files = files,
+                transitive_files = depset(transitive = files_depsets),
             ),
         ),
         AmdNamesInfo(names = ctx.attr.amd_names),
         js_module_info(
-            sources = js_files_depset,
+            sources = depset(transitive = js_files_depsets),
             deps = ctx.attr.deps,
         ),
         js_named_module_info(
-            sources = named_module_srcs_depset,
+            sources = depset(transitive = direct_named_module_srcs_depsets),
             deps = ctx.attr.deps,
         ),
     ]
@@ -125,17 +150,14 @@ def _impl(ctx):
         providers.append(LinkablePackageInfo(
             package_name = ctx.attr.package_name,
             path = path,
-            files = depset([
-                files_depset,
-                named_module_srcs_depset
-            ])
+            files = depset(transitive = direct_sources_depsets),
         ))
 
     if include_npm_package_info:
         workspace_name = ctx.label.workspace_name if ctx.label.workspace_name else ctx.workspace_name
         providers.append(NpmPackageInfo(
-            direct_sources = files_depset,
-            sources = transitive_sources,
+            direct_sources = depset(transitive = direct_sources_depsets),
+            sources = depset(transitive = npm_sources_depsets),
             workspace = workspace_name,
         ))
 
@@ -143,7 +165,7 @@ def _impl(ctx):
     # Improves error messaging downstream if DeclarationInfo is required.
     if len(typings):
         providers.append(declaration_info(
-            declarations = typings_depset,
+            declarations = depset(transitive = typings_depsets),
             deps = ctx.attr.deps,
         ))
 
@@ -155,21 +177,33 @@ _js_library = rule(
         "amd_names": attr.string_dict(
             doc = _AMD_NAMES_DOC,
         ),
+        "deps": attr.label_list(
+            doc = """Transitive dependencies of the package.
+            It should include fine grained npm dependencies from the sources
+            or other targets we want to include in the library but also propagate their own deps.""",
+        ),
+        "is_windows": attr.bool(
+            doc = "Automatically set by macro",
+            mandatory = True,
+        ),
         # module_name for legacy ts_library module_mapping support
+        # which is still being used in a couple of tests
         # TODO: remove once legacy module_mapping is removed
-        "module_name": attr.string(),
+        "module_name": attr.string(
+            doc = "Internal use only. It will be removed soon.",
+        ),
+        "named_module_srcs": attr.label_list(
+            doc = """A subset of srcs that are javascript named-UMD or
+            named-AMD for use in rules such as ts_devserver.
+            They will be copied into the package bin folder if needed.""",
+            allow_files = True,
+        ),
         "package_name": attr.string(
             doc = """Optional package_name that this package may be imported as.""",
         ),
         "srcs": attr.label_list(
-            doc = "The list of files that comprise the package",
-            allow_files = True,
-        ),
-        "deps": attr.label_list(
-            doc = "Transitive dependencies of the package",
-        ),
-        "named_module_srcs": attr.label_list(
-            doc = "A subset of srcs that are javascript named-UMD or named-AMD for use in rules such as ts_devserver",
+            doc = """The list of files that comprise the package.
+            They will be copied into the package bin folder if needed.""",
             allow_files = True,
         ),
     },
@@ -184,19 +218,26 @@ def js_library(
         deps = [],
         named_module_srcs = [],
         **kwargs):
-    """Internal use only. May be published to the public API in a future release."""
+    """Internal use only yet. It will be released into a public API in a future release."""
     module_name = kwargs.pop("module_name", None)
     if module_name:
         fail("use package_name instead of module_name in target //%s:%s" % (native.package_name(), name))
+    if kwargs.pop("is_windows", None):
+        fail("is_windows is set by the js_library macro and should not be set explicitely")
     _js_library(
         name = name,
-        srcs = srcs,
-        deps = deps,
-        named_module_srcs = named_module_srcs,
         amd_names = amd_names,
+        srcs = srcs,
+        named_module_srcs = named_module_srcs,
+        deps = deps,
         package_name = package_name,
         # module_name for legacy ts_library module_mapping support
+        # which is still being used in a couple of tests
         # TODO: remove once legacy module_mapping is removed
         module_name = package_name,
+        is_windows = select({
+            "@bazel_tools//src/conditions:host_windows": True,
+            "//conditions:default": False,
+        }),
         **kwargs
     )

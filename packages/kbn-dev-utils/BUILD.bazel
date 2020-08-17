@@ -79,15 +79,13 @@ filegroup(
     output_group = "types",
 )
 
-copy_to_bin("raw_workspace_files", [
-    "package.json",
-    ":certs",
-    ":tooling_log"
-])
-
 js_library(
     name = "kbn-dev-utils",
-    srcs = [ ":raw_workspace_files" ],
+    srcs = [
+        "package.json",
+        ":certs",
+        ":tooling_log"
+    ],
     deps = [
         ":target",
         ":target_types",
