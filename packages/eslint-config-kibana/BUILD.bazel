@@ -1,4 +1,8 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = [
     "package.json",
@@ -11,10 +15,18 @@ SRCS = [
     "typescript.js",
 ]
 
-pkg_npm(
-    name = "npm_module",
+js_library(
+    name = "eslint-config-kibana",
     srcs = SRCS,
     package_name = "@elastic/eslint-config-kibana",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":eslint-config-kibana",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -1,5 +1,9 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 filegroup(
     name = "src",
@@ -31,13 +35,23 @@ alias(
     actual = "target"
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "elastic-datemath",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
     ],
     package_name = "@elastic/datemath",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":elastic-datemath",
+    ],
     visibility = ["//visibility:public"],
 )
 

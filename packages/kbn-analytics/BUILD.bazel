@@ -1,6 +1,11 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -21,9 +26,9 @@ filegroup(
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 
 SRC_NPM_DEPS = [
+    "//packages/kbn-babel-preset",
+    "//packages/kbn-dev-utils",
     "@npm//@babel/plugin-proposal-class-properties",
-    "@npm//@kbn/babel-preset",
-    "@npm//@kbn/dev-utils",
     "@npm//moment-timezone",
     "@npm//typescript",
 ]
@@ -115,12 +120,22 @@ pkg_npm(
     ],
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-analytics",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
     ],
     package_name = "@kbn/analytics",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":target",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -1,4 +1,8 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = [
     "package.json",
@@ -9,9 +13,32 @@ SRCS = [
     "webpack_preset.js",
 ]
 
+js_library(
+    name = "kbn-babel-preset",
+    srcs = SRCS,
+    deps = [
+        "@npm//@babel/plugin-proposal-class-properties",
+        "@npm//@babel/plugin-proposal-export-namespace-from",
+        "@npm//@babel/plugin-proposal-nullish-coalescing-operator",
+        "@npm//@babel/plugin-proposal-optional-chaining",
+        "@npm//@babel/plugin-proposal-private-methods",
+        "@npm//@babel/preset-env",
+        "@npm//@babel/preset-react",
+        "@npm//@babel/preset-typescript",
+        "@npm//babel-plugin-add-module-exports",
+        "@npm//babel-plugin-filter-imports",
+        "@npm//babel-plugin-styled-components",
+        "@npm//babel-plugin-transform-define",
+        "@npm//babel-plugin-transform-imports",
+    ],
+    package_name = "@kbn/babel-preset",
+    visibility = ["//visibility:public"],
+)
+
 pkg_npm(
     name = "npm_module",
-    srcs = SRCS,
-    package_name = "@kbn/babel-preset",
+    deps = [
+        ":kbn-babel-preset",
+    ],
     visibility = ["//visibility:public"],
 )
