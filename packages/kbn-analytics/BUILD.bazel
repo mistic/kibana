@@ -33,6 +33,14 @@ SRC_NPM_DEPS = [
     "@npm//typescript",
 ]
 
+TSC_TYPES_DEPS = [
+    "@npm//@types/jest",
+    "@npm//@types/moment-timezone",
+    "@npm//@types/node",
+]
+
+ALL_DEPS = SRC_NPM_DEPS + TSC_TYPES_DEPS
+
 babel(
     name = "web",
     data = SRC_NPM_DEPS + [
@@ -83,11 +91,7 @@ ts_project(
     tsconfig = "//packages/kbn-analytics:tsconfig.json",
     srcs = SRCS,
     args = ["--emitDeclarationOnly"],
-    deps = SRC_NPM_DEPS + [
-        "@npm//@types/jest",
-        "@npm//@types/moment-timezone",
-        "@npm//@types/node",
-    ],
+    deps = ALL_DEPS,
     extends = ["//:tsconfig.json"],
     root_dir = "src",
     out_dir = "types",
@@ -127,7 +131,7 @@ js_library(
     ],
     deps = [
         ":target",
-    ],
+    ] + ALL_DEPS,
     package_name = "@kbn/analytics",
     visibility = ["//visibility:public"],
 )

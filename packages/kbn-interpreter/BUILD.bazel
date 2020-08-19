@@ -1,5 +1,9 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -29,15 +33,15 @@ babel(
     data = [
         ":src",
         ".babelrc",
+        "//packages/kbn-babel-preset",
+        "//packages/kbn-dev-utils",
+        "//packages/kbn-i18n",
         "@npm//@babel/runtime",
-        "@npm//@kbn/i18n",
         "@npm//lodash",
         "@npm//uuid",
         "@npm//@babel/core",
         "@npm//@babel/plugin-transform-modules-commonjs",
         "@npm//@babel/plugin-transform-runtime",
-        "@npm//@kbn/babel-preset",
-        "@npm//@kbn/dev-utils",
         "@npm//babel-loader",
         "@npm//copy-webpack-plugin",
         "@npm//css-loader",
@@ -68,13 +72,24 @@ alias(
     actual = "target"
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json", ":common" ],
+js_library(
+    name = "kbn-interpreter",
+    srcs = [
+        "package.json",
+        ":common",
+    ],
     deps = [
         ":target",
     ],
     package_name = "@kbn/interpreter",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-interpreter",
+    ],
     visibility = ["//visibility:public"],
 )
 

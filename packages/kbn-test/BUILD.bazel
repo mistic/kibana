@@ -1,5 +1,9 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -18,37 +22,42 @@ filegroup(
     srcs = SRCS,
 )
 
+SRC_NPM_DEPS = [
+    "//packages/kbn-babel-preset",
+    "//packages/kbn-dev-utils",
+    "@npm//diff",
+    "@npm//chalk",
+    "@npm//dedent",
+    "@npm//del",
+    "@npm//exit-hook",
+    "@npm//getopts",
+    "@npm//glob",
+    "@npm//joi",
+    "@npm//lodash",
+    "@npm//parse-link-header",
+    "@npm//puppeteer",
+    "@npm//rxjs",
+    "@npm//strip-ansi",
+    "@npm//tar-fs",
+    "@npm//tmp",
+    "@npm//xml2js",
+    "@npm//zlib",
+    "@npm//@types/joi",
+    "@npm//@types/lodash",
+    "@npm//@types/parse-link-header",
+    "@npm//@types/puppeteer",
+    "@npm//@types/strip-ansi",
+    "@npm//@types/xml2js",
+]
+
+ALL_DEPS = SRC_NPM_DEPS
+
 babel(
     name = "target",
     data = [
         ":src",
         "babel.config.js",
-        "@npm//@kbn/babel-preset",
-        "@npm//@kbn/dev-utils",
-        "@npm//diff",
-        "@npm//chalk",
-        "@npm//dedent",
-        "@npm//del",
-        "@npm//exit-hook",
-        "@npm//getopts",
-        "@npm//glob",
-        "@npm//joi",
-        "@npm//lodash",
-        "@npm//parse-link-header",
-        "@npm//puppeteer",
-        "@npm//rxjs",
-        "@npm//strip-ansi",
-        "@npm//tar-fs",
-        "@npm//tmp",
-        "@npm//xml2js",
-        "@npm//zlib",
-        "@npm//@types/joi",
-        "@npm//@types/lodash",
-        "@npm//@types/parse-link-header",
-        "@npm//@types/puppeteer",
-        "@npm//@types/strip-ansi",
-        "@npm//@types/xml2js",
-    ],
+    ] + SRC_NPM_DEPS,
     output_dir = True,
     args = [
         "./%s/src" % package_name(),
@@ -69,13 +78,23 @@ alias(
     actual = "target"
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-test",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
-    ],
+    ] + ALL_DEPS,
     package_name = "@kbn/test",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-test",
+    ],
     visibility = ["//visibility:public"],
 )
 

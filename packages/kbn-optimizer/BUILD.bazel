@@ -1,5 +1,9 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -22,9 +26,9 @@ babel(
     data = [
         ":src",
         "babel.config.js",
-        "@npm//@kbn/babel-preset",
-        "@npm//@kbn/dev-utils",
-        "@npm//@kbn/ui-shared-deps",
+        "//packages/kbn-babel-preset",
+        "//packages/kbn-dev-utils",
+        "//packages/kbn-ui-shared-deps",
         "@npm//acorn",
         "@npm//acorn-walk",
         "@npm//autoprefixer",
@@ -82,13 +86,23 @@ alias(
     actual = "target"
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-optimizer",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
     ],
     package_name = "@kbn/optimizer",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-optimizer",
+    ],
     visibility = ["//visibility:public"],
 )
 

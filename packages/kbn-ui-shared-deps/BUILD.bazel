@@ -1,7 +1,12 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -31,11 +36,13 @@ webpack(
         ":webpack.config.bazel.js",
         "//:package.json",
         ":tsconfig.json",
+        "//packages/kbn-babel-preset",
+        "//packages/kbn-dev-utils",
+        "//packages/kbn-i18n",
+        "//packages/kbn-monaco",
         "@npm//@elastic/charts",
         "@npm//@elastic/eui",
         "@npm//@elastic/numeral",
-        "@npm//@kbn/i18n",
-        "@npm//@kbn/monaco",
         "@npm//abortcontroller-polyfill",
         "@npm//angular",
         "@npm//compression-webpack-plugin",
@@ -56,8 +63,6 @@ webpack(
         "@npm//styled-components",
         "@npm//symbol-observable",
         "@npm//whatwg-fetch",
-        "@npm//@kbn/babel-preset",
-        "@npm//@kbn/dev-utils",
         "@npm//css-loader",
         "@npm//del",
         "@npm//loader-utils",
@@ -76,12 +81,22 @@ webpack(
     ],
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-ui-shared-deps",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
     ],
     package_name = "@kbn/ui-shared-deps",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-ui-shared-deps",
+    ],
     visibility = ["//visibility:public"],
 )

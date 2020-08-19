@@ -1,4 +1,8 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -9,9 +13,17 @@ SRCS = glob(
     ],
 )
 
-pkg_npm(
-    name = "npm_module",
+js_library(
+    name = "kbn-storybook",
     srcs = SRCS,
     package_name = "@kbn/storybook",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+      ":kbn-storybook",
+    ],
     visibility = ["//visibility:public"],
 )

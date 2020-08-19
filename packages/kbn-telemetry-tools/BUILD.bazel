@@ -1,5 +1,9 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -17,21 +21,26 @@ filegroup(
     srcs = SRCS,
 )
 
+SRC_NPM_DEPS = [
+    "//packages/kbn-babel-preset",
+    "//packages/kbn-dev-utils",
+    "@npm//lodash",
+    "@npm//@kbn/utility-types",
+    "@npm//normalize-path",
+    "@npm//moment",
+    "@npm//typescript",
+    "@npm//@types/lodash",
+    "@npm//@types/normalize-path",
+]
+
+ALL_DEPS = SRC_NPM_DEPS
+
 babel(
     name = "target",
     data = [
         ":src",
         "babel.config.js",
-        "@npm//lodash",
-        "@npm//@kbn/babel-preset",
-        "@npm//@kbn/dev-utils",
-        "@npm//@kbn/utility-types",
-        "@npm//normalize-path",
-        "@npm//moment",
-        "@npm//typescript",
-        "@npm//@types/lodash",
-        "@npm//@types/normalize-path",
-    ],
+    ] + SRC_NPM_DEPS,
     output_dir = True,
     args = [
         "./%s/src" % package_name(),
@@ -50,13 +59,23 @@ alias(
     actual = "target"
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-telemetry-tools",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
-    ],
+    ] + ALL_DEPS,
     package_name = "@kbn/telemetry-tools",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-telemetry-tools",
+    ],
     visibility = ["//visibility:public"],
 )
 

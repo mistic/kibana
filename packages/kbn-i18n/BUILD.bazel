@@ -1,7 +1,12 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -54,9 +59,9 @@ filegroup(
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 
 SRC_NPM_DEPS = [
+    "//packages/kbn-babel-preset",
+    "//packages/kbn-dev-utils",
     "@npm//@babel/core",
-    "@npm//@kbn/babel-preset",
-    "@npm//@kbn/dev-utils",
     "@npm//babel-loader",
     "@npm//del",
     "@npm//getopts",
@@ -68,6 +73,17 @@ SRC_NPM_DEPS = [
     "@npm//react-intl",
     "@npm//supports-color",
 ]
+
+TSC_TYPES_DEPS = [
+    "@npm//typescript",
+    "@npm//@types/angular",
+    "@npm//@types/intl-relativeformat",
+    "@npm//@types/jest",
+    "@npm//@types/react",
+    "@npm//@types/react-intl",
+]
+
+ALL_DEPS = SRC_NPM_DEPS + TSC_TYPES_DEPS
 
 babel(
     name = "web",
@@ -112,14 +128,7 @@ ts_project(
     tsconfig = "//packages/kbn-i18n:tsconfig.json",
     srcs = SRCS_TS + TYPES,
     args = ["--emitDeclarationOnly"],
-    deps = SRC_NPM_DEPS + [
-        "@npm//typescript",
-        "@npm//@types/angular",
-        "@npm//@types/intl-relativeformat",
-        "@npm//@types/jest",
-        "@npm//@types/react",
-        "@npm//@types/react-intl",
-    ],
+    deps = ALL_DEPS,
     extends = ["//:tsconfig.json"],
     root_dir = "src",
     out_dir = "types",
@@ -152,12 +161,24 @@ pkg_npm(
     ],
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json", ":angular", ":react"],
+js_library(
+    name = "kbn-i18n",
+    srcs = [
+        "package.json",
+        ":angular",
+        ":react",
+    ],
     deps = [
         ":target",
-    ],
+    ] + ALL_DEPS,
     package_name = "@kbn/i18n",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-i18n",
+    ],
     visibility = ["//visibility:public"],
 )

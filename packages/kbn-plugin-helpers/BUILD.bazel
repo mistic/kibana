@@ -1,5 +1,10 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project", "ts_library")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@npm//@bazel/typescript:index.bzl", "ts_project")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@kibana//:src/dev/bazel/ts_project.bzl", ts_project = "ts_project_macro")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -30,6 +35,7 @@ ts_project(
     srcs = SRCS,
     args = [],
     deps = [
+        "//packages/kbn-babel-preset",
         "@npm//@babel/core",
         "@npm//argv-split",
         "@npm//commander",
@@ -48,7 +54,6 @@ ts_project(
         "@npm//typescript",
         "@npm//vinyl",
         "@npm//vinyl-fs",
-        "@npm//@kbn/babel-preset",
         "@npm//@types/globby",
         "@npm//@types/gulp-rename",
         "@npm//@types/gulp-zip",
@@ -81,13 +86,24 @@ filegroup(
     output_group = "types",
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json", ":bin" ],
+js_library(
+    name = "kbn-plugin-helpers",
+    srcs = [
+        "package.json",
+        ":bin",
+    ],
     deps = [
         ":target",
         ":target_types",
     ],
     package_name = "@kbn/plugin-helpers",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-plugin-helpers",
+    ],
     visibility = ["//visibility:public"],
 )

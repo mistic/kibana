@@ -1,5 +1,10 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm", "copy_to_bin")
+#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm", "copy_to_bin")
+#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+
+load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
+load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
+load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
 SRCS = glob(
     [
@@ -24,24 +29,29 @@ filegroup(
     ]),
 )
 
+SRC_NPM_DEPS = [
+    "//packages/kbn-babel-preset",
+    "@npm//classnames",
+    "@npm//focus-trap-react",
+    "@npm//lodash",
+    "@npm//prop-types",
+    "@npm//react",
+    "@npm//react-ace",
+    "@npm//react-color",
+    "@npm//tabbable",
+    "@npm//uuid",
+    "@npm//@babel/core",
+    "@npm//@elastic/eui",
+    "@npm//core-js"
+]
+
+ALL_DEPS = SRC_NPM_DEPS
+
 babel(
     name = "src",
     data = [
         ":src_files",
-        "@npm//@kbn/babel-preset",
-        "@npm//classnames",
-        "@npm//focus-trap-react",
-        "@npm//lodash",
-        "@npm//prop-types",
-        "@npm//react",
-        "@npm//react-ace",
-        "@npm//react-color",
-        "@npm//tabbable",
-        "@npm//uuid",
-        "@npm//@babel/core",
-        "@npm//@elastic/eui",
-        "@npm//core-js"
-    ],
+    ] + SRC_NPM_DEPS,
     output_dir = True,
     args = [
         "./%s/src" % package_name(),
@@ -74,12 +84,22 @@ pkg_npm(
     ],
 )
 
-pkg_npm(
-    name = "npm_module",
-    srcs = [ "package.json" ],
+js_library(
+    name = "kbn-ui-framework",
+    srcs = [
+        "package.json",
+    ],
     deps = [
         ":target",
-    ],
+    ] + ALL_DEPS,
     package_name = "@kbn/ui-framework",
+    visibility = ["//visibility:public"],
+)
+
+pkg_npm(
+    name = "npm_module",
+    deps = [
+        ":kbn-ui-framework",
+    ],
     visibility = ["//visibility:public"],
 )
