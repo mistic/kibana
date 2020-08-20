@@ -21,8 +21,8 @@ filegroup(
 SRC_NPM_DEPS = [
     "//packages/kbn-babel-preset",
     "//packages/kbn-dev-utils",
+    "//packages/kbn-utility-types",
     "@npm//lodash",
-    "@npm//@kbn/utility-types",
     "@npm//normalize-path",
     "@npm//moment",
     "@npm//typescript",
