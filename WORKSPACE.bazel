@@ -18,12 +18,12 @@ check_rules_nodejs_version(minimum_version_string = "2.0.3")
 # Setup the Node.js toolchain
 node_repositories(
     node_repositories = {
-        "10.21.0-darwin_amd64": ("node-v10.21.0-darwin-x64.tar.gz", "node-v10.21.0-darwin-x64", "596900700c4a0de0303bb4c378a1abcd63f31efc848704c5fbc1230de628577a"),
-        "10.21.0-linux_amd64": ("node-v10.21.0-linux-x64.tar.xz", "node-v10.21.0-linux-x64", "1d3296763e46540047099e4910812e81c4899c0595f2d82474e2099c1e1603e2"),
-        "10.21.0-linux_arm64": ("node-v10.21.0-linux-arm64.tar.gz", "node-v10.21.0-linux-arm64", "43f821147c18367c227ea63ce173ee3acfd3da1fa3ea0581f6de1a27ca5b7d4e"),
-        "10.21.0-windows_amd64": ("node-v10.21.0-win-x64.zip", "node-v10.21.0-win-x64", "03dddcdaccdb40978ddf15d189acdc20409d9a666636db2595118690ff83ce82"),
+        "10.22.0-darwin_amd64": ("node-v10.22.0-darwin-x64.tar.gz", "node-v10.22.0-darwin-x64", "c7583a297ba9c6cfc03688a32776155d02fabf9ff45847c63b12a68d400f1dc1"),
+        "10.22.0-linux_amd64": ("node-v10.22.0-linux-x64.tar.xz", "node-v10.22.0-linux-x64", "ddf33e038c593d6df36b1dd4b25c1b6fa8230c615e6312ad33e80ef863e4a74f"),
+        "10.22.0-linux_arm64": ("node-v10.22.0-linux-arm64.tar.gz", "node-v10.22.0-linux-arm64", "8e59eb6865f704785a9aa53ccf9f4cb10412caaf778cee617241a0d0684e008d"),
+        "10.22.0-windows_amd64": ("node-v10.22.0-win-x64.zip", "node-v10.22.0-win-x64", "931c2907450790f89aa178fa84c1adbd1f7cb7ab0a34f8bfb4af25640e8d4e06"),
     },
-    node_version = "10.21.0",
+    node_version = "10.22.0",
     node_urls = [
         "https://nodejs.org/dist/v{version}/{filename}",
     ],
