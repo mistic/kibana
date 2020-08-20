@@ -10,8 +10,7 @@
 # Cache action outputs on disk so they persist across output_base and bazel shutdown (eg. changing branches)
 build --disk_cache=bazel-cache/disk-cache
 
-# Overall bazel caches
-startup --output_user_root=bazel-cache/bazel-root
+# Overall bazel cache settings
 build --repository_cache=bazel-cache/repository-cache
 
 # Remote cache settings for local env
