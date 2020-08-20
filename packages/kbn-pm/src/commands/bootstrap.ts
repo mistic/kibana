@@ -35,8 +35,6 @@ export const BootstrapCommand: ICommand = {
   name: 'bootstrap',
 
   async run(projects, projectGraph, { options, kbn, rootPath }) {
-    // TODO: fix preinstall check to allow that command
-
     // Get defined bazelisk version and install it if needed
     const bazeliskVersion = (await readFile(resolve(rootPath, '.bazeliskversion')))
       .toString()
@@ -52,7 +50,11 @@ export const BootstrapCommand: ICommand = {
 
     // Run bazel to build packages
     // await spawn('bazel', ['run', '@nodejs//:yarn'], {});
-    await spawn('bazel', ['build', '//packages:build'], {});
+    const bazelArgs = ['build', '//packages:build'];
+    if (options.ci === true) {
+      bazelArgs.push('--config=ci');
+    }
+    await spawn('bazel', bazelArgs, {});
 
     // TODO: Do we want to keep supporting this?
     await linkProjectExecutables(projects, projectGraph);

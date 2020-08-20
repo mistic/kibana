@@ -1,47 +1,25 @@
-load("@npm//@babel/cli:index.bzl", "babel")
 #load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 #load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
 
 load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
 load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
 
+SRCS = [
+    "src/**/*",
+    "LICENSE.txt",
+    "README.md",
+    "package.json",
+]
+
 filegroup(
     name = "src",
-    srcs = glob([
-        "src/**/*",
-    ]),
-)
-
-babel(
-    name = "target",
-    data = [
-        ":src",
-        ".babelrc",
-        "@npm//@babel/preset-env",
-        "@npm//babel-plugin-add-module-exports",
-        "@npm//moment",
-    ],
-    output_dir = True,
-    args = [
-        "$(locations :src)",
-        "--out-dir",
-        "$(@D)",
-        "--copy-files"
-    ],
-)
-
-alias(
-    name = "es5",
-    actual = "target"
+    srcs = glob(SRCS),
 )
 
 js_library(
     name = "elastic-datemath",
     srcs = [
-        "package.json",
-    ],
-    deps = [
-        ":target",
+        ":src",
     ],
     package_name = "@elastic/datemath",
     visibility = ["//visibility:public"],

@@ -3,17 +3,9 @@
   "version": "5.0.3",
   "description": "elasticsearch datemath parser, used in kibana",
   "license": "Apache-2.0",
-  "main": "target/index.js",
-  "typings": "target/index.d.ts",
-  "scripts": {
-    "build": "babel src --out-dir target --copy-files",
-    "kbn:bootstrap": "yarn build --quiet",
-    "kbn:watch": "yarn build --watch"
-  },
+  "main": "src/index.js",
+  "typings": "src/index.d.ts",
   "devDependencies": {
-    "@babel/cli": "^7.10.1",
-    "@babel/preset-env": "^7.10.2",
-    "babel-plugin-add-module-exports": "^1.0.2",
     "moment": "^2.24.0"
   },
   "peerDependencies": {

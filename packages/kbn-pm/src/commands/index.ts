@@ -35,6 +35,7 @@ export interface ICommand {
 
 import { BootstrapCommand } from './bootstrap';
 import { CleanCommand } from './clean';
+import { NukeCommand } from './nuke';
 import { RunCommand } from './run';
 import { WatchCommand } from './watch';
 import { Kibana } from '../utils/kibana';
@@ -42,6 +43,7 @@ import { Kibana } from '../utils/kibana';
 export const commands: { [key: string]: ICommand } = {
   bootstrap: BootstrapCommand,
   clean: CleanCommand,
+  nuke: NukeCommand,
   run: RunCommand,
   watch: WatchCommand,
 };

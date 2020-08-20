@@ -26,14 +26,21 @@ import { isDirectory } from '../utils/fs';
 import { log } from '../utils/log';
 import { ICommand } from './';
 
-export const CleanCommand: ICommand = {
+export const NukeCommand: ICommand = {
   description:
-    'Remove target directories from all projects along with extra patterns and finally soft cleans bazel state.',
+    'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state.',
   name: 'clean',
 
   async run(projects) {
     const toDelete = [];
     for (const project of projects.values()) {
+      if (await isDirectory(project.nodeModulesLocation)) {
+        toDelete.push({
+          cwd: project.path,
+          pattern: relative(project.path, project.nodeModulesLocation),
+        });
+      }
+
       if (await isDirectory(project.targetLocation)) {
         toDelete.push({
           cwd: project.path,
@@ -50,9 +57,9 @@ export const CleanCommand: ICommand = {
       }
     }
 
-    // Soft delete bazel cache
-    await spawn('bazel', ['clean'], {});
-    log.success('Soft cleaned bazel');
+    // Hard delete bazel cache
+    await spawn('bazel', ['clean', '--expunge'], {});
+    log.success('Hard cleaned bazel');
 
     if (toDelete.length !== 0) {
       /**

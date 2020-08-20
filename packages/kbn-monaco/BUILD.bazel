@@ -94,6 +94,14 @@ alias(
     actual = "target_files"
 )
 
+# TODO: that is not a very good practise in bazel
+# pkg_npm is a terminal node so if any of the files
+# it contains changes, everything needs to be rebuilt,
+# which make us to loose a lot of the bazel benefits.
+# We should change the build of kbn_monaco down the road
+# to built server, browser and types to separate folders like
+# target_server, target_web, targer_types and remap them
+# into the package.json.
 pkg_npm(
     name = "target",
     deps = [

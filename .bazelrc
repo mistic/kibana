@@ -10,6 +10,14 @@
 # Cache action outputs on disk so they persist across output_base and bazel shutdown (eg. changing branches)
 build --disk_cache=bazel-cache/
 
+# Remote cache settings for local env
+build --remote_cache=https://storage.googleapis.com/kibana-bazel-cache
+build --remote_upload_local_results=false
+
+# Remote cache settings for ci env
+build:ci --google_default_credentials
+build:ci --remote_upload_local_results=true
+
 # Bazel will create symlinks from the workspace directory to output artifacts.
 # Build results will be placed in a directory called "dist/bin"
 # Other directories will be created like "dist/testlogs"

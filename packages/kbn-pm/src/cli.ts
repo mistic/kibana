@@ -81,7 +81,7 @@ export async function run(argv: string[]) {
     default: {
       cache: true,
     },
-    boolean: ['prefer-offline', 'frozen-lockfile', 'cache'],
+    boolean: ['prefer-offline', 'frozen-lockfile', 'cache', 'ci'],
   });
 
   const args = options._;
