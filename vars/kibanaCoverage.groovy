@@ -145,7 +145,7 @@ def generateReports(title) {
     source src/dev/ci_setup/setup_env.sh true
     # bootstrap from x-pack folder
     cd x-pack
-    yarn kbn bootstrap --prefer-offline
+    yarn kbn bootstrap --prefer-offline --ci
     # Return to project root
     cd ..
     . src/dev/code_coverage/shell_scripts/extract_archives.sh
@@ -172,7 +172,7 @@ def uploadCombinedReports() {
 def ingestData(jobName, buildNum, buildUrl, previousSha, title) {
   kibanaPipeline.bash("""
     source src/dev/ci_setup/setup_env.sh
-    yarn kbn bootstrap --prefer-offline
+    yarn kbn bootstrap --prefer-offline --ci
     # Using existing target/kibana-coverage folder
     . src/dev/code_coverage/shell_scripts/ingest_coverage.sh '${jobName}' ${buildNum} '${buildUrl}' ${previousSha}
   """, title)
