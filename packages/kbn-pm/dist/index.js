@@ -89935,7 +89935,10 @@ const NukeCommand = {
   name: 'clean',
 
   async run(projects) {
-    const toDelete = [];
+    const toDelete = [{
+      cwd: projects.get('kibana').path,
+      pattern: Object(path__WEBPACK_IMPORTED_MODULE_2__["relative"])(projects.get('kibana').path, 'bazel-cache')
+    }];
 
     for (const project of projects.values()) {
       if (await Object(_utils_fs__WEBPACK_IMPORTED_MODULE_4__["isDirectory"])(project.nodeModulesLocation)) {

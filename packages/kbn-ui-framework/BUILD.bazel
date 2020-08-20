@@ -1,10 +1,6 @@
 load("@npm//@babel/cli:index.bzl", "babel")
-#load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm", "copy_to_bin")
-#load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
-
-load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
-load("@kibana//:src/dev/bazel/pkg_npm.bzl", "pkg_npm")
-load("@kibana//:src/dev/bazel/js_library.bzl", "js_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm", "copy_to_bin")
+load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
 
 SRCS = glob(
     [
