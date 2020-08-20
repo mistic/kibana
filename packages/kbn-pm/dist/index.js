@@ -89931,17 +89931,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const NukeCommand = {
-  description: 'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state (including bazel-cache).',
+  description: 'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state.',
   name: 'clean',
 
   async run(projects) {
-    const toDelete = [// The nuke command will include deletion of the bazel-cache which destroys
-    // everything that bazel have written locally.
-    // As a result the next bootstrap will be extremely slow
-    {
-      cwd: projects.get('kibana').path,
-      pattern: Object(path__WEBPACK_IMPORTED_MODULE_2__["relative"])(projects.get('kibana').path, 'bazel-cache')
-    }];
+    const toDelete = [];
 
     for (const project of projects.values()) {
       if (await Object(_utils_fs__WEBPACK_IMPORTED_MODULE_4__["isDirectory"])(project.nodeModulesLocation)) {
@@ -89973,6 +89967,10 @@ const NukeCommand = {
 
     await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_3__["spawn"])('bazel', ['clean', '--expunge'], {});
     _utils_log__WEBPACK_IMPORTED_MODULE_5__["log"].success('Hard cleaned bazel');
+
+    if (toDelete.length === 0) {
+      return;
+    }
     /**
      * In order to avoid patterns like `/build` in packages from accidentally
      * impacting files outside the package we use `process.chdir()` to change
@@ -89982,6 +89980,7 @@ const NukeCommand = {
      * `del()` does support a `cwd` option, but it's only for resolving the
      * patterns and does not impact the cwd check.
      */
+
 
     const originalCwd = process.cwd();
 

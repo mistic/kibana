@@ -28,19 +28,11 @@ import { ICommand } from './';
 
 export const NukeCommand: ICommand = {
   description:
-    'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state (including bazel-cache).',
+    'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state.',
   name: 'clean',
 
   async run(projects) {
-    const toDelete = [
-      // The nuke command will include deletion of the bazel-cache which destroys
-      // everything that bazel have written locally.
-      // As a result the next bootstrap will be extremely slow
-      {
-        cwd: projects.get('kibana').path,
-        pattern: relative(projects.get('kibana').path, 'bazel-cache'),
-      },
-    ];
+    const toDelete = [];
     for (const project of projects.values()) {
       if (await isDirectory(project.nodeModulesLocation)) {
         toDelete.push({
@@ -68,6 +60,10 @@ export const NukeCommand: ICommand = {
     // Hard delete bazel cache
     await spawn('bazel', ['clean', '--expunge'], {});
     log.success('Hard cleaned bazel');
+
+    if (toDelete.length === 0) {
+      return;
+    }
 
     /**
      * In order to avoid patterns like `/build` in packages from accidentally
