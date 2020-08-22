@@ -15,6 +15,8 @@ build --repository_cache=bazel-cache/repository-cache
 
 # Remote cache settings for local env
 build --remote_cache=https://storage.googleapis.com/kibana-bazel-cache
+build --incompatible_remote_results_ignore_disk=true
+build --remote_accept_cached=true
 build --remote_upload_local_results=false
 
 # Remote cache settings for ci env
