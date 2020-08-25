@@ -8876,7 +8876,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "commands", function() { return commands; });
 /* harmony import */ var _bootstrap__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(128);
 /* harmony import */ var _clean__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(856);
-/* harmony import */ var _nuke__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(865);
+/* harmony import */ var _destroy__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(865);
 /* harmony import */ var _run__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(866);
 /* harmony import */ var _watch__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(867);
 /*
@@ -8905,7 +8905,7 @@ __webpack_require__.r(__webpack_exports__);
 const commands = {
   bootstrap: _bootstrap__WEBPACK_IMPORTED_MODULE_0__["BootstrapCommand"],
   clean: _clean__WEBPACK_IMPORTED_MODULE_1__["CleanCommand"],
-  nuke: _nuke__WEBPACK_IMPORTED_MODULE_2__["NukeCommand"],
+  destroy: _destroy__WEBPACK_IMPORTED_MODULE_2__["DestroyCommand"],
   run: _run__WEBPACK_IMPORTED_MODULE_3__["RunCommand"],
   watch: _watch__WEBPACK_IMPORTED_MODULE_4__["WatchCommand"]
 };
@@ -89896,7 +89896,7 @@ module.exports = isSupported ? main : fallbacks;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NukeCommand", function() { return NukeCommand; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DestroyCommand", function() { return DestroyCommand; });
 /* harmony import */ var del__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(350);
 /* harmony import */ var del__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(del__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var ora__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(857);
@@ -89930,7 +89930,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const NukeCommand = {
+const DestroyCommand = {
   description: 'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state.',
   name: 'clean',
 

@@ -26,7 +26,7 @@ import { isDirectory } from '../utils/fs';
 import { log } from '../utils/log';
 import { ICommand } from './';
 
-export const NukeCommand: ICommand = {
+export const DestroyCommand: ICommand = {
   description:
     'Remove the node_modules, remove target directories from all projects along with extra patterns and finally hard cleans bazel state.',
   name: 'clean',
