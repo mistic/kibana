@@ -43,7 +43,6 @@ yarn_install(
     package_json = "//:package.json",
     yarn_lock = "//:yarn.lock",
     data = [
-      "//:.yarnrc",
       "//:preinstall_check.js",
     ],
     symlink_node_modules = True,
