@@ -15,13 +15,5 @@
   "bugs": {
     "url": "https://github.com/jbudz/spec-to-console/issues"
   },
-  "homepage": "https://github.com/jbudz/spec-to-console#readme",
-  "devDependencies": {
-    "jest": "^25.5.4",
-    "prettier": "^2.0.5"
-  },
-  "dependencies": {
-    "commander": "^3.0.0",
-    "glob": "^7.1.2"
-  }
+  "homepage": "https://github.com/jbudz/spec-to-console#readme"
 }

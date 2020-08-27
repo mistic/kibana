@@ -13,14 +13,5 @@
     "build": "babel src --out-dir target",
     "kbn:bootstrap": "yarn build --quiet",
     "kbn:watch": "yarn build --watch"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.10.1"
-  },
-  "dependencies": {
-    "@kbn/babel-preset": "link:../kbn-babel-preset",
-    "@babel/parser": "^7.10.2",
-    "@babel/traverse": "^7.10.1",
-    "lodash": "^4.17.15"
   }
 }
