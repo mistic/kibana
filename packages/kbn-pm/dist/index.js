@@ -8996,7 +8996,7 @@ const BootstrapCommand = {
       bazelArgs.push('--config=ci');
     }
 
-    await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_5__["spawn"])('bazel', bazelArgs, {}); // TODO: Do we want to keep supporting this?
+    await Object(_utils_child_process__WEBPACK_IMPORTED_MODULE_5__["spawn"])('bazel', bazelArgs, {}); // Create node_modules/bin for every project
 
     await Object(_utils_link_project_executables__WEBPACK_IMPORTED_MODULE_10__["linkProjectExecutables"])(projects, projectGraph); // TODO: That runs kbn:bootstrap tasks. Do we want to support it?
 
@@ -76668,41 +76668,117 @@ module.exports = function isArrayish(obj) {
 "use strict";
 
 
-module.exports = parseJson
-function parseJson (txt, reviver, context) {
+const hexify = char => {
+  const h = char.charCodeAt(0).toString(16).toUpperCase()
+  return '0x' + (h.length % 2 ? '0' : '') + h
+}
+
+const parseError = (e, txt, context) => {
+  if (!txt) {
+    return {
+      message: e.message + ' while parsing empty string',
+      position: 0,
+    }
+  }
+  const badToken = e.message.match(/^Unexpected token (.) .*position\s+(\d+)/i)
+  const errIdx = badToken ? +badToken[2]
+    : e.message.match(/^Unexpected end of JSON.*/i) ? txt.length - 1
+    : null
+
+  const msg = badToken ? e.message.replace(/^Unexpected token ./, `Unexpected token ${
+      JSON.stringify(badToken[1])
+    } (${hexify(badToken[1])})`)
+    : e.message
+
+  if (errIdx !== null && errIdx !== undefined) {
+    const start = errIdx <= context ? 0
+      : errIdx - context
+
+    const end = errIdx + context >= txt.length ? txt.length
+      : errIdx + context
+
+    const slice = (start === 0 ? '' : '...') +
+      txt.slice(start, end) +
+      (end === txt.length ? '' : '...')
+
+    const near = txt === slice ? '' : 'near '
+
+    return {
+      message: msg + ` while parsing ${near}${JSON.stringify(slice)}`,
+      position: errIdx,
+    }
+  } else {
+    return {
+      message: msg + ` while parsing '${txt.slice(0, context * 2)}'`,
+      position: 0,
+    }
+  }
+}
+
+class JSONParseError extends SyntaxError {
+  constructor (er, txt, context, caller) {
+    context = context || 20
+    const metadata = parseError(er, txt, context)
+    super(metadata.message)
+    Object.assign(this, metadata)
+    this.code = 'EJSONPARSE'
+    this.systemError = er
+    Error.captureStackTrace(this, caller || this.constructor)
+  }
+  get name () { return this.constructor.name }
+  set name (n) {}
+  get [Symbol.toStringTag] () { return this.constructor.name }
+}
+
+const kIndent = Symbol.for('indent')
+const kNewline = Symbol.for('newline')
+// only respect indentation if we got a line break, otherwise squash it
+// things other than objects and arrays aren't indented, so ignore those
+const formatRE = /^\s*[{\[]((?:\r?\n)+)([\s\t]*)/
+
+const parseJson = (txt, reviver, context) => {
+  const parseText = stripBOM(txt)
   context = context || 20
   try {
-    return JSON.parse(txt, reviver)
+    // get the indentation so that we can save it back nicely
+    // if the file starts with {" then we have an indent of '', ie, none
+    // otherwise, pick the indentation of the next line after the first \n
+    // If the pattern doesn't match, then it means no indentation.
+    // JSON.stringify ignores symbols, so this is reasonably safe.
+    const [, newline, indent] = parseText.match(formatRE) || [, '', '']
+    const result = JSON.parse(parseText, reviver)
+    if (result && typeof result === 'object') {
+      result[kNewline] = newline
+      result[kIndent] = indent
+    }
+    return result
   } catch (e) {
-    if (typeof txt !== 'string') {
+    if (typeof txt !== 'string' && !Buffer.isBuffer(txt)) {
       const isEmptyArray = Array.isArray(txt) && txt.length === 0
-      const errorMessage = 'Cannot parse ' +
-      (isEmptyArray ? 'an empty array' : String(txt))
-      throw new TypeError(errorMessage)
+      throw Object.assign(new TypeError(
+        `Cannot parse ${isEmptyArray ? 'an empty array' : String(txt)}`
+      ), {
+        code: 'EJSONPARSE',
+        systemError: e,
+      })
     }
-    const syntaxErr = e.message.match(/^Unexpected token.*position\s+(\d+)/i)
-    const errIdx = syntaxErr
-    ? +syntaxErr[1]
-    : e.message.match(/^Unexpected end of JSON.*/i)
-    ? txt.length - 1
-    : null
-    if (errIdx != null) {
-      const start = errIdx <= context
-      ? 0
-      : errIdx - context
-      const end = errIdx + context >= txt.length
-      ? txt.length
-      : errIdx + context
-      e.message += ` while parsing near '${
-        start === 0 ? '' : '...'
-      }${txt.slice(start, end)}${
-        end === txt.length ? '' : '...'
-      }'`
-    } else {
-      e.message += ` while parsing '${txt.slice(0, context * 2)}'`
-    }
-    throw e
+
+    throw new JSONParseError(e, parseText, context, parseJson)
   }
+}
+
+// Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+// because the buffer-to-string conversion in `fs.readFileSync()`
+// translates it to FEFF, the UTF-16 BOM.
+const stripBOM = txt => String(txt).replace(/^\uFEFF/, '')
+
+module.exports = parseJson
+parseJson.JSONParseError = JSONParseError
+
+parseJson.noExceptions = (txt, reviver) => {
+  try {
+    return JSON.parse(stripBOM(txt), reviver)
+  } catch (e) {}
 }
 
 
@@ -82662,6 +82738,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "readFile", function() { return readFile; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "chmod", function() { return chmod; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "mkdirp", function() { return mkdirp; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rmdirp", function() { return rmdirp; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "unlink", function() { return unlink; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "copyDirectory", function() { return copyDirectory; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isSymlink", function() { return isSymlink; });
@@ -82670,14 +82747,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createSymlink", function() { return createSymlink; });
 /* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(803);
 /* harmony import */ var cmd_shim__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(cmd_shim__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(133);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(806);
-/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(ncp__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(112);
-/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(350);
+/* harmony import */ var del__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(del__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(133);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(806);
+/* harmony import */ var ncp__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(ncp__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(112);
+/* harmony import */ var util__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(util__WEBPACK_IMPORTED_MODULE_5__);
 /*
  * Licensed to Elasticsearch B.V. under one or more contributor
  * license agreements. See the NOTICE file distributed with
@@ -82701,17 +82780,21 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const lstat = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.lstat);
-const readFile = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.readFile);
-const symlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.symlink);
-const chmod = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.chmod);
-const cmdShim = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(cmd_shim__WEBPACK_IMPORTED_MODULE_0___default.a);
-const mkdir = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.mkdir);
+
+const lstat = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.lstat);
+const readFile = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.readFile);
+const symlink = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.symlink);
+const chmod = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.chmod);
+const cmdShim = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(cmd_shim__WEBPACK_IMPORTED_MODULE_0___default.a);
+const mkdir = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.mkdir);
 const mkdirp = async path => await mkdir(path, {
   recursive: true
 });
-const unlink = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_1___default.a.unlink);
-const copyDirectory = Object(util__WEBPACK_IMPORTED_MODULE_4__["promisify"])(ncp__WEBPACK_IMPORTED_MODULE_2__["ncp"]);
+const rmdirp = async path => await del__WEBPACK_IMPORTED_MODULE_1___default()(path, {
+  force: true
+});
+const unlink = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(fs__WEBPACK_IMPORTED_MODULE_2___default.a.unlink);
+const copyDirectory = Object(util__WEBPACK_IMPORTED_MODULE_5__["promisify"])(ncp__WEBPACK_IMPORTED_MODULE_3__["ncp"]);
 
 async function statTest(path, block) {
   try {
@@ -82769,7 +82852,7 @@ async function createSymlink(src, dest, type) {
     }
   } else {
     const posixType = type === 'exec' ? 'file' : type;
-    const relativeSource = Object(path__WEBPACK_IMPORTED_MODULE_3__["relative"])(Object(path__WEBPACK_IMPORTED_MODULE_3__["dirname"])(dest), src);
+    const relativeSource = Object(path__WEBPACK_IMPORTED_MODULE_4__["relative"])(Object(path__WEBPACK_IMPORTED_MODULE_4__["dirname"])(dest), src);
     await forceCreate(relativeSource, dest, posixType);
   }
 }
@@ -83592,7 +83675,7 @@ function buildProjectGraph(projects) {
     for (const depName of Object.keys(dependencies)) {
       if (projects.has(depName)) {
         const dep = projects.get(depName);
-        const dependentProjectIsInWorkspace = project.isWorkspaceProject || project.json.name === 'kibana';
+        const dependentProjectIsInWorkspace = project.isWorkspaceProject || project.isWorkspaceRoot;
         project.ensureValidProjectDependency(dep, dependentProjectIsInWorkspace);
         projectDeps.push(dep);
       }
@@ -83809,7 +83892,7 @@ class Project {
     this.productionDependencies = this.json.dependencies || {};
     this.devDependencies = this.json.devDependencies || {};
     this.allDependencies = _objectSpread(_objectSpread({}, this.devDependencies), this.productionDependencies);
-    this.isWorkspaceRoot = this.json.hasOwnProperty('workspaces');
+    this.isWorkspaceRoot = this.json.name === 'kibana';
     this.scripts = this.json.scripts || {};
   }
 
@@ -89430,37 +89513,75 @@ __webpack_require__.r(__webpack_exports__);
  * Yarn does not link the executables from dependencies that are installed
  * using `link:` https://github.com/yarnpkg/yarn/pull/5046
  *
- * We simulate this functionality by walking through each project's project
- * dependencies, and manually linking their executables if defined. The logic
- * for linking was mostly adapted from lerna: https://github.com/lerna/lerna/blob/1d7eb9eeff65d5a7de64dea73613b1bf6bfa8d57/src/PackageUtilities.js#L348
+ * Additionally while we have a single package.json being used to install dependencies
+ * in the root project, we also want to be able to run npm scripts in the underlying projects.
+ * We simulate this functionality by finding the root project and for the root project walking through each
+ * dependency and manually link its executables if any defined.
+ * Finally we walk through each other project (excluding the root) and we just symlink each project's
+ * node_modules/.bin into the root node_modules/.bin
+ *
  */
 async function linkProjectExecutables(projectsByName, projectGraph) {
-  _log__WEBPACK_IMPORTED_MODULE_2__["log"].debug(`Linking package executables`);
+  _log__WEBPACK_IMPORTED_MODULE_2__["log"].debug(`Linking package executables`); // Find root and generate executables from dependencies for it
+
+  let rootProject = null;
+  let rootProjectDeps = [];
 
   for (const [projectName, projectDeps] of projectGraph) {
     const project = projectsByName.get(projectName);
-    const binsDir = Object(path__WEBPACK_IMPORTED_MODULE_0__["resolve"])(project.nodeModulesLocation, '.bin');
 
-    for (const projectDep of projectDeps) {
-      const executables = projectDep.getExecutables();
-
-      for (const name of Object.keys(executables)) {
-        const srcPath = executables[name]; // existing logic from lerna -- ensure that the bin we are going to
-        // point to exists or ignore it
-
-        if (!(await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["isFile"])(srcPath))) {
-          continue;
-        }
-
-        const dest = Object(path__WEBPACK_IMPORTED_MODULE_0__["resolve"])(binsDir, name); // Get relative project path with normalized path separators.
-
-        const projectRelativePath = Object(path__WEBPACK_IMPORTED_MODULE_0__["relative"])(project.path, srcPath).split(path__WEBPACK_IMPORTED_MODULE_0__["sep"]).join('/');
-        _log__WEBPACK_IMPORTED_MODULE_2__["log"].debug(`[${project.name}] ${name} -> ${projectRelativePath}`);
-        await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["mkdirp"])(Object(path__WEBPACK_IMPORTED_MODULE_0__["dirname"])(dest));
-        await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["createSymlink"])(srcPath, dest, 'exec');
-        await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["chmod"])(dest, '755');
-      }
+    if (project.isWorkspaceRoot) {
+      rootProject = projectsByName.get(projectName);
+      rootProjectDeps = projectDeps;
+      break;
     }
+  }
+
+  if (!rootProject) {
+    _log__WEBPACK_IMPORTED_MODULE_2__["log"].error('Could not finding root project while linking package executables');
+  } // Prepare root project node_modules/.bin
+
+
+  const rootBinsDir = Object(path__WEBPACK_IMPORTED_MODULE_0__["resolve"])(rootProject.nodeModulesLocation, '.bin');
+
+  for (const rootProjectDep of rootProjectDeps) {
+    const executables = rootProjectDep.getExecutables();
+
+    for (const name of Object.keys(executables)) {
+      const srcPath = executables[name]; // existing logic from lerna -- ensure that the bin we are going to
+      // point to exists or ignore it
+
+      if (!(await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["isFile"])(srcPath))) {
+        continue;
+      }
+
+      const dest = Object(path__WEBPACK_IMPORTED_MODULE_0__["resolve"])(rootBinsDir, name); // Get relative project path with normalized path separators.
+
+      const rootProjectRelativePath = Object(path__WEBPACK_IMPORTED_MODULE_0__["relative"])(rootProject.path, srcPath).split(path__WEBPACK_IMPORTED_MODULE_0__["sep"]).join('/');
+      _log__WEBPACK_IMPORTED_MODULE_2__["log"].debug(`[${rootProject.name}] ${name} -> ${rootProjectRelativePath}`);
+      await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["mkdirp"])(Object(path__WEBPACK_IMPORTED_MODULE_0__["dirname"])(dest));
+      await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["createSymlink"])(srcPath, dest, 'exec');
+      await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["chmod"])(dest, '755');
+    }
+  } // Create symlinks to rootProject/node_modules/.bin for every other project
+
+
+  for (const [projectName] of projectGraph) {
+    const project = projectsByName.get(projectName);
+
+    if (project.isWorkspaceRoot) {
+      continue;
+    }
+
+    const srcPath = rootBinsDir;
+    const dest = Object(path__WEBPACK_IMPORTED_MODULE_0__["resolve"])(project.nodeModulesLocation, '.bin'); // Get relative project path with normalized path separators.
+
+    const projectRelativePath = Object(path__WEBPACK_IMPORTED_MODULE_0__["relative"])(project.path, srcPath).split(path__WEBPACK_IMPORTED_MODULE_0__["sep"]).join('/');
+    _log__WEBPACK_IMPORTED_MODULE_2__["log"].debug(`[${project.name}] 'node_modules/.bin' -> ${projectRelativePath}`);
+    await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["rmdirp"])(Object(path__WEBPACK_IMPORTED_MODULE_0__["dirname"])(dest));
+    await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["mkdirp"])(Object(path__WEBPACK_IMPORTED_MODULE_0__["dirname"])(dest));
+    await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["createSymlink"])(srcPath, dest, 'dir');
+    await Object(_fs__WEBPACK_IMPORTED_MODULE_1__["chmod"])(dest, '755');
   }
 }
 

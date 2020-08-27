@@ -113,8 +113,7 @@ export function buildProjectGraph(projects: ProjectMap) {
       if (projects.has(depName)) {
         const dep = projects.get(depName)!;
 
-        const dependentProjectIsInWorkspace =
-          project.isWorkspaceProject || project.json.name === 'kibana';
+        const dependentProjectIsInWorkspace = project.isWorkspaceProject || project.isWorkspaceRoot;
         project.ensureValidProjectDependency(dep, dependentProjectIsInWorkspace);
 
         projectDeps.push(dep);

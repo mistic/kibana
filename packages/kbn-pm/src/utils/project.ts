@@ -92,7 +92,7 @@ export class Project {
       ...this.devDependencies,
       ...this.productionDependencies,
     };
-    this.isWorkspaceRoot = this.json.hasOwnProperty('workspaces');
+    this.isWorkspaceRoot = this.json.name === 'kibana';
 
     this.scripts = this.json.scripts || {};
   }

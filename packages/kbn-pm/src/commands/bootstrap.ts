@@ -56,7 +56,7 @@ export const BootstrapCommand: ICommand = {
     }
     await spawn('bazel', bazelArgs, {});
 
-    // TODO: Do we want to keep supporting this?
+    // Create node_modules/bin for every project
     await linkProjectExecutables(projects, projectGraph);
 
     // TODO: That runs kbn:bootstrap tasks. Do we want to support it?
