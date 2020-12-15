@@ -38,7 +38,7 @@ exports.getWebpackConfig = ({ dev = false } = {}) => ({
     'kbn-ui-shared-deps.v8.light': ['@elastic/eui/dist/eui_theme_amsterdam_light.css'],
   },
   context: __dirname,
-  devtool: dev ? '#cheap-source-map' : false,
+  devtool: dev ? 'cheap-source-map' : false,
   output: {
     path: UiSharedDeps.distDir,
     filename: '[name].js',
@@ -104,10 +104,12 @@ exports.getWebpackConfig = ({ dev = false } = {}) => ({
       moment: MOMENT_SRC,
     },
     extensions: ['.js', '.ts'],
+    fallback: {
+      path: false,
+    },
   },
 
   optimization: {
-    noEmitOnErrors: true,
     splitChunks: {
       cacheGroups: {
         'kbn-ui-shared-deps.@elastic': {

@@ -24,8 +24,9 @@ import webpack from 'webpack';
 // @ts-expect-error
 import TerserPlugin from 'terser-webpack-plugin';
 import webpackMerge from 'webpack-merge';
-import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import CompressionPlugin from 'compression-webpack-plugin';
+// @ts-ignore
+import { DelWebpackPlugin } from 'del-webpack-plugin';
 import * as UiSharedDeps from '@kbn/ui-shared-deps';
 
 import { Bundle, BundleRefs, WorkerConfig } from '../common';
@@ -39,14 +40,13 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
   const ENTRY_CREATOR = require.resolve('./entry_point_creator');
 
   const commonConfig: webpack.Configuration = {
-    node: { fs: 'empty' },
     context: bundle.contextDir,
     cache: true,
     entry: {
       [bundle.id]: ENTRY_CREATOR,
     },
 
-    devtool: worker.dist ? false : '#cheap-source-map',
+    devtool: worker.dist ? false : 'cheap-source-map',
     profile: worker.profileWebpack,
 
     output: {
@@ -62,7 +62,6 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
     },
 
     optimization: {
-      noEmitOnErrors: true,
       splitChunks: {
         maxAsyncRequests: 10,
         cacheGroups: {
@@ -76,7 +75,7 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
     externals: [UiSharedDeps.externals],
 
     plugins: [
-      new CleanWebpackPlugin(),
+      new DelWebpackPlugin(),
       new BundleRefsPlugin(bundle, bundleRefs),
       ...(bundle.banner ? [new webpack.BannerPlugin({ banner: bundle.banner, raw: true })] : []),
     ],
@@ -229,6 +228,10 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
       alias: {
         tinymath: require.resolve('tinymath/lib/tinymath.es5.js'),
         core_app_image_assets: Path.resolve(worker.repoRoot, 'src/core/public/core_app/images'),
+      },
+      // @ts-ignore
+      fallback: {
+        fs: false,
       },
     },
 
