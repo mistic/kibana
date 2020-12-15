@@ -63,7 +63,7 @@ export class BundleRefsPlugin {
       // hook into the creation of NormalModule instances in webpack, if the import
       // statement leading to the creation of the module is pointing to a bundleRef
       // entry then create a BundleRefModule instead of a NormalModule.
-      compilationParams.normalModuleFactory.hooks.factory.tap(
+      compilationParams.normalModuleFactory.hooks.factorize.tap(
         'BundleRefsPlugin/normalModuleFactory/factory',
         (wrappedFactory: ModuleFactory): ModuleFactory => (data, callback) => {
           const context = data.context;
@@ -100,26 +100,26 @@ export class BundleRefsPlugin {
         compilation.fileDependencies.add(manifestPath);
       });
 
-      compilation.hooks.finishModules.tapPromise(
-        'BundleRefsPlugin/finishModules',
-        async (modules) => {
-          const usedBundleIds = (modules as any[])
-            .filter((m: any): m is BundleRefModule => m instanceof BundleRefModule)
-            .map((m) => m.ref.bundleId);
-
-          const unusedBundleIds = deps.explicit
-            .filter((id) => !usedBundleIds.includes(id))
-            .join(', ');
-
-          if (unusedBundleIds) {
-            const error = new Error(
-              `Bundle for [${this.bundle.id}] lists [${unusedBundleIds}] as a required bundle, but does not use it. Please remove it.`
-            );
-            (error as any).file = manifestPath;
-            compilation.errors.push(error);
-          }
-        }
-      );
+      // compilation.hooks.finishModules.tapPromise(
+      //   'BundleRefsPlugin/finishModules',
+      //   async (modules) => {
+      //     const usedBundleIds = (Array.from(modules) as any[])
+      //       .filter((m: any): m is BundleRefModule => m instanceof BundleRefModule)
+      //       .map((m) => m.ref.bundleId);
+      //
+      //     const unusedBundleIds = deps.explicit
+      //       .filter((id) => !usedBundleIds.includes(id))
+      //       .join(', ');
+      //
+      //     if (unusedBundleIds) {
+      //       const error = new Error(
+      //         `Bundle for [${this.bundle.id}] lists [${unusedBundleIds}] as a required bundle, but does not use it. Please remove it.`
+      //       );
+      //       (error as any).file = manifestPath;
+      //       compilation.errors.push(error);
+      //     }
+      //   }
+      // );
     });
   }
 

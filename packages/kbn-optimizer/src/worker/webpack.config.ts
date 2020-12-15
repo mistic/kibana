@@ -26,7 +26,7 @@ import TerserPlugin from 'terser-webpack-plugin';
 import webpackMerge from 'webpack-merge';
 import CompressionPlugin from 'compression-webpack-plugin';
 // @ts-ignore
-import { DelWebpackPlugin } from 'del-webpack-plugin';
+import DelWebpackPlugin from 'del-webpack-plugin';
 import * as UiSharedDeps from '@kbn/ui-shared-deps';
 
 import { Bundle, BundleRefs, WorkerConfig } from '../common';
@@ -58,7 +58,7 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
           bundle.sourceRoot,
           info.absoluteResourcePath
         )}${info.query}`,
-      jsonpFunction: `${bundle.id}_bundle_jsonpfunction`,
+      uniqueName: `${bundle.id}`,
     },
 
     optimization: {
@@ -273,8 +273,6 @@ export function getWebpackConfig(bundle: Bundle, bundleRefs: BundleRefs, worker:
     optimization: {
       minimizer: [
         new TerserPlugin({
-          cache: false,
-          sourceMap: false,
           extractComments: false,
           parallel: false,
           terserOptions: {
