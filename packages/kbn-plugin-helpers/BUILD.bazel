@@ -1,4 +1,4 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
 
@@ -23,11 +23,19 @@ filegroup(
 
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 
+ts_config(
+    name = "tsconfig",
+    src = "//packages/kbn-plugin-helpers:tsconfig.json",
+    deps = [
+        "//:tsconfig.json",
+    ],
+)
+
 ts_project(
     name = "target",
     declaration = True,
     source_map = True,
-    tsconfig = "//packages/kbn-plugin-helpers:tsconfig.json",
+    tsconfig = "tsconfig",
     srcs = SRCS,
     args = [],
     deps = [
@@ -66,7 +74,6 @@ ts_project(
         "@npm//jest-styled-components",
         "@npm//@types/testing-library__jest-dom",
     ],
-    extends = ["//:tsconfig.json"],
     out_dir = "target",
     root_dir = "src",
 )

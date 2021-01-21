@@ -3,6 +3,7 @@ filegroup(
   name = "build",
   srcs = [
     "//:tsconfig.json",
+    # "//:setup_files",
     "//packages/elastic-datemath:npm_module",
     "//packages/eslint-config-kibana:npm_module",
     "//packages/kbn-analytics:npm_module",

@@ -8,22 +8,22 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Fetch Node.js rules
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "10fffa29f687aa4d8eb6dfe8731ab5beb63811ab00981fc84a93899641fd4af1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/2.0.3/rules_nodejs-2.0.3.tar.gz"],
+    sha256 = "6142e9586162b179fdd570a55e50d1332e7d9c030efd853453438d607569721d",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.0.0/rules_nodejs-3.0.0.tar.gz"],
 )
 load("@build_bazel_rules_nodejs//:index.bzl", "check_rules_nodejs_version", "node_repositories", "yarn_install")
 
-check_rules_nodejs_version(minimum_version_string = "2.0.3")
+check_rules_nodejs_version(minimum_version_string = "3.0.0")
 
 # Setup the Node.js toolchain
 node_repositories(
     node_repositories = {
-        "12.19.1-darwin_amd64": ("node-v12.19.1-darwin-x64.tar.gz", "node-v12.19.1-darwin-x64", "3cb491abc1f643bb71ef40722291c2fee0b75ed52b333ea71aa67de005757251"),
-        "12.19.1-linux_amd64": ("node-v12.19.1-linux-x64.tar.xz", "node-v12.19.1-linux-x64", "1436dbc34383abbe5e921e9744e527cd24c690e7b0362a39fb960795a23a7a03"),
-        "12.19.1-linux_arm64": ("node-v12.19.1-linux-arm64.tar.gz", "node-v12.19.1-linux-arm64", "a716fca03eb7ba6e07c6a05595e152e177ad3435e58df8120cf615836bcd00b4"),
-        "12.19.1-windows_amd64": ("node-v12.19.1-win-x64.zip", "node-v12.19.1-win-x64", "a9390166ca69ce678f32d84672449c9fb200aea6505140211f7ae5b6939611a1"),
+        "14.15.4-darwin_amd64": ("node-v14.15.4-darwin-x64.tar.gz", "node-v14.15.4-darwin-x64", "6b0e19e5c2601ef97510f7eb4f52cc8ee261ba14cb05f31eb1a41a5043b0304e"),
+        "14.15.4-linux_amd64": ("node-v14.15.4-linux-x64.tar.xz", "node-v14.15.4-linux-x64", "ed01043751f86bb534d8c70b16ab64c956af88fd35a9506b7e4a68f5b8243d8a"),
+        "14.15.4-linux_arm64": ("node-v14.15.4-linux-arm64.tar.gz", "node-v14.15.4-linux-arm64", "b681bda8eaa1ed2ac85e0ed2c2041a0408963c2198a24da183dc3ab60d93d975"),
+        "14.15.4-windows_amd64": ("node-v14.15.4-win-x64.zip", "node-v14.15.4-win-x64", "b2a0765240f8fbd3ba90a050b8c87069d81db36c9f3745aff7516e833e4d2ed6"),
     },
-    node_version = "12.19.1",
+    node_version = "14.15.4",
     node_urls = [
         "https://nodejs.org/dist/v{version}/{filename}",
     ],
@@ -47,4 +47,5 @@ yarn_install(
     ],
     symlink_node_modules = True,
     quiet = False,
+    frozen_lockfile = False,
 )

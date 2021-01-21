@@ -1,4 +1,4 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
@@ -58,15 +58,22 @@ webpack(
     ],
 )
 
+ts_config(
+    name = "tsconfig",
+    src = "//packages/kbn-monaco:tsconfig.json",
+    deps = [
+        "//:tsconfig.json",
+    ],
+)
+
 ts_project(
     name = "tsc_files",
     declaration = True,
     source_map = True,
-    tsconfig = "//packages/kbn-monaco:tsconfig.json",
+    tsconfig = "tsconfig",
     srcs = SRCS,
     args = [],
     deps = ALL_DEPS,
-    extends = ["//:tsconfig.json"],
     root_dir = "src",
 )
 

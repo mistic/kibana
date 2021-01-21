@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "private": true,
   "scripts": {
-    "build": "webpack",
+    "build": "../../node_modules/.bin/webpack",
     "kbn:watch": "webpack --watch --progress",
     "prettier": "prettier --write './src/**/*.ts'"
   }

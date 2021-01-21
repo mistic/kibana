@@ -1,4 +1,3 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
@@ -24,6 +23,8 @@ filegroup(
 
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 
+
+# TODO: test if we can omit transitive dep of elastic/datemath by using a linked BUILD file.
 webpack(
     name = "target",
     data = [
@@ -36,6 +37,7 @@ webpack(
         "//packages/kbn-dev-utils",
         "//packages/kbn-i18n",
         "//packages/kbn-monaco",
+        "//packages/elastic-datemath",
         "@npm//@elastic/charts",
         "@npm//@elastic/eui",
         "@npm//@elastic/numeral",

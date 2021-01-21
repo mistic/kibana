@@ -1,5 +1,9 @@
 const semver = require('semver')
-const PKG = require('../../package.json')
+const fs = require('fs');
+const path = require('path');
+const { REPO_ROOT } = require('@kbn/dev-utils');
+
+const PKG = JSON.parse(fs.readFileSync(path.resolve(REPO_ROOT, 'package.json'), 'utf8'));
 
 module.exports = {
   plugins: [

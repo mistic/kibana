@@ -16,6 +16,9 @@ js_library(
     name = "eslint-config-kibana",
     srcs = SRCS,
     package_name = "@elastic/eslint-config-kibana",
+    deps = [
+      "//packages/kbn-dev-utils",
+    ],
     visibility = ["//visibility:public"],
 )
 

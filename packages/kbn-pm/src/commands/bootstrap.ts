@@ -62,26 +62,26 @@ export const BootstrapCommand: ICommand = {
     // TODO: That runs kbn:bootstrap tasks. Do we want to support it?
     const batchedProjects = topologicallyBatchProjects(projects, projectGraph);
     await parallelizeBatches(batchedProjects, async (project) => {
-      const bazelDistProjectTarget = resolve(
-        REPO_ROOT,
-        'bazel-dist/bin/packages',
-        basename(project.path),
-        'npm_module/target'
-      );
-      if (project.path.includes('packages') && existsSync(bazelDistProjectTarget)) {
-        const paths = await globby([`${bazelDistProjectTarget}/**/*`], {
-          expandDirectories: true,
-          onlyFiles: false,
-        });
-        paths.push(bazelDistProjectTarget);
-        paths.forEach((path) => chmodSync(path, 0o755));
-
-        if (existsSync(project.targetLocation)) {
-          await del(project.targetLocation);
-        }
-
-        await copyDirectory(bazelDistProjectTarget, project.targetLocation);
-      }
+      // const bazelDistProjectTarget = resolve(
+      //   REPO_ROOT,
+      //   'bazel-dist/bin/packages',
+      //   basename(project.path),
+      //   'npm_module/target'
+      // );
+      // if (project.path.includes('packages') && existsSync(bazelDistProjectTarget)) {
+      //   const paths = await globby([`${bazelDistProjectTarget}/**/*`], {
+      //     expandDirectories: true,
+      //     onlyFiles: false,
+      //   });
+      //   paths.push(bazelDistProjectTarget);
+      //   paths.forEach((path) => chmodSync(path, 0o755));
+      //
+      //   if (existsSync(project.targetLocation)) {
+      //     await del(project.targetLocation);
+      //   }
+      //
+      //   await copyDirectory(bazelDistProjectTarget, project.targetLocation);
+      // }
 
       if (project.isWorkspaceRoot) {
         log.info(`[${project.name}] running [kbn:bootstrap] script`);

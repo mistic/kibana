@@ -60,3 +60,5 @@ snapshots.js
 # release notes script output
 report.csv
 report.asciidoc
+
+.yarn-local-mirror/

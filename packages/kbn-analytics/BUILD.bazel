@@ -1,4 +1,4 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
 load("@npm//@babel/cli:index.bzl", "babel")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
@@ -79,16 +79,23 @@ babel(
     ],
 )
 
+ts_config(
+    name = "tsconfig",
+    src = "//packages/kbn-analytics:tsconfig.json",
+    deps = [
+        "//:tsconfig.json",
+    ],
+)
+
 ts_project(
     name = "tsc",
     declaration = True,
     emit_declaration_only = True,
     declaration_map = True,
-    tsconfig = "//packages/kbn-analytics:tsconfig.json",
+    tsconfig = "tsconfig",
     srcs = SRCS,
     args = ["--emitDeclarationOnly"],
     deps = ALL_DEPS,
-    extends = ["//:tsconfig.json"],
     root_dir = "src",
     out_dir = "types",
 )

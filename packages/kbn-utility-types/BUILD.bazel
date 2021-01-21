@@ -1,4 +1,4 @@
-load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
 
@@ -11,10 +11,18 @@ SRCS = glob(
 
 exports_files(["tsconfig.json"], visibility = ["//visibility:public"])
 
+ts_config(
+    name = "tsconfig",
+    src = "//packages/kbn-utility-types:tsconfig.json",
+    deps = [
+        "//:tsconfig.json",
+    ],
+)
+
 ts_project(
     name = "target",
     declaration = True,
-    tsconfig = "//packages/kbn-utility-types:tsconfig.json",
+    tsconfig = "tsconfig",
     srcs = SRCS,
     args = [],
     deps = [
@@ -24,7 +32,6 @@ ts_project(
         "@npm//@types/jest",
         "@npm//@types/node",
     ],
-    extends = ["//:tsconfig.json"],
     declaration_map = True,
     out_dir = "target",
     declaration_dir = "target"
