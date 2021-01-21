@@ -105,8 +105,12 @@ run --incompatible_strict_action_env
 try-import %workspace%/.bazelrc.user
 
 
-# common --color=no
-# common --curses=yes
-
-build --noshow_progress
+# Log configs
+## different from default
+common --color=yes
 build --show_task_finish
+
+## enforced default values
+build --noshow_progress
+build --noshow_loading_progress
+build --show_result=1

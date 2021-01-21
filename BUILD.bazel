@@ -1,14 +1,3 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "copy_to_bin")
-
-copy_to_bin(
-    name = "setup_files",
-    srcs = [
-        "package.json",
-        "tsconfig.json",
-    ],
-    visibility = ["//visibility:public"]
-)
-
 exports_files(
     [
         "tsconfig.json",

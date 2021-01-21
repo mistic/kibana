@@ -17,7 +17,11 @@
  * under the License.
  */
 
+import chalk from 'chalk';
 import { resolve } from 'path';
+import * as Rx from 'rxjs';
+import { tap } from 'rxjs/operators';
+import { observeLines } from '@kbn/dev-utils';
 import { ICommand } from './';
 import { spawn } from '../utils/child_process';
 import { readFile } from '../utils/fs';
@@ -51,7 +55,23 @@ export const BootstrapCommand: ICommand = {
       bazelArgs.push('--config=ci');
     }
 
-    await spawn('bazel', bazelArgs);
+    const bazelProc = spawn('bazel', bazelArgs, {
+      stdio: 'pipe',
+    });
+
+    const bazelLogs$ = new Rx.Subject<string>();
+
+    Rx.merge(
+      observeLines(bazelProc.stdout!).pipe(
+        tap((line) => log.info(`${chalk.cyan('[bazel]')} ${line}`))
+      ),
+      observeLines(bazelProc.stderr!).pipe(
+        tap((line) => log.info(`${chalk.cyan('[bazel]')} ${line}`))
+      )
+    ).subscribe(bazelLogs$);
+
+    await bazelProc;
+    await bazelLogs$.toPromise();
 
     // Create node_modules/bin for every project
     await linkProjectExecutables(projects, projectGraph);
