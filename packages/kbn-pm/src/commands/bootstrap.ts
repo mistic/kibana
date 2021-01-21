@@ -17,14 +17,10 @@
  * under the License.
  */
 
-import globby from 'globby';
-import del from 'del';
-import { basename, resolve } from 'path';
-import { existsSync, chmodSync } from 'fs';
-import { REPO_ROOT } from '@kbn/dev-utils';
+import { resolve } from 'path';
 import { ICommand } from './';
 import { spawn } from '../utils/child_process';
-import { readFile, copyDirectory } from '../utils/fs';
+import { readFile } from '../utils/fs';
 import { log } from '../utils/log';
 import { topologicallyBatchProjects } from '../utils/projects';
 import { parallelizeBatches } from '../utils/parallelize';
@@ -54,7 +50,8 @@ export const BootstrapCommand: ICommand = {
     if (options.ci === true) {
       bazelArgs.push('--config=ci');
     }
-    await spawn('bazel', bazelArgs, {});
+
+    await spawn('bazel', bazelArgs);
 
     // Create node_modules/bin for every project
     await linkProjectExecutables(projects, projectGraph);
