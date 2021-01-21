@@ -142,7 +142,7 @@ js_library(
 pkg_npm(
     name = "npm_module",
     deps = [
-        ":target",
+        ":kbn-analytics",
     ],
     visibility = ["//visibility:public"],
 )
