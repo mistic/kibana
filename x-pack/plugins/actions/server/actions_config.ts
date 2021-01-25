@@ -67,7 +67,7 @@ function isHostnameAllowedInUri(config: ActionsConfigType, uri: string): boolean
   return pipe(
     tryCatch(() => url.parse(uri)),
     map((parsedUrl) => parsedUrl.hostname),
-    mapNullable((hostname) => isAllowed(config, hostname)),
+    mapNullable((hostname) => isAllowed(config, hostname as string | null)),
     getOrElse<boolean>(() => false)
   );
 }

@@ -222,7 +222,6 @@ export class LoginPage extends Component<Props, State> {
         http={this.props.http}
         notifications={this.props.notifications}
         selector={selector}
-        // @ts-expect-error Map.get is ok with getting `undefined`
         infoMessage={infoMessageMap.get(query[LOGOUT_REASON_QUERY_STRING_PARAMETER]?.toString())}
         loginAssistanceMessage={this.props.loginAssistanceMessage}
         loginHelp={loginHelp}
