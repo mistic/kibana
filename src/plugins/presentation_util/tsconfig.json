@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["common/**/*", "public/**/*", ".storybook/**/*"],
+  "include": ["common/**/*", "public/**/*", "../../../typings/**/*"],
   "references": [
     { "path": "../../core/tsconfig.json" },
     { "path": "../dashboard/tsconfig.json" },
