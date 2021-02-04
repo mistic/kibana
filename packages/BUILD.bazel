@@ -2,6 +2,6 @@
 filegroup(
   name = "build",
   srcs = [
-    "//packages/elastic-datemath:npm_module",
+    "//packages/elastic-datemath:build",
   ],
 )

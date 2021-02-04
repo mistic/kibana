@@ -2,9 +2,12 @@ load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
 
 SRCS = [
+    ".npmignore",
     "index.js",
     "index.d.ts",
     "package.json",
+    "readme",
+    "tsconfig.json",
 ]
 
 filegroup(
@@ -24,11 +27,8 @@ js_library(
     visibility = ["//visibility:public"],
 )
 
-pkg_npm(
-    name = "npm_module",
-    deps = [
-        ":elastic-datemath",
-    ],
-    visibility = ["//visibility:public"],
+alias(
+    name = "build",
+    actual = "elastic-datemath",
+    visibility = ["//visibility:public"]
 )
-
