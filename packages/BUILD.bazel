@@ -1,5 +1,7 @@
 # Call each package final target
 filegroup(
   name = "build",
-  srcs = [],
+  srcs = [
+    "//packages/elastic-datemath:npm_module",
+  ],
 )
