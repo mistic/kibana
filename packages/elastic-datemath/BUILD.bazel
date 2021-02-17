@@ -1,11 +1,23 @@
 load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+load(":jest.bzl", "jest_test")
 
-SRCS = [
-    "index.d.ts",
+ES_SRCS = [
     "index.js",
+]
+
+SRCS = ES_SRCS + [
+    "index.d.ts",
     "package.json",
     "tsconfig.json",
+]
+
+DEPS = [
+    "@npm//moment",
+]
+
+JEST_SRCS = ES_SRCS + [
+    "index.test.js",
 ]
 
 filegroup(
@@ -18,9 +30,14 @@ js_library(
     srcs = [
         ":src",
     ],
-    deps = [
-        "@npm//moment",
-    ],
+    deps = DEPS,
     package_name = "@elastic/datemath",
     visibility = ["//visibility:public"],
+)
+
+jest_test(
+    name = "jest",
+    srcs = JEST_SRCS,
+    deps = DEPS,
+    jest_config = ":jest.config.js"
 )
