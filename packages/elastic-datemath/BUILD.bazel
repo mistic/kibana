@@ -43,6 +43,5 @@ jest_test(
 
 nodejs_binary(
     name = "debug",
-    entry_point = ":debug.js",
-
+    entry_point = ":debug.js"
 )
