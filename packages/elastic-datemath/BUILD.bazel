@@ -1,5 +1,4 @@
-load("@build_bazel_rules_nodejs//:index.bzl", "pkg_npm")
-load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "js_library", "nodejs_binary")
 load(":jest.bzl", "jest_test")
 
 ES_SRCS = [
@@ -40,4 +39,10 @@ jest_test(
     srcs = JEST_SRCS,
     deps = DEPS,
     jest_config = ":jest.config.js"
+)
+
+nodejs_binary(
+    name = "debug",
+    entry_point = ":debug.js",
+
 )
