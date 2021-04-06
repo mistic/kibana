@@ -31,6 +31,7 @@ import { LogInterceptor } from './log_interceptor';
 // In order to keep using the legacy logger until we remove it I'm just adding
 // a new hard limit here.
 process.stdout.setMaxListeners(25);
+process.setMaxListeners(25);
 
 export function getLoggerStream({ events, config }) {
   const squeeze = new Squeeze(events);
@@ -44,10 +45,18 @@ export function getLoggerStream({ events, config }) {
     dest = writeStr(config.dest, {
       flags: 'a',
       encoding: 'utf8',
+      emitClose: true,
+      autoClose: true,
     });
 
     logInterceptor.on('end', () => {
-      dest.end();
+      dest.destroy();
+    });
+
+    process.on('message', (msg) => {
+      if (msg && msg.reloadLoggingConfig) {
+        dest.destroy();
+      }
     });
   }
 
