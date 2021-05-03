@@ -65,6 +65,7 @@ yarn kbn watch-bazel
 - @elastic/eslint-config-kibana
 - @elastic/safer-lodash-set
 - @kbn/apm-config-loader
+- @kbn/ace
 - @kbn/apm-utils
 - @kbn/babel-code-parser
 - @kbn/babel-preset
