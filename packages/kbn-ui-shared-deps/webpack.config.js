@@ -152,9 +152,7 @@ module.exports = {
   },
 
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: '[name].css',
-    }),
+    new MiniCssExtractPlugin(),
     new CompressionPlugin({
       algorithm: 'brotliCompress',
       filename: '[path].br',
