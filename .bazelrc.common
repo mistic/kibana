@@ -39,6 +39,13 @@ build --incompatible_restrict_string_escapes
 query --incompatible_no_implicit_file_export
 query --incompatible_restrict_string_escapes
 
+# Experimental flag to enable sandbox folders reuse
+# not released yet https://github.com/bazelbuild/bazel/issues/8230
+# build --experimental_reuse_sandbox_directories
+
+# Experimental flag to not block an action completion due to folder deletes
+build --experimental_sandbox_async_tree_delete_idle_threads=1
+
 # Log configs
 ## different from default
 common --color=yes
