@@ -19,7 +19,15 @@
 
 import moment from 'moment';
 
+/**
+ * The widget class
+ * @public
+ */
 export type Unit = 'ms' | 's' | 'm' | 'h' | 'd' | 'w' | 'M' | 'y';
+/**
+ * The widget class
+ * @public
+ */
 export type UnitsMap = {
   [k in Unit]: {
     weight: number;
@@ -28,6 +36,10 @@ export type UnitsMap = {
   };
 };
 
+/**
+ * The widget class
+ * @public
+ */
 export const unitsMap: UnitsMap = {
   ms: { weight: 1, type: 'fixed', base: 1 },
   s: { weight: 2, type: 'fixed', base: 1000 },
@@ -39,10 +51,25 @@ export const unitsMap: UnitsMap = {
   // q: { weight: 8, type: 'calendar' }, // TODO: moment duration does not support quarter
   y: { weight: 9, type: 'calendar', base: NaN },
 };
+
+/**
+ * The widget class
+ * @public
+ */
 export const units: Unit[] = Object.keys(unitsMap).sort(
   (a, b) => unitsMap[b as Unit].weight - unitsMap[a as Unit].weight
 ) as Unit[];
+
+/**
+ * The widget class
+ * @public
+ */
 export const unitsDesc: Unit[] = [...units] as Unit[];
+
+/**
+ * The widget class
+ * @public
+ */
 export const unitsAsc: Unit[] = [...units].reverse() as Unit[];
 
 const isDate = (d: string) => Object.prototype.toString.call(d) === '[object Date]';
@@ -53,6 +80,10 @@ const isValidDate = (d: string) => isDate(d) && !isNaN(d.valueOf() as any);
  * If you pass in a momentjs instance as the third parameter the calculation
  * will be done using this (and its locale settings) instead of the one bundled
  * with this library.
+ */
+/**
+ * The widget class
+ * @public
  */
 export function parse(
   input: string,
@@ -166,6 +197,11 @@ function parseDateMath(mathString: string, time: moment.Moment, roundUp: boolean
 
   return dateTime;
 }
+
+/**
+ * The widget class
+ * @public
+ */
 
 // eslint-disable-next-line import/no-default-export
 export default {

@@ -71,7 +71,8 @@ copy_to_bin(
 api_extractor(
  name = "types",
  chdir = "$(@D)",
- outs = ["types/datemath.d.ts", "types/datemath-beta.d.ts", "types/datemath-public.d.ts"],
+ #outs = ["types/datemath.d.ts", "types/datemath-beta.d.ts", "types/datemath-public.d.ts"],
+ output_dir = True,
  data = [":all_types", "//:copy_tsconfig_base", ":deps"],
  args = ["run", "--local", "--verbose", "--config", "api-extractor.json"]
 )
