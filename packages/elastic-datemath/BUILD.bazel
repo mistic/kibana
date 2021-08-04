@@ -1,6 +1,8 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "js_library", "pkg_npm")
 load("//src/dev/bazel:index.bzl", "jsts_transpiler")
+load("@npm//@microsoft/api-extractor:index.bzl", "api_extractor")
+load("@npm//typescript:index.bzl", "tsc")
 
 PKG_BASE_NAME = "elastic-datemath"
 PKG_REQUIRE_NAME = "@elastic/datemath"
@@ -42,6 +44,35 @@ ts_config(
   ],
 )
 
+tsc(
+  name = "all_types",
+  # output_dir = True,
+  outs = ["all_types/index.d.ts", "all_types/index.d.ts.map"],
+  args = [
+    "-p",
+    "./%s/tsconfig.json" % package_name(),
+    "--outDir",
+    "$(@D)/all_types",
+    "--pretty",
+  ],
+  data = DEPS + SRCS + ["//:tsconfig.base.json", "tsconfig.json"],
+)
+
+js_library(
+  name = "pkg_types",
+  srcs = NPM_MODULE_EXTRA_FILES,
+  deps = [":all_types"],
+  package_name = "@types/@elastic/datemath",
+  visibility = ["//visibility:public"],
+)
+
+api_extractor(
+ name = "types",
+ output_dir = True,
+ data = [":pkg_types", "api-extractor.json", ] + ["//:tsconfig.base.json", "tsconfig.json"],
+ args = ["run", "--local", "--verbose", "--config", "$(execpath api-extractor.json)"]
+)
+
 ts_project(
   name = "tsc_types",
   args = ['--pretty'],
@@ -60,7 +91,7 @@ ts_project(
 js_library(
   name = PKG_BASE_NAME,
   srcs = NPM_MODULE_EXTRA_FILES,
-  deps = DEPS + [":target_node", ":tsc_types"],
+  deps = DEPS + [":target_node"],
   package_name = PKG_REQUIRE_NAME,
   visibility = ["//visibility:public"],
 )
