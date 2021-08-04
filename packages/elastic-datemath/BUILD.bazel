@@ -1,8 +1,7 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_config", "ts_project")
-load("@build_bazel_rules_nodejs//:index.bzl", "js_library", "pkg_npm")
+load("@build_bazel_rules_nodejs//:index.bzl", "js_library", "pkg_npm", "copy_to_bin")
 load("//src/dev/bazel:index.bzl", "jsts_transpiler")
 load("@npm//@microsoft/api-extractor:index.bzl", "api_extractor")
-load("@npm//typescript:index.bzl", "tsc")
 
 PKG_BASE_NAME = "elastic-datemath"
 PKG_REQUIRE_NAME = "@elastic/datemath"
@@ -44,37 +43,8 @@ ts_config(
   ],
 )
 
-tsc(
-  name = "all_types",
-  # output_dir = True,
-  outs = ["all_types/index.d.ts", "all_types/index.d.ts.map"],
-  args = [
-    "-p",
-    "./%s/tsconfig.json" % package_name(),
-    "--outDir",
-    "$(@D)/all_types",
-    "--pretty",
-  ],
-  data = DEPS + SRCS + ["//:tsconfig.base.json", "tsconfig.json"],
-)
-
-js_library(
-  name = "pkg_types",
-  srcs = NPM_MODULE_EXTRA_FILES,
-  deps = [":all_types"],
-  package_name = "@types/@elastic/datemath",
-  visibility = ["//visibility:public"],
-)
-
-api_extractor(
- name = "types",
- output_dir = True,
- data = [":pkg_types", "api-extractor.json", ] + ["//:tsconfig.base.json", "tsconfig.json"],
- args = ["run", "--local", "--verbose", "--config", "$(execpath api-extractor.json)"]
-)
-
 ts_project(
-  name = "tsc_types",
+  name = "all_types",
   args = ['--pretty'],
   srcs = SRCS,
   deps = DEPS,
@@ -82,10 +52,28 @@ ts_project(
   declaration_map = True,
   emit_declaration_only = True,
   incremental = False,
-  out_dir = "target_types",
+  out_dir = "all_types",
   source_map = True,
   root_dir = "src",
   tsconfig = ":tsconfig",
+)
+
+copy_to_bin(
+  name = "deps",
+  srcs = [
+    "tsconfig.json",
+    "api-extractor.json",
+    "package.json",
+    ":srcs"
+  ],
+)
+
+api_extractor(
+ name = "types",
+ chdir = "$(@D)",
+ outs = ["types/datemath.d.ts", "types/datemath-beta.d.ts", "types/datemath-public.d.ts"],
+ data = [":all_types", "//:copy_tsconfig_base", ":deps"],
+ args = ["run", "--local", "--verbose", "--config", "api-extractor.json"]
 )
 
 js_library(
