@@ -28,6 +28,7 @@ NPM_MODULE_EXTRA_FILES = [
 ]
 
 SRC_DEPS = [
+#  "@npm//@elastic/elasticsearch",
   "@npm//@elastic/elasticsearch",
   "@npm//@hapi/hapi",
   "@npm//tslib",
