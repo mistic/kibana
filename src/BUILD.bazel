@@ -1,0 +1,7 @@
+filegroup(
+  name = "default_plugins_kbn_json",
+  srcs = glob([
+    "**/kibana.json",
+  ]),
+  visibility = ["//visibility:public"],
+)

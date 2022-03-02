@@ -125,8 +125,15 @@ export function runKbnOptimizerCli(options: { defaultLimitsPath: string }) {
         throw createFlagError('expected --update-limits to have no value');
       }
 
+      const outputRoot = flags['output-root'] ? String(flags['output-root']) : undefined;
+      // eslint-disable-next-line
+      console.log(`#### REPO-ROOT: ${REPO_ROOT}`)
+      // eslint-disable-next-line
+      console.log(`#### OUTPUT-ROOT: ${outputRoot}`)
+
       const config = OptimizerConfig.create({
         repoRoot: REPO_ROOT,
+        outputRoot,
         watch,
         maxWorkerCount,
         oss: oss && !(validateLimits || updateLimits),
@@ -181,7 +188,7 @@ export function runKbnOptimizerCli(options: { defaultLimitsPath: string }) {
           'update-limits',
           'progress',
         ],
-        string: ['workers', 'scan-dir', 'filter', 'limits'],
+        string: ['workers', 'scan-dir', 'filter', 'limits', 'output-root'],
         default: {
           core: true,
           examples: true,
@@ -208,6 +215,7 @@ export function runKbnOptimizerCli(options: { defaultLimitsPath: string }) {
           --limits           path to a limits.yml file to read, defaults to $KBN_OPTIMIZER_LIMITS_PATH or source file
           --validate-limits  validate the limits.yml config to ensure that there are limits defined for every bundle
           --update-limits    run a build and rewrite the limits file to include the current bundle sizes +15kb
+          --output-root      defines an output root path for the bundles
         `,
       },
     }

@@ -1,5 +1,5 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_config")
-load("@build_bazel_rules_nodejs//:index.bzl", "js_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "directory_file_path", "js_library")
 load("//src/dev/bazel:index.bzl", "jsts_transpiler", "pkg_npm", "pkg_npm_types", "ts_project")
 
 PKG_BASE_NAME = "kbn-optimizer"
@@ -31,6 +31,7 @@ NPM_MODULE_EXTRA_FILES = [
 ]
 
 RUNTIME_DEPS = [
+  "//packages/kbn-babel-preset",
   "//packages/kbn-config",
   "//packages/kbn-config-schema",
   "//packages/kbn-dev-utils",
@@ -161,5 +162,20 @@ filegroup(
   srcs = [
     ":npm_module_types",
   ],
+  visibility = ["//visibility:public"],
+)
+
+directory_file_path(
+  name = "optimizer-cli-path",
+  directory = ":target_node",
+  path = "cli.js",
+)
+
+nodejs_binary(
+  name = "_bin-optimizer-cli",
+  data = [
+    ":%s" % PKG_BASE_NAME
+  ],
+  entry_point = ":optimizer-cli-path",
   visibility = ["//visibility:public"],
 )
