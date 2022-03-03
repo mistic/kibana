@@ -132,11 +132,11 @@ public_plugin_bundler = rule(
       allow_files = True,
       aspects = [module_mappings_aspect],
     ),
-    "entrypoint_name": attr.string(
-      doc = """Entrypoint name of the types files group to summarise""",
-      default = "index.d.ts",
-    ),
-    "package_name": attr.string(),
+#    "entrypoint_name": attr.string(
+#      doc = """Entrypoint name of the types files group to summarise""",
+#      default = "index.d.ts",
+#    ),
+#    "package_name": attr.string(),
     "srcs": attr.label_list(
       doc = """Files inside this directory which are inputs for the types to summarise.""",
       allow_files = True,

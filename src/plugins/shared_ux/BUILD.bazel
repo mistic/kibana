@@ -20,14 +20,15 @@ filegroup(
 )
 
 RUNTIME_DEPS = [
-  "//packages/kbn-babel-preset",
   "//packages/kbn-i18n",
-  "@npm//antlr4ts",
-  "@npm//babel-loader",
-  "@npm//monaco-editor",
-  "@npm//raw-loader",
-  "@npm//regenerator-runtime",
-  "@npm//rxjs",
+  "//packages/kbn-i18n-react",
+  "@npm//@elastic/eui",
+  "@npm//@emotion/css",
+  "@npm//@emotion/react",
+  "@npm//@storybook/addon-actions",
+  "@npm//classnames",
+  "@npm//enzyme",
+  "@npm//react"
 ]
 
 ts_config(
@@ -39,24 +40,39 @@ ts_config(
   ],
 )
 
-webpack(
+#webpack(
+#  name = "target_public",
+#  data = RUNTIME_DEPS + [
+#    "//src:default_plugins_kbn_json",
+#    ":srcs",
+#    ":tsconfig",
+#  ],
+#  output_dir = True,
+#  args = [
+#    "--no-core",
+#    "--no-cache",
+#    "--output-root",
+#    "$(@D)",
+#    "--workers",
+#    "1",
+#    "--focus",
+#    "sharedUX"
+#  ],
+#)
+
+public_plugin_bundler(
   name = "target_public",
-  data = RUNTIME_DEPS + [
-    "//src:default_plugins_kbn_json",
-    ":srcs",
-    ":tsconfig",
-  ],
-  output_dir = True,
-  args = [
-    "--no-core",
-    "--no-cache",
-    "--output-root",
-    "$(@D)",
-    "--workers",
-    "1",
-    "--focus",
-    "sharedUX"
-  ],
+  srcs = SRCS + ["//src:default_plugins_kbn_json"],
+  tsconfig = ":tsconfig",
+#  args = [
+#    "--no-cache",
+#    "--output-root",
+#    "$(@D)",
+#    "--workers",
+#    "1",
+#    "--focus",
+#    "sharedUX"
+#  ],
 )
 
 filegroup(
