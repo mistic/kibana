@@ -22,11 +22,12 @@ def _collect_inputs_deps_and_transitive_types_deps(ctx):
     deps_files_depsets.append(dep.files)
 
     # Collect transitive type deps to propagate in the provider
-    if DeclarationInfo in dep:
-      transitive_types_deps.append(dep)
+#    if DeclarationInfo in dep:
+#      transitive_types_deps.append(dep)
 
   deps_files = depset(transitive = deps_files_depsets).to_list()
-  return [deps_files, transitive_types_deps]
+#  return [deps_files, transitive_types_deps]
+  return [deps_files]
 
 def _get_type_package_name(actualName):
   return "@types/" + actualName.replace("@", "").replace("/", "__")
@@ -59,7 +60,7 @@ def _tsconfig_inputs(ctx):
 def _public_plugin_bundler_impl(ctx):
   # collect input deps and transitive type deps
   inputs_deps_and_transitive_types_deps = _collect_inputs_deps_and_transitive_types_deps(ctx)
-  transitive_types_deps = inputs_deps_and_transitive_types_deps[1]
+#  transitive_types_deps = inputs_deps_and_transitive_types_deps[1]
 
   # input declarations
   deps_inputs = inputs_deps_and_transitive_types_deps[0]
@@ -67,7 +68,8 @@ def _public_plugin_bundler_impl(ctx):
   inputs = ctx.files.srcs[:]
   inputs.extend(tsconfig_inputs)
   inputs.extend(deps_inputs)
-  inputs.append(ctx.file._generated_package_json_template)
+  inputs.extend(ctx.files._extra_srcs[:])
+#  inputs.append(ctx.file._generated_package_json_template)
 
   # output dir declaration
   package_path = ctx.label.package
@@ -75,9 +77,9 @@ def _public_plugin_bundler_impl(ctx):
   outputs = [package_dir]
 
   # gathering template args
-  template_args = [
-    "NAME", _get_type_package_name(ctx.attr.package_name)
-  ]
+#  template_args = [
+#    "NAME", _get_type_package_name(ctx.attr.package_name)
+#  ]
 
   # layout api extractor arguments
   extractor_args = ctx.actions.args()
@@ -88,11 +90,23 @@ def _public_plugin_bundler_impl(ctx):
   ### [2] = stringified template args
   ### [3] = tsconfig input file path
   ### [4] = entry point from provided types to summarise
-  extractor_args.add(package_dir.path)
-  extractor_args.add(ctx.file._generated_package_json_template.path)
-  extractor_args.add_joined(template_args, join_with = ",", omit_if_empty = False)
-  extractor_args.add(tsconfig_inputs[0])
-  extractor_args.add(_calculate_entrypoint_path(ctx))
+#  extractor_args.add(package_dir.path)
+#  extractor_args.add(ctx.file._generated_package_json_template.path)
+#  extractor_args.add_joined(template_args, join_with = ",", omit_if_empty = False)
+#  extractor_args.add(tsconfig_inputs[0])
+#  extractor_args.add(_calculate_entrypoint_path(ctx))
+  extractor_args.add_all([
+     "--no-core",
+     "--no-cache",
+     "--output-root",
+     package_dir.path,
+     "--workers",
+     "1",
+     "--focus",
+     "sharedUX",
+     "--filter",
+     "sharedUX"
+  ])
 
   run_node(
     ctx,
@@ -112,16 +126,16 @@ def _public_plugin_bundler_impl(ctx):
       files = package_dir_depset,
       runfiles = ctx.runfiles([package_dir]),
     ),
-    declaration_info(
-      declarations = depset([package_dir]),
-      deps = transitive_types_deps,
-    ),
-    LinkablePackageInfo(
-      package_name = _get_type_package_name(ctx.attr.package_name),
-      package_path = "",
-      path = package_dir.path,
-      files = package_dir_depset,
-    )
+#    declaration_info(
+#      declarations = depset([package_dir]),
+#      deps = transitive_types_deps,
+#    ),
+#    LinkablePackageInfo(
+#      package_name = _get_type_package_name(ctx.attr.package_name),
+#      package_path = "",
+#      path = package_dir.path,
+#      files = package_dir_depset,
+#    )
   ]
 
 public_plugin_bundler = rule(
@@ -140,6 +154,11 @@ public_plugin_bundler = rule(
     "srcs": attr.label_list(
       doc = """Files inside this directory which are inputs for the types to summarise.""",
       allow_files = True,
+    ),
+    "_extra_srcs": attr.label_list(
+      doc = """Files inside this directory which are inputs for the types to summarise.""",
+      allow_files = True,
+      default = [Label("//src:default_plugins_kbn_json"), "//:package.json"]
     ),
     "tsconfig": attr.label(mandatory = True, allow_single_file = [".json"]),
     "_bundler": attr.label(

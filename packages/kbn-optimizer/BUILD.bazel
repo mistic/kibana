@@ -1,5 +1,5 @@
 load("@npm//@bazel/typescript:index.bzl", "ts_config")
-load("@build_bazel_rules_nodejs//:index.bzl", "directory_file_path", "js_library")
+load("@build_bazel_rules_nodejs//:index.bzl", "directory_file_path", "js_library", "nodejs_binary")
 load("//src/dev/bazel:index.bzl", "jsts_transpiler", "pkg_npm", "pkg_npm_types", "ts_project")
 
 PKG_BASE_NAME = "kbn-optimizer"
@@ -168,7 +168,7 @@ filegroup(
 directory_file_path(
   name = "optimizer-cli-path",
   directory = ":target_node",
-  path = "cli.js",
+  path = "cli_bazell_runner.js",
 )
 
 nodejs_binary(

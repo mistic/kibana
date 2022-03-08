@@ -125,7 +125,13 @@ export function runKbnOptimizerCli(options: { defaultLimitsPath: string }) {
         throw createFlagError('expected --update-limits to have no value');
       }
 
-      const outputRoot = flags['output-root'] ? String(flags['output-root']) : undefined;
+      const outputRootFlagValue = flags['output-root'] ? String(flags['output-root']) : undefined;
+      const outputRoot =
+        outputRootFlagValue && Path.isAbsolute(outputRootFlagValue)
+          ? outputRootFlagValue
+          : outputRootFlagValue
+          ? Path.join(REPO_ROOT, outputRootFlagValue)
+          : outputRootFlagValue;
       // eslint-disable-next-line
       console.log(`#### REPO-ROOT: ${REPO_ROOT}`)
       // eslint-disable-next-line

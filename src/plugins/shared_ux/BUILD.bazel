@@ -62,7 +62,7 @@ ts_config(
 
 public_plugin_bundler(
   name = "target_public",
-  srcs = SRCS + ["//src:default_plugins_kbn_json"],
+  srcs = SRCS,
   tsconfig = ":tsconfig",
 #  args = [
 #    "--no-cache",
