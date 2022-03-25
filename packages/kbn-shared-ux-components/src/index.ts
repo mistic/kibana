@@ -111,3 +111,5 @@ export const KibanaSolutionAvatarLazy = React.lazy(() =>
  * a predefined fallback and error boundary.
  */
 export const KibanaSolutionAvatar = withSuspense(KibanaSolutionAvatarLazy);
+
+export { CustomizablePalette } from './coloring';
