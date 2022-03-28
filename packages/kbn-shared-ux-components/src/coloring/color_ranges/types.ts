@@ -6,8 +6,12 @@
  * Side Public License, v 1.
  */
 
-import type { PaletteContinuity, PaletteRegistry, DataBounds } from '@kbn/coloring';
-import type { CustomPaletteParams } from '../types';
+import type {
+  PaletteContinuity,
+  PaletteRegistry,
+  DataBounds,
+  CustomPaletteParams,
+} from '@kbn/coloring';
 
 export interface ColorRange {
   color: string;

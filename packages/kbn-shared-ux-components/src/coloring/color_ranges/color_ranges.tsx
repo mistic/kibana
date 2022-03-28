@@ -9,6 +9,7 @@
 import React, { useState, useEffect, Dispatch } from 'react';
 import { camelCase } from 'lodash';
 import { EuiFlexGroup, EuiTextColor, EuiFlexItem } from '@elastic/eui';
+import { DEFAULT_CONTINUITY, DEFAULT_RANGE_TYPE } from '@kbn/coloring';
 
 import { ColorRangesExtraActions } from './color_ranges_extra_actions';
 import { ColorRangeItem } from './color_ranges_item';
@@ -20,8 +21,6 @@ import {
 
 import type { ColorRange } from './types';
 import type { PaletteConfigurationActions, CustomPaletteParamsConfig } from '../types';
-
-import { DEFAULT_CONTINUITY, DEFAULT_RANGE_TYPE } from '../constants';
 
 export interface ColorRangesProps {
   colorRanges: ColorRange[];

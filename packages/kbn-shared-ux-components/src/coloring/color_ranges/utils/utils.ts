@@ -13,10 +13,10 @@ import {
   DataBounds,
   roundValue,
   getDataMinMax,
+  CustomPaletteParams,
 } from '@kbn/coloring';
 
 import type { ColorRange, ColorRangeAccessor } from '../types';
-import type { CustomPaletteParams } from '../../types';
 
 /**
  * Check if item is last

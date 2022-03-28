@@ -6,7 +6,12 @@
  * Side Public License, v 1.
  */
 
-import type { PaletteOutput, PaletteRegistry, PaletteContinuity, DataBounds } from '@kbn/coloring';
+import type {
+  PaletteOutput,
+  PaletteRegistry,
+  DataBounds,
+  CustomPaletteParams,
+} from '@kbn/coloring';
 import type { ColorRange, ColorRangesActions } from './color_ranges';
 
 /** @internal **/
@@ -35,26 +40,6 @@ export type PaletteConfigurationActions =
   | ColorRangesActions
   | { type: 'updateRangeType'; payload: UpdateRangeTypePayload }
   | { type: 'changeColorPalette'; payload: ChangeColorPalettePayload };
-
-/** todo: from Lens **/
-export interface ColorStop {
-  color: string;
-  stop: number;
-}
-
-/** todo: from Lens **/
-export interface CustomPaletteParams {
-  name?: string;
-  reverse?: boolean;
-  rangeType?: 'number' | 'percent';
-  continuity?: PaletteContinuity;
-  progression?: 'fixed';
-  rangeMin?: number;
-  rangeMax?: number;
-  stops?: ColorStop[];
-  colorStops?: ColorStop[];
-  steps?: number;
-}
 
 /** todo: from Lens **/
 export type CustomPaletteParamsConfig = CustomPaletteParams & {

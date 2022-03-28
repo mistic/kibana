@@ -7,4 +7,3 @@
  */
 
 export { CustomizablePalette } from './palette_configuration';
-export { ColorRanges } from './color_ranges';

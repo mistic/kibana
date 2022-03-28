@@ -7,6 +7,7 @@
  */
 
 import type { Reducer } from 'react';
+import { DEFAULT_CONTINUITY, DEFAULT_RANGE_TYPE } from '@kbn/coloring';
 import {
   addColorRange,
   deleteColorRange,
@@ -17,7 +18,6 @@ import {
   updateColorRangeValue,
   getValueForContinuity,
 } from './color_ranges/utils';
-import { DEFAULT_CONTINUITY, DEFAULT_RANGE_TYPE } from './constants';
 
 import {
   mergePaletteParams,

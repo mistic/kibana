@@ -9,7 +9,12 @@
 import { i18n } from '@kbn/i18n';
 import useUpdateEffect from 'react-use/lib/useUpdateEffect';
 import React, { useState, useCallback, Dispatch, FocusEvent, useContext } from 'react';
-import { PaletteContinuity, checkIsMaxContinuity, checkIsMinContinuity } from '@kbn/coloring';
+import {
+  PaletteContinuity,
+  checkIsMaxContinuity,
+  checkIsMinContinuity,
+  CustomPaletteParams,
+} from '@kbn/coloring';
 
 import {
   EuiFieldNumber,
@@ -34,7 +39,6 @@ import {
 import type { ColorRange, ColorRangeAccessor, ColorRangesActions } from './types';
 import { ColorRangesContext } from './color_ranges_context';
 import type { ColorRangeValidation } from './color_ranges_validation';
-import type { CustomPaletteParams } from '../types';
 
 export interface ColorRangesItemProps {
   colorRange: ColorRange;

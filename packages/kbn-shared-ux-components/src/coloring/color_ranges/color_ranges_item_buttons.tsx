@@ -8,7 +8,7 @@
 
 import React, { Dispatch, useCallback, useContext } from 'react';
 import { i18n } from '@kbn/i18n';
-import type { PaletteContinuity } from '@kbn/coloring';
+import type { PaletteContinuity, CustomPaletteParams } from '@kbn/coloring';
 
 import { EuiButtonIcon } from '@elastic/eui';
 
@@ -19,7 +19,6 @@ import { TooltipWrapper } from '../tooltip_wrapper';
 
 import type { ColorRangesActions, ColorRange, ColorRangeAccessor } from './types';
 import { ColorRangesContext } from './color_ranges_context';
-import type { CustomPaletteParams } from '../types';
 
 export interface ColorRangesItemButtonProps {
   index: number;

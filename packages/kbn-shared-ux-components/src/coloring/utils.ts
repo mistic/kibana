@@ -19,6 +19,7 @@ import {
   roundValue,
   getPaletteStops,
   getDataMinMax,
+  CustomPaletteParams,
   CUSTOM_PALETTE,
   DEFAULT_RANGE_TYPE,
   DEFAULT_COLOR_STEPS,
@@ -27,7 +28,7 @@ import {
 
 import type { ColorRange } from './color_ranges';
 import { toColorStops, sortColorRanges } from './color_ranges/utils';
-import type { PaletteConfigurationState, CustomPaletteParams } from './types';
+import type { PaletteConfigurationState } from './types';
 
 /**
  * Some name conventions here:

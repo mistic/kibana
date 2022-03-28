@@ -7,11 +7,11 @@
  */
 
 import { mountWithIntl } from '@kbn/test-jest-helpers';
+import { PaletteRegistry } from '@kbn/coloring';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 import { ColorRanges, ColorRangesProps } from './color_ranges';
 import { ReactWrapper } from 'enzyme';
-import { PaletteRegistry } from 'src/plugins/charts/public';
 import { ColorRangesContext } from './color_ranges_context';
 
 const extraActionSelectors = {

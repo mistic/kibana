@@ -8,14 +8,15 @@
 
 import React from 'react';
 import { EuiColorPalettePicker, EuiColorPalettePickerPaletteProps } from '@elastic/eui';
-import type { PaletteOutput, PaletteRegistry } from '@kbn/coloring';
 import {
+  PaletteOutput,
+  PaletteRegistry,
+  CustomPaletteParams,
   CUSTOM_PALETTE,
   DEFAULT_COLOR_STEPS,
   FIXED_PROGRESSION,
   DEFAULT_PALETTE_NAME,
-} from './constants';
-import type { CustomPaletteParams } from './types';
+} from '@kbn/coloring';
 
 function getCustomPaletteConfig(
   palettes: PaletteRegistry,
