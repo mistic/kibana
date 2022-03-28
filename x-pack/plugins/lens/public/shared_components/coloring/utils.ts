@@ -8,6 +8,7 @@
 import chroma from 'chroma-js';
 import { euiLightVars, euiDarkVars } from '@kbn/ui-theme';
 import { isColorDark } from '@elastic/eui';
+
 import {
   DataBounds,
   PaletteRegistry,
@@ -46,10 +47,6 @@ export function getNumericValue(rowValue: number | number[] | undefined) {
   return rowValue;
 }
 
-function getId(id: string) {
-  return id;
-}
-
 export function applyPaletteParams<T extends PaletteOutput<CustomPaletteParams>>(
   palettes: PaletteRegistry,
   activePalette: T,
@@ -70,7 +67,7 @@ export function applyPaletteParams<T extends PaletteOutput<CustomPaletteParams>>
 export const findMinMaxByColumnId = (
   columnIds: string[],
   table: Datatable | undefined,
-  getOriginalId: (id: string) => string = getId
+  getOriginalId: (id: string) => string = (id: string) => id
 ) => {
   const minMax: Record<string, DataBounds> = {};
 

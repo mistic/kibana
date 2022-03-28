@@ -5,9 +5,9 @@
  * 2.0.
  */
 
-import type { PaletteOutput } from 'src/plugins/charts/common';
-import { Filter } from '@kbn/es-query';
-import { Query } from 'src/plugins/data/public';
+import type { PaletteOutput } from '@kbn/coloring';
+import type { Filter } from '@kbn/es-query';
+import type { Query } from 'src/plugins/data/public';
 import type { MigrateFunctionsObject } from 'src/plugins/kibana_utils/common';
 import type { CustomPaletteParams, LayerType, PersistableFilter } from '../../common';
 

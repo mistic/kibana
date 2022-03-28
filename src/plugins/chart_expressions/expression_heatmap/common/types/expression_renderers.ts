@@ -6,7 +6,8 @@
  * Side Public License, v 1.
  */
 
-import type { ChartsPluginSetup, PaletteRegistry } from '../../../../charts/public';
+import type { PaletteRegistry } from '@kbn/coloring';
+import type { ChartsPluginSetup } from '../../../../charts/public';
 import type { IFieldFormat, SerializedFieldFormat } from '../../../../field_formats/common';
 import type { RangeSelectContext, ValueClickContext } from '../../../../embeddable/public';
 import type { PersistedState } from '../../../../visualizations/public';

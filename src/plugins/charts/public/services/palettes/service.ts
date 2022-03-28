@@ -6,12 +6,9 @@
  * Side Public License, v 1.
  */
 
+import type { PaletteRegistry, PaletteDefinition } from '@kbn/coloring';
 import { ExpressionsSetup } from '../../../../../../src/plugins/expressions/public';
-import {
-  ChartsPluginSetup,
-  PaletteDefinition,
-  PaletteRegistry,
-} from '../../../../../../src/plugins/charts/public';
+import { ChartsPluginSetup } from '../../../../../../src/plugins/charts/public';
 import { LegacyColorsService } from '../legacy_colors';
 
 export interface PaletteSetupPlugins {

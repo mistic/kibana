@@ -7,13 +7,14 @@
  */
 
 import { $Values } from '@kbn/utility-types';
+import type { PaletteOutput } from '@kbn/coloring';
 import {
   Datatable,
   ExpressionFunctionDefinition,
   ExpressionValueRender,
 } from '../../../../expressions';
 import { ExpressionValueVisDimension } from '../../../../visualizations/public';
-import { CustomPaletteState, PaletteOutput } from '../../../../charts/common';
+import { CustomPaletteState } from '../../../../charts/common';
 import {
   EXPRESSION_GAUGE_NAME,
   GAUGE_FUNCTION_RENDERER_NAME,

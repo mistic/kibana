@@ -6,7 +6,7 @@
  */
 
 import { cloneDeep, mapValues } from 'lodash';
-import { PaletteOutput } from 'src/plugins/charts/common';
+import type { PaletteOutput } from '@kbn/coloring';
 import { SerializableRecord } from '@kbn/utility-types';
 import {
   mergeMigrationFunctionMaps,

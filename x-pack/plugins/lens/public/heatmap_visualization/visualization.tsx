@@ -11,6 +11,7 @@ import { i18n } from '@kbn/i18n';
 import { FormattedMessage, I18nProvider } from '@kbn/i18n-react';
 import { Ast } from '@kbn/interpreter';
 import { Position } from '@elastic/charts';
+import { CUSTOM_PALETTE } from '@kbn/coloring';
 import { ThemeServiceStart } from 'kibana/public';
 import { KibanaThemeProvider } from '../../../../../src/plugins/kibana_react/public';
 import { PaletteRegistry } from '../../../../../src/plugins/charts/public';
@@ -29,7 +30,6 @@ import {
   LENS_HEATMAP_ID,
 } from './constants';
 import { HeatmapToolbar } from './toolbar_component';
-import { CUSTOM_PALETTE } from '../shared_components';
 import { HeatmapDimensionEditor } from './dimension_editor';
 import { getSafePaletteParams } from './utils';
 import type { CustomPaletteParams } from '../../common';

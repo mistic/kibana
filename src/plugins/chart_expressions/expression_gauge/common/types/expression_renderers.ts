@@ -6,8 +6,9 @@
  * Side Public License, v 1.
  */
 
-import { PersistedState } from '../../../../visualizations/public';
-import type { ChartsPluginSetup, PaletteRegistry } from '../../../../charts/public';
+import type { PaletteRegistry } from '@kbn/coloring';
+import type { PersistedState } from '../../../../visualizations/public';
+import type { ChartsPluginSetup } from '../../../../charts/public';
 import type { IFieldFormat, SerializedFieldFormat } from '../../../../field_formats/common';
 import type { GaugeExpressionProps } from './expression_functions';
 

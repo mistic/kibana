@@ -10,6 +10,7 @@ import { defaultPaletteParams as sharedDefaultParams } from '../shared_component
 
 export const DEFAULT_PALETTE_NAME = 'status';
 export const DEFAULT_COLOR_STEPS = 3;
+
 export const defaultPaletteParams: RequiredPaletteParamTypes = {
   ...sharedDefaultParams,
   maxSteps: 5,

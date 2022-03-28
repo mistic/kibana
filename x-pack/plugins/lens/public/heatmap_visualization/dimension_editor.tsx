@@ -14,10 +14,11 @@ import {
   EuiFlexGroup,
   EuiButtonEmpty,
 } from '@elastic/eui';
+import { FIXED_PROGRESSION } from '@kbn/coloring';
 import { CustomizablePalette } from '@kbn/shared-ux-components';
 import type { PaletteRegistry } from 'src/plugins/charts/public';
 import type { VisualizationDimensionEditorProps } from '../types';
-import { FIXED_PROGRESSION, PalettePanelContainer } from '../shared_components/';
+import { PalettePanelContainer } from '../shared_components/';
 import './dimension_editor.scss';
 import type { HeatmapVisualizationState } from './types';
 import { getSafePaletteParams } from './utils';

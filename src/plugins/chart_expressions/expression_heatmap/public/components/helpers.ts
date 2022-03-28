@@ -5,7 +5,8 @@
  * in compliance with, at your election, the Elastic License 2.0 or the Server
  * Side Public License, v 1.
  */
-import { PaletteOutput, PaletteRegistry } from 'src/plugins/charts/public';
+
+import type { PaletteOutput, PaletteRegistry } from '@kbn/coloring';
 import type { Datatable, DatatableColumn } from 'src/plugins/expressions/public';
 import type { CustomPaletteParams, ColorStop } from '../../common';
 import {

@@ -22,7 +22,7 @@ import {
   LayoutDirection,
   LineAnnotation,
 } from '@elastic/charts';
-import { PaletteOutput } from 'src/plugins/charts/public';
+import type { PaletteOutput } from '@kbn/coloring';
 import { calculateMinInterval, XYChart, XYChartRenderProps } from './expression';
 import type { LensMultiTable } from '../../common';
 import { layerTypes } from '../../common';

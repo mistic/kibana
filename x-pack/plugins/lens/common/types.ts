@@ -8,16 +8,13 @@
 import type { Filter, FilterMeta } from '@kbn/es-query';
 import { Position } from '@elastic/charts';
 import { $Values } from '@kbn/utility-types';
+import type { PaletteContinuity, PaletteOutput } from '@kbn/coloring';
 import type {
   IFieldFormat,
   SerializedFieldFormat,
 } from '../../../../src/plugins/field_formats/common';
 import type { Datatable } from '../../../../src/plugins/expressions/common';
-import type {
-  PaletteContinuity,
-  PaletteOutput,
-  ColorMode,
-} from '../../../../src/plugins/charts/common';
+import type { ColorMode } from '../../../../src/plugins/charts/common';
 import {
   CategoryDisplay,
   layerTypes,

@@ -10,7 +10,8 @@ import {
   PaletteDefinition,
   PaletteRegistry,
   SeriesLayer,
-} from 'src/plugins/charts/public';
+} from '@kbn/coloring';
+
 import Color from 'color';
 import { RequiredPaletteParamTypes } from '../../../common';
 import { defaultPaletteParams as sharedDefaultParams } from '../../shared_components/';

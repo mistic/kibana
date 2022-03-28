@@ -6,11 +6,9 @@
  */
 
 import type { Direction } from '@elastic/eui';
+import type { PaletteOutput } from '@kbn/coloring';
 import { SortingHint } from '../..';
-import type {
-  CustomPaletteState,
-  PaletteOutput,
-} from '../../../../../../src/plugins/charts/common';
+import type { CustomPaletteState } from '../../../../../../src/plugins/charts/common';
 import type {
   ExpressionFunctionDefinition,
   DatatableColumn,

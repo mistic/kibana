@@ -19,7 +19,7 @@ import {
   EuiFieldText,
   EuiComboBox,
 } from '@elastic/eui';
-import { PaletteRegistry } from 'src/plugins/charts/public';
+import { PaletteRegistry, FIXED_PROGRESSION } from '@kbn/coloring';
 import { CustomizablePalette } from '@kbn/shared-ux-components';
 import { VisualizationDimensionEditorProps } from '../../types';
 import { DatatableVisualizationState } from '../visualization';
@@ -27,7 +27,6 @@ import { DatatableVisualizationState } from '../visualization';
 import {
   applyPaletteParams,
   defaultPaletteParams,
-  FIXED_PROGRESSION,
   useDebouncedValue,
   PalettePanelContainer,
   findMinMaxByColumnId,
