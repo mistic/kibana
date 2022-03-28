@@ -14,18 +14,13 @@ import {
   htmlIdGenerator,
 } from '@elastic/eui';
 import { CustomizablePalette } from '@kbn/shared-ux-components';
+import { PaletteRegistry, CUSTOM_PALETTE, FIXED_PROGRESSION } from '@kbn/coloring';
 import { i18n } from '@kbn/i18n';
 import React, { useCallback, useState } from 'react';
 import { ColorMode } from '../../../../../src/plugins/charts/common';
-import type { PaletteRegistry } from '../../../../../src/plugins/charts/public';
 import type { MetricState } from '../../common/types';
 import { isNumericFieldForDatatable } from '../../common/expressions';
-import {
-  applyPaletteParams,
-  CUSTOM_PALETTE,
-  FIXED_PROGRESSION,
-  PalettePanelContainer,
-} from '../shared_components';
+import { applyPaletteParams, PalettePanelContainer } from '../shared_components';
 import type { VisualizationDimensionEditorProps } from '../types';
 import { defaultPaletteParams } from './palette_config';
 

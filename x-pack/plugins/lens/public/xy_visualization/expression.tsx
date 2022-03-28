@@ -50,6 +50,7 @@ import { i18n } from '@kbn/i18n';
 import { RenderMode } from 'src/plugins/expressions';
 import { ThemeServiceStart } from 'kibana/public';
 import { FieldFormat } from 'src/plugins/field_formats/common';
+import { PaletteRegistry, SeriesLayer } from '@kbn/coloring';
 import { EventAnnotationServiceType } from '../../../../../src/plugins/event_annotation/public';
 import { EmptyPlaceholder } from '../../../../../src/plugins/charts/public';
 import { KibanaThemeProvider } from '../../../../../src/plugins/kibana_react/public';
@@ -68,8 +69,6 @@ import { search } from '../../../../../src/plugins/data/public';
 import {
   ChartsPluginSetup,
   ChartsPluginStart,
-  PaletteRegistry,
-  SeriesLayer,
   useActiveCursor,
 } from '../../../../../src/plugins/charts/public';
 import { MULTILAYER_TIME_AXIS_STYLE } from '../../../../../src/plugins/charts/common';

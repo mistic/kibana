@@ -9,7 +9,7 @@ import './expression_reference_lines.scss';
 import React from 'react';
 import { groupBy } from 'lodash';
 import { RectAnnotation, AnnotationDomainType, LineAnnotation, Position } from '@elastic/charts';
-import type { PaletteRegistry } from 'src/plugins/charts/public';
+import type { PaletteRegistry } from '@kbn/coloring';
 import type { FieldFormat } from 'src/plugins/field_formats/common';
 import type { ReferenceLineLayerArgs } from '../../common/expressions';
 import type { LensMultiTable } from '../../common/types';

@@ -17,8 +17,8 @@ import {
 } from '@elastic/eui';
 import React, { useState } from 'react';
 import { i18n } from '@kbn/i18n';
+import { PaletteRegistry, CUSTOM_PALETTE, FIXED_PROGRESSION } from '@kbn/coloring';
 import { CustomizablePalette } from '@kbn/shared-ux-components';
-import type { PaletteRegistry } from 'src/plugins/charts/public';
 import {
   GaugeTicksPositions,
   GaugeColorModes,
@@ -30,8 +30,6 @@ import {
 import { isNumericFieldForDatatable } from '../../../common/expressions';
 import {
   applyPaletteParams,
-  CUSTOM_PALETTE,
-  FIXED_PROGRESSION,
   PalettePanelContainer,
   TooltipWrapper,
 } from '../../shared_components/';
