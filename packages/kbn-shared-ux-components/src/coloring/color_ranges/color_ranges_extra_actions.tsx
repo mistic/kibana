@@ -47,7 +47,7 @@ export function ColorRangesExtraActions({
   }, [dataBounds, dispatch, palettes]);
 
   const oneColorRangeWarn = i18n.translate(
-    'xpack.lens.dynamicColoring.customPalette.oneColorRange',
+    'sharedUXComponents.dynamicColoring.customPalette.oneColorRange',
     {
       defaultMessage: `Requires more than one color`,
     }
@@ -58,7 +58,7 @@ export function ColorRangesExtraActions({
       <EuiFlexItem grow={false}>
         <TooltipWrapper
           tooltipContent={i18n.translate(
-            'xpack.lens.dynamicColoring.customPalette.maximumStepsApplied',
+            'sharedUXComponents.dynamicColoring.customPalette.maximumStepsApplied',
             {
               defaultMessage: `You've applied the maximum number of steps`,
             }
@@ -72,7 +72,7 @@ export function ColorRangesExtraActions({
             iconType="plusInCircle"
             color="primary"
             aria-label={i18n.translate(
-              'xpack.lens.dynamicColoring.customPalette.addColorAriaLabel',
+              'sharedUXComponents.dynamicColoring.customPalette.addColorAriaLabel',
               {
                 defaultMessage: 'Add color',
               }
@@ -83,7 +83,7 @@ export function ColorRangesExtraActions({
             onClick={onAddColorRange}
           >
             <FormattedMessage
-              id="xpack.lens.dynamicColoring.customPalette.addColor"
+              id="sharedUXComponents.dynamicColoring.customPalette.addColor"
               defaultMessage="Add color"
             />
           </EuiButtonEmpty>
@@ -100,16 +100,19 @@ export function ColorRangesExtraActions({
             data-test-subj={`lnsPalettePanel_dynamicColoring_reverseColors`}
             iconType="sortable"
             color="primary"
-            aria-label={i18n.translate('xpack.lens.dynamicColoring.customPaletteAriaLabel', {
-              defaultMessage: 'Reverse colors',
-            })}
+            aria-label={i18n.translate(
+              'sharedUXComponents.dynamicColoring.customPaletteAriaLabel',
+              {
+                defaultMessage: 'Reverse colors',
+              }
+            )}
             size="xs"
             flush="left"
             onClick={onReversePalette}
             disabled={shouldDisableReverse}
           >
             <FormattedMessage
-              id="xpack.lens.dynamicColoring.customPalette.reverseColors"
+              id="sharedUXComponents.dynamicColoring.customPalette.reverseColors"
               defaultMessage="Reverse colors"
             />
           </EuiButtonEmpty>
@@ -127,7 +130,7 @@ export function ColorRangesExtraActions({
             iconType={DistributeEquallyIcon}
             color="primary"
             aria-label={i18n.translate(
-              'xpack.lens.dynamicColoring.customPalette.distributeValuesAriaLabel',
+              'sharedUXComponents.dynamicColoring.customPalette.distributeValuesAriaLabel',
               {
                 defaultMessage: 'Distribute values',
               }
@@ -138,7 +141,7 @@ export function ColorRangesExtraActions({
             onClick={onDistributeValues}
           >
             <FormattedMessage
-              id="xpack.lens.dynamicColoring.customPalette.distributeValues"
+              id="sharedUXComponents.dynamicColoring.customPalette.distributeValues"
               defaultMessage="Distribute values"
             />
           </EuiButtonEmpty>

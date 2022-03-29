@@ -66,10 +66,10 @@ const getMode = (
 
 const getPlaceholderForAutoMode = (isLast: boolean) =>
   isLast
-    ? i18n.translate('xpack.lens.dynamicColoring.customPalette.maxValuePlaceholder', {
+    ? i18n.translate('sharedUXComponents.dynamicColoring.customPalette.maxValuePlaceholder', {
         defaultMessage: 'Max. value',
       })
-    : i18n.translate('xpack.lens.dynamicColoring.customPalette.minValuePlaceholder', {
+    : i18n.translate('sharedUXComponents.dynamicColoring.customPalette.minValuePlaceholder', {
         defaultMessage: 'Min. value',
       });
 
@@ -155,7 +155,7 @@ export function ColorRangeItem({
   }, [localValue, colorRange, accessor]);
 
   const selectNewColorText = i18n.translate(
-    'xpack.lens.dynamicColoring.customPalette.selectNewColor',
+    'sharedUXComponents.dynamicColoring.customPalette.selectNewColor',
     {
       defaultMessage: 'Select a new color',
     }
@@ -207,12 +207,15 @@ export function ColorRangeItem({
           onBlur={onLeaveFocus}
           data-test-subj={`lnsPalettePanel_dynamicColoring_range_value_${index}`}
           prepend={<span className="euiFormLabel">{isLast ? '\u2264' : '\u2265'}</span>}
-          aria-label={i18n.translate('xpack.lens.dynamicColoring.customPalette.rangeAriaLabel', {
-            defaultMessage: 'Range {index}',
-            values: {
-              index: index + 1,
-            },
-          })}
+          aria-label={i18n.translate(
+            'sharedUXComponents.dynamicColoring.customPalette.rangeAriaLabel',
+            {
+              defaultMessage: 'Range {index}',
+              values: {
+                index: index + 1,
+              },
+            }
+          )}
           step="any"
         />
       </EuiFlexItem>

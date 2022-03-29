@@ -48,9 +48,12 @@ export function ColorRangeDeleteButton({ index, dispatch }: ColorRangesItemButto
     dispatch({ type: 'deleteColorRange', payload: { index, dataBounds, palettes } });
   }, [dispatch, index, dataBounds, palettes]);
 
-  const title = i18n.translate('xpack.lens.dynamicColoring.customPalette.deleteButtonAriaLabel', {
-    defaultMessage: 'Delete',
-  });
+  const title = i18n.translate(
+    'sharedUXComponents.dynamicColoring.customPalette.deleteButtonAriaLabel',
+    {
+      defaultMessage: 'Delete',
+    }
+  );
 
   return (
     <EuiButtonIcon
@@ -83,16 +86,16 @@ export function ColorRangeEditButton({
   }, [isLast, dispatch, continuity, dataBounds, palettes]);
 
   let tooltipContent = isLast
-    ? i18n.translate('xpack.lens.dynamicColoring.customPalette.setCustomMinValue', {
+    ? i18n.translate('sharedUXComponents.dynamicColoring.customPalette.setCustomMinValue', {
         defaultMessage: `Set custom maximum value`,
       })
-    : i18n.translate('xpack.lens.dynamicColoring.customPalette.setCustomMaxValue', {
+    : i18n.translate('sharedUXComponents.dynamicColoring.customPalette.setCustomMaxValue', {
         defaultMessage: `Set custom minimum value`,
       });
 
   if (disableSwitchingContinuity) {
     tooltipContent = i18n.translate(
-      'xpack.lens.dynamicColoring.customPalette.disallowedEditMinMaxValues',
+      'sharedUXComponents.dynamicColoring.customPalette.disallowedEditMinMaxValues',
       {
         defaultMessage: `You cannot set custom value for current configuration`,
       }
@@ -130,10 +133,10 @@ export function ColorRangeAutoDetectButton({
   }, [continuity, dataBounds, dispatch, isLast, palettes]);
 
   const tooltipContent = isLast
-    ? i18n.translate('xpack.lens.dynamicColoring.customPalette.useAutoMaxValue', {
+    ? i18n.translate('sharedUXComponents.dynamicColoring.customPalette.useAutoMaxValue', {
         defaultMessage: `Use maximum data value`,
       })
-    : i18n.translate('xpack.lens.dynamicColoring.customPalette.useAutoMinValue', {
+    : i18n.translate('sharedUXComponents.dynamicColoring.customPalette.useAutoMinValue', {
         defaultMessage: `Use minimum data value`,
       });
 

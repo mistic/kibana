@@ -75,7 +75,7 @@ export const CustomizablePalette = ({
     <div className="lnsPalettePanel__section lnsPalettePanel__section--shaded">
       <EuiFormRow
         display="rowCompressed"
-        label={i18n.translate('xpack.lens.palettePicker.label', {
+        label={i18n.translate('sharedUXComponents.dynamicColoring.palettePicker.label', {
           defaultMessage: 'Color palette',
         })}
         fullWidth
@@ -101,12 +101,12 @@ export const CustomizablePalette = ({
         <EuiFormRow
           label={
             <>
-              {i18n.translate('xpack.lens.table.dynamicColoring.rangeType.label', {
+              {i18n.translate('sharedUXComponents.dynamicColoring.rangeType.label', {
                 defaultMessage: 'Value type',
               })}{' '}
               <EuiIconTip
                 content={i18n.translate(
-                  'xpack.lens.table.dynamicColoring.customPalette.colorStopsHelpPercentage',
+                  'sharedUXComponents.dynamicColoring.customPalette.colorStopsHelpPercentage',
                   {
                     defaultMessage:
                       'Percent value types are relative to the full range of available data values.',
@@ -120,7 +120,7 @@ export const CustomizablePalette = ({
           display="rowCompressed"
         >
           <EuiButtonGroup
-            legend={i18n.translate('xpack.lens.table.dynamicColoring.rangeType.label', {
+            legend={i18n.translate('sharedUXComponents.dynamicColoring.rangeType.label', {
               defaultMessage: 'Value type',
             })}
             data-test-subj="lnsPalettePanel_dynamicColoring_custom_range_groups"
@@ -129,14 +129,14 @@ export const CustomizablePalette = ({
             options={[
               {
                 id: `${idPrefix}percent`,
-                label: i18n.translate('xpack.lens.table.dynamicColoring.rangeType.percent', {
+                label: i18n.translate('sharedUXComponents.dynamicColoring.rangeType.percent', {
                   defaultMessage: 'Percent',
                 }),
                 'data-test-subj': 'lnsPalettePanel_dynamicColoring_rangeType_groups_percent',
               },
               {
                 id: `${idPrefix}number`,
-                label: i18n.translate('xpack.lens.table.dynamicColoring.rangeType.number', {
+                label: i18n.translate('sharedUXComponents.dynamicColoring.rangeType.number', {
                   defaultMessage: 'Number',
                 }),
                 'data-test-subj': 'lnsPalettePanel_dynamicColoring_rangeType_groups_number',
@@ -163,7 +163,7 @@ export const CustomizablePalette = ({
         </EuiFormRow>
       )}
       <EuiFormRow
-        label={i18n.translate('xpack.lens.palettePicker.colorRangesLabel', {
+        label={i18n.translate('sharedUXComponents.dynamicColoring.palettePicker.colorRangesLabel', {
           defaultMessage: 'Color Ranges',
         })}
         display="rowCompressed"

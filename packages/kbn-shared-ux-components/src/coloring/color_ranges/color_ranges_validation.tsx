@@ -32,15 +32,18 @@ export const getErrorMessages = (colorRangesValidity: Record<string, ColorRangeV
             case 'invalidColor':
             case 'invalidValue':
               return i18n.translate(
-                'xpack.lens.dynamicColoring.customPalette.invalidValueOrColor',
+                'sharedUXComponents.dynamicColoring.customPalette.invalidValueOrColor',
                 {
                   defaultMessage: 'At least one color range contains the wrong value or color',
                 }
               );
             case 'greaterThanMaxValue':
-              return i18n.translate('xpack.lens.dynamicColoring.customPalette.invalidMaxValue', {
-                defaultMessage: 'Maximum value must be greater than preceding values',
-              });
+              return i18n.translate(
+                'sharedUXComponents.dynamicColoring.customPalette.invalidMaxValue',
+                {
+                  defaultMessage: 'Maximum value must be greater than preceding values',
+                }
+              );
             default:
               return '';
           }
