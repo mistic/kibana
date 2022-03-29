@@ -7,7 +7,7 @@
  */
 
 import { Position } from '@elastic/charts';
-import { PaletteOutput } from 'src/plugins/charts/common';
+import { PaletteOutput } from '@kbn/coloring';
 import { Datatable, DatatableRow } from 'src/plugins/expressions';
 import { LayerTypes } from '../constants';
 import { DataLayerConfigResult, LensMultiTable, XYArgs } from '../types';
