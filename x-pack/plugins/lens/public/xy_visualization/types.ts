@@ -6,7 +6,7 @@
  */
 
 import { i18n } from '@kbn/i18n';
-import { PaletteOutput } from '@kbn/coloring';
+import type { PaletteOutput } from '@kbn/coloring';
 import { LensIconChartArea } from '../assets/chart_area';
 import { LensIconChartAreaStacked } from '../assets/chart_area_stacked';
 import { LensIconChartAreaPercentage } from '../assets/chart_area_percentage';
