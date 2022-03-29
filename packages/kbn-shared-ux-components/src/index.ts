@@ -116,11 +116,7 @@ export const KibanaSolutionAvatar = withSuspense(KibanaSolutionAvatarLazy);
  * The Lazily-loaded `CustomizablePalette` component.  Consumers should use `React.Suspense` or
  * the withSuspense` HOC to load this component.
  */
-export const CustomizablePaletteLazy = React.lazy(() =>
-  import('./coloring').then(({ CustomizablePalette }) => ({
-    default: CustomizablePalette,
-  }))
-);
+export const CustomizablePaletteLazy = React.lazy(() => import('./coloring'));
 
 /**
  * A `CustomizablePalette` component that is wrapped by the `withSuspense` HOC. This component can

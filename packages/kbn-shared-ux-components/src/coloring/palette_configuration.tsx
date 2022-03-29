@@ -27,21 +27,23 @@ import { ColorRanges, ColorRangesContext } from './color_ranges';
 import { isAllColorRangesValid } from './color_ranges/color_ranges_validation';
 import { paletteConfigurationReducer } from './palette_configuration_reducer';
 
-export function CustomizablePalette({
-  palettes,
-  activePalette,
-  setPalette,
-  dataBounds = getFallbackDataBounds(activePalette.params?.rangeType),
-  showRangeTypeSelector = true,
-  disableSwitchingContinuity = false,
-}: {
+export interface CustomizablePaletteProps {
   palettes: PaletteRegistry;
   activePalette: PaletteOutput<CustomPaletteParams>;
   setPalette: (palette: PaletteOutput<CustomPaletteParams>) => void;
   dataBounds?: DataBounds;
   showRangeTypeSelector?: boolean;
   disableSwitchingContinuity?: boolean;
-}) {
+}
+
+export const CustomizablePalette = ({
+  palettes,
+  activePalette,
+  setPalette,
+  dataBounds = getFallbackDataBounds(activePalette.params?.rangeType),
+  showRangeTypeSelector = true,
+  disableSwitchingContinuity = false,
+}: CustomizablePaletteProps) => {
   const idPrefix = useMemo(() => htmlIdGenerator()(), []);
   const colorRangesToShow = toColorRanges(
     palettes,
@@ -183,4 +185,4 @@ export function CustomizablePalette({
       </EuiFormRow>
     </div>
   );
-}
+};

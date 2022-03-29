@@ -6,4 +6,8 @@
  * Side Public License, v 1.
  */
 
-export { CustomizablePalette } from './palette_configuration';
+import { CustomizablePalette } from './palette_configuration';
+
+// React.lazy support
+// eslint-disable-next-line import/no-default-export
+export default CustomizablePalette;
