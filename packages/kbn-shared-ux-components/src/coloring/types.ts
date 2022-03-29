@@ -40,13 +40,3 @@ export type PaletteConfigurationActions =
   | ColorRangesActions
   | { type: 'updateRangeType'; payload: UpdateRangeTypePayload }
   | { type: 'changeColorPalette'; payload: ChangeColorPalettePayload };
-
-/** todo: from Lens **/
-export type CustomPaletteParamsConfig = CustomPaletteParams & {
-  maxSteps?: number;
-};
-
-/** todo: from Lens **/
-export type RequiredPaletteParamTypes = Required<CustomPaletteParams> & {
-  maxSteps?: number;
-};

@@ -7,6 +7,7 @@
  */
 
 import { Ast } from '@kbn/interpreter';
+import { Assign } from '@kbn/utility-types';
 
 /** @public **/
 export type PaletteContinuity = 'above' | 'below' | 'none' | 'all';
@@ -141,7 +142,13 @@ export interface CustomPaletteParams {
   stops?: ColorStop[];
   colorStops?: ColorStop[];
   steps?: number;
+  maxSteps?: number | undefined;
 }
+
+export type RequiredPaletteParamTypes = Assign<
+  Required<CustomPaletteParams>,
+  { maxSteps?: number }
+>;
 
 export interface ColorStop {
   color: string;

@@ -38,6 +38,7 @@ NPM_MODULE_EXTRA_FILES = [
 #    eg. "@npm//lodash"
 RUNTIME_DEPS = [
   "//packages/kbn-interpreter",
+  "//packages/kbn-utility-types",
   "@npm//react"
 ]
 
@@ -52,6 +53,7 @@ RUNTIME_DEPS = [
 #  References to NPM packages work the same as RUNTIME_DEPS
 TYPES_DEPS = [
   "//packages/kbn-interpreter:npm_module_types",
+  "//packages/kbn-utility-types:npm_module_types",
   "@npm//@types/node",
   "@npm//@types/jest",
   "@npm//@types/react"

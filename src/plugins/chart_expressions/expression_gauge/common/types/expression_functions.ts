@@ -7,7 +7,7 @@
  */
 
 import { $Values } from '@kbn/utility-types';
-import type { PaletteOutput } from '@kbn/coloring';
+import type { PaletteOutput, CustomPaletteParams } from '@kbn/coloring';
 import {
   Datatable,
   ExpressionFunctionDefinition,
@@ -24,7 +24,6 @@ import {
   GaugeColorModes,
   GaugeCentralMajorModes,
 } from '../constants';
-import { CustomPaletteParams } from '.';
 
 export type GaugeColorMode = $Values<typeof GaugeColorModes>;
 export type GaugeShape = $Values<typeof GaugeShapes>;

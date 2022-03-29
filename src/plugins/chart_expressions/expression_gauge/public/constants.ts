@@ -5,7 +5,7 @@
  * in compliance with, at your election, the Elastic License 2.0 or the Server
  * Side Public License, v 1.
  */
-import type { RequiredPaletteParamTypes } from '../common';
+import type { RequiredPaletteParamTypes } from '@kbn/coloring';
 export const FIXED_PROGRESSION = 'fixed' as const;
 export const CUSTOM_PALETTE = 'custom';
 export const DEFAULT_CONTINUITY = 'above';

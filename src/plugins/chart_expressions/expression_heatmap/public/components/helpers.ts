@@ -6,9 +6,9 @@
  * Side Public License, v 1.
  */
 
-import type { PaletteOutput, PaletteRegistry } from '@kbn/coloring';
+import type { PaletteOutput, PaletteRegistry, CustomPaletteParams, ColorStop } from '@kbn/coloring';
 import type { Datatable, DatatableColumn } from 'src/plugins/expressions/public';
-import type { CustomPaletteParams, ColorStop } from '../../common';
+
 import {
   CUSTOM_PALETTE,
   defaultPaletteParams,

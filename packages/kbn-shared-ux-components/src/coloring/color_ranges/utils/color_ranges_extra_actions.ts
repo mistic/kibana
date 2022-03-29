@@ -13,11 +13,10 @@ import {
   DataBounds,
   roundValue,
   getDataMinMax,
+  CustomPaletteParams,
 } from '@kbn/coloring';
 
 import type { ColorRange } from '../types';
-
-import type { CustomPaletteParamsConfig } from '../../types';
 
 /**
  * Distribute equally
@@ -25,7 +24,7 @@ import type { CustomPaletteParamsConfig } from '../../types';
  */
 export const distributeEqually = (
   colorRanges: ColorRange[],
-  rangeType: CustomPaletteParamsConfig['rangeType'],
+  rangeType: CustomPaletteParams['rangeType'],
   continuity: PaletteContinuity,
   dataBounds: DataBounds
 ) => {

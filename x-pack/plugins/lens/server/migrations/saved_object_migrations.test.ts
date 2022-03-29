@@ -6,7 +6,7 @@
  */
 
 import { cloneDeep } from 'lodash';
-import type { PaletteOutput } from '@kbn/coloring';
+import type { PaletteOutput, CustomPaletteParams } from '@kbn/coloring';
 import { getAllMigrations, LensDocShape } from './saved_object_migrations';
 import {
   SavedObjectMigrationContext,
@@ -22,7 +22,7 @@ import {
   VisState810,
   VisState820,
 } from './types';
-import { CustomPaletteParams, layerTypes } from '../../common';
+import { layerTypes } from '../../common';
 import { Filter } from '@kbn/es-query';
 
 describe('Lens migrations', () => {
@@ -203,7 +203,7 @@ describe('Lens migrations', () => {
   | xyVis
       xTitle="products.created_on"
       yTitle="Count of records"
-      legend={legendConfig isVisible=true position="right"} 
+      legend={legendConfig isVisible=true position="right"}
       layers={lens_xy_layer
         layerId="bd09dc71-a7e2-42d0-83bd-85df8291f03c"
         hide=false

@@ -6,10 +6,8 @@
  * Side Public License, v 1.
  */
 
-import { DataBounds, roundValue, getDataMinMax } from '@kbn/coloring';
-
+import { DataBounds, roundValue, getDataMinMax, CustomPaletteParams } from '@kbn/coloring';
 import type { ColorRange, ColorRangeAccessor } from '../types';
-import type { CustomPaletteParamsConfig } from '../../types';
 
 /**
  * Allows to update a ColorRange
@@ -31,7 +29,7 @@ const updateColorRangeItem = (
  */
 export const addColorRange = (
   colorRanges: ColorRange[],
-  rangeType: CustomPaletteParamsConfig['rangeType'],
+  rangeType: CustomPaletteParams['rangeType'],
   dataBounds: DataBounds
 ) => {
   let newColorRanges = [...colorRanges];

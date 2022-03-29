@@ -35,23 +35,3 @@ export type HeatmapRenderProps = HeatmapExpressionProps & {
   uiState: PersistedState;
   interactive: boolean;
 };
-
-export interface ColorStop {
-  color: string;
-  stop: number;
-}
-
-export interface CustomPaletteParams {
-  name?: string;
-  reverse?: boolean;
-  rangeType?: 'number' | 'percent';
-  continuity?: 'above' | 'below' | 'all' | 'none';
-  progression?: 'fixed';
-  rangeMin?: number;
-  rangeMax?: number;
-  stops?: ColorStop[];
-  colorStops?: ColorStop[];
-  steps?: number;
-}
-
-export type RequiredPaletteParamTypes = Required<CustomPaletteParams>;

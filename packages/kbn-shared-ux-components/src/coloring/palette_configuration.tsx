@@ -14,6 +14,7 @@ import {
   DataBounds,
   getFallbackDataBounds,
   CustomPaletteParams,
+  RequiredPaletteParamTypes,
 } from '@kbn/coloring';
 import { EuiFormRow, htmlIdGenerator, EuiButtonGroup, EuiIconTip } from '@elastic/eui';
 import { i18n } from '@kbn/i18n';
@@ -21,7 +22,6 @@ import { PalettePicker } from './palette_picker';
 
 import './palette_configuration.scss';
 
-import type { RequiredPaletteParamTypes } from './types';
 import { toColorRanges } from './utils';
 import { ColorRanges, ColorRangesContext } from './color_ranges';
 import { isAllColorRangesValid } from './color_ranges/color_ranges_validation';
