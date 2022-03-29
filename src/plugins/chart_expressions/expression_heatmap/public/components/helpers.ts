@@ -6,15 +6,18 @@
  * Side Public License, v 1.
  */
 
-import type { PaletteOutput, PaletteRegistry, CustomPaletteParams, ColorStop } from '@kbn/coloring';
-import type { Datatable, DatatableColumn } from 'src/plugins/expressions/public';
-
 import {
+  PaletteOutput,
+  PaletteRegistry,
+  CustomPaletteParams,
+  ColorStop,
   CUSTOM_PALETTE,
-  defaultPaletteParams,
   DEFAULT_MAX_STOP,
   DEFAULT_MIN_STOP,
-} from '../constants';
+} from '@kbn/coloring';
+import type { Datatable, DatatableColumn } from 'src/plugins/expressions/public';
+
+import { defaultPaletteParams } from '../constants';
 
 // very simple heuristic: pick last two stops and compute a new stop based on the same distance
 // if the new stop is above max, then reduce the step to reach max, or if zero then just 1.
