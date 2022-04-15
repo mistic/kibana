@@ -32,6 +32,8 @@ build --experimental_sandbox_async_tree_delete_idle_threads=auto
 #build --experimental_remote_merkle_tree_cache
 #build --experimental_remote_merkle_tree_cache_size=100
 #build --spawn_strategy=local
+#build --spawn_strategy=remote,worker,processwrapper-sandbox,local
+#build --jobs=1
 
 # Bazel will create symlinks from the workspace directory to output artifacts.
 # Build results will be placed in a directory called "bazel-bin"
