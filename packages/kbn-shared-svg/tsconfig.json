@@ -11,10 +11,10 @@
       "jest",
       "node",
       "react",
+      "@kbn/ambient-ui-types"
     ],
   },
   "include": [
-    "src/**/*",
-    "src/@types/assets"
+    "src/**/*"
   ]
 }
