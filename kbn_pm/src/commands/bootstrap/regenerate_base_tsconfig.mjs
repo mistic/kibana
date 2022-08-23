@@ -30,7 +30,7 @@ export function regenerateBaseTsconfig(plugins, packages) {
       // return [`      "${id}": ["${path}"],`, `      "${id}/*": ["${path}/*"],`];
       // return [`      "${id}": ["node_modules/@types/${id.replace("@", "").replace("/", "__")}", "bazel-out/darwin-fastbuild/bin/${path}/target_types", "bazel-out/darwin_arm64-fastbuild/bin/${path}/target_types", "bazel-out/k8-fastbuild/bin/${path}/target_types", "bazel-out/x64_windows-fastbuild/bin/${path}/target_types"],`,];
       // return [`      "${id}": ["bazel-out/darwin_arm64-fastbuild/bin/${path}/target_types"],`,];
-      return [`      "${id}": ["${path}"],`,];
+      return [`      "${id}": ["${path}/src/index"],`,];
     });
 
   const pluginsMap = plugins
