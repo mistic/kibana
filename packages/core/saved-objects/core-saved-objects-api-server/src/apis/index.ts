@@ -51,6 +51,7 @@ export type {
   SavedObjectsFindResponse,
   SavedObjectsFindResult,
   SavedObjectsPitParams,
+  KueryNode,
 } from './find';
 export type {
   SavedObjectsIncrementCounterField,

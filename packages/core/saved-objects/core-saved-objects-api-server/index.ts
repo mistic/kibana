@@ -9,6 +9,7 @@
 export type { SavedObjectsClientContract } from './src/saved_objects_client';
 export type { ISavedObjectsRepository } from './src/saved_objects_repository';
 export type {
+  KueryNode,
   MutatingOperationRefreshSetting,
   SavedObjectsBaseOptions,
   SavedObjectsIncrementCounterOptions,

@@ -13,7 +13,7 @@ import type {
 } from '@elastic/elasticsearch/lib/api/typesWithBodyKey';
 import type { SavedObject } from '@kbn/core-saved-objects-common';
 
-type KueryNode = any;
+export type KueryNode = any;
 
 /**
  * @public

@@ -684,7 +684,7 @@ filegroup(
 filegroup(
   name = "build",
   srcs = [
-    ":build_pkg_types"
+    ":build_pkg_code"
   ],
 )
 
