@@ -47,3 +47,29 @@ export async function regenerateBaseTsconfig(packages, plugins) {
     [...lines.slice(0, start + 1), ...packagesMap, ...pluginsMap, ...lines.slice(end)].join('\n')
   );
 }
+
+/**
+ * @param {import('@kbn/bazel-packages').BazelPackage[]} packages
+ * @param {import('@kbn/plugin-discovery').KibanaPlatformPlugin[]} plugins
+ */
+export async function regeneratePluginsTsconfig(plugins) {
+  const tsconfigPath = Path.resolve(REPO_ROOT, 'tsconfig.plugins.json');
+  const lines = (await Fsp.readFile(tsconfigPath, 'utf-8')).split('\n');
+
+  const pluginsMap = plugins
+    .slice()
+    .sort((a, b) => a.manifestPath.localeCompare(b.manifestPath))
+    .flatMap((p) => {
+      const id = convertPluginIdToPackageId(p.manifest.id);
+      const path = normalizePath(Path.relative(REPO_ROOT, p.directory));
+      return [`      "${id}": ["${path}"],`, `      "${id}/*": ["${path}/*"],`];
+    });
+
+  const start = lines.findIndex((l) => l.trim() === '// START AUTOMATED PACKAGE LISTING');
+  const end = lines.findIndex((l) => l.trim() === '// END AUTOMATED PACKAGE LISTING');
+
+  await Fsp.writeFile(
+    tsconfigPath,
+    [...lines.slice(0, start + 1), ...pluginsMap, ...lines.slice(end)].join('\n')
+  );
+}

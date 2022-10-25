@@ -66,7 +66,8 @@ export async function updateRootRefsConfig(log: ToolingLog) {
     refs.push(pTsRefs);
     //
     const tsconfig = JSON.parse(await Fs.readFile(p.tsConfigPath, { encoding: 'utf8' }));
-    tsconfig!.compilerOptions!.paths = {};
+
+    tsconfig.extends = tsconfig.extends.replace('tsconfig.base.json', 'tsconfig.plugins.json');
     if (tsconfig.references) {
       tsconfig.references = tsconfig.references.map((ref: any) => {
         return { path: ref.path.replace('tsconfig.json', 'tsconfig.refs_build.json') };

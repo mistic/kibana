@@ -14,7 +14,7 @@ import { regenerateSyntheticPackageMap } from './regenerate_synthetic_package_ma
 import { sortPackageJson } from './sort_package_json.mjs';
 import { packagesDiscovery } from './packages.mjs';
 import { pluginDiscovery } from './plugins.mjs';
-import { regenerateBaseTsconfig } from './regenerate_base_tsconfig.mjs';
+import { regenerateBaseTsconfig,regeneratePluginsTsconfig } from './regenerate_base_tsconfig.mjs';
 
 /** @type {import('../../lib/command').Command} */
 export const command = {
@@ -105,6 +105,10 @@ export const command = {
     });
     await time('regenerate tsconfig.base.json', async () => {
       await regenerateBaseTsconfig(packages, plugins);
+    });
+
+    await time('regenerate tsconfig.plugins.json', async () => {
+      await regeneratePluginsTsconfig(plugins);
     });
 
     if (validate) {
