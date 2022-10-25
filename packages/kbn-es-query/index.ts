@@ -23,6 +23,7 @@ export type {
   FieldFilter,
   Filter,
   FilterCompareOptions,
+  FilterItem,
   FilterMeta,
   LatLon,
   MatchAllFilter,
