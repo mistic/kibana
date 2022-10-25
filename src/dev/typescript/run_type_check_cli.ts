@@ -78,14 +78,7 @@ export async function runTypeCheckCli() {
 
       log.info('running type check in', projects.length, 'projects');
 
-      const tscArgs = [
-        ...['--emitDeclarationOnly', 'false'],
-        '--noEmit',
-        '--pretty',
-        ...(flags['skip-lib-check']
-          ? ['--skipLibCheck', flags['skip-lib-check'] as string]
-          : ['--skipLibCheck', 'false']),
-      ];
+      const tscArgs = [...['--emitDeclarationOnly', 'false'], '--noEmit', '--pretty'];
 
       const failureCount = await Rx.lastValueFrom(
         Rx.from(projects).pipe(
@@ -97,7 +90,10 @@ export async function runTypeCheckCli() {
               [
                 '--max-old-space-size=5120',
                 require.resolve('typescript/bin/tsc'),
-                ...['--project', p.tsConfigPath],
+                ...[
+                  '--project',
+                  p.tsConfigPath.replace('tsconfig.json', 'tsconfig.refs_build.json'),
+                ],
                 ...tscArgs,
               ],
               {
