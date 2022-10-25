@@ -8,7 +8,7 @@
     "public/**/*.ts",
     "public/**/*.tsx",
     "server/**/*.ts",
-    "../../../typings/**/*",
+    "../../../typings/**/*"
   ],
   "exclude": [],
   "references": [
@@ -16,6 +16,6 @@
     { "path": "../../../src/plugins/kibana_react/tsconfig.json" },
     { "path": "../../plugins/alerting/tsconfig.json" },
     { "path": "../../plugins/triggers_actions_ui/tsconfig.json" },
-    { "path": "../../../examples/developer_examples/tsconfig.json" },
+    { "path": "../../../examples/developer_examples/tsconfig.json" }
   ]
 }

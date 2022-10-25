@@ -14,6 +14,6 @@
     { "path": "../../../../src/core/tsconfig.json" },
     { "path": "../../../../src/plugins/data/tsconfig.json" },
     { "path": "../../../../src/plugins/visualizations/tsconfig.json" },
-    { "path": "../../../../src/plugins/expressions/tsconfig.json" },
+    { "path": "../../../../src/plugins/expressions/tsconfig.json" }
   ]
 }

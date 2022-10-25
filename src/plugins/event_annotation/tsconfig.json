@@ -20,6 +20,6 @@
     },
     {
       "path": "../data/tsconfig.json"
-    },
+    }
   ]
 }

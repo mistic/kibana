@@ -8,10 +8,10 @@
   },
   "include": [
     "common/**/*",
-    "public/**/*",
+    "public/**/*"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },
-    { "path": "../saved_objects/tsconfig.json" },
+    { "path": "../saved_objects/tsconfig.json" }
   ]
 }

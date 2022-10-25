@@ -7,11 +7,11 @@
     "index.ts",
     "server/**/*.ts",
     "server/**/*.tsx",
-    "../../../../typings/**/*",
+    "../../../../typings/**/*"
   ],
   "exclude": [],
   "references": [
     { "path": "../../../../src/core/tsconfig.json" },
-    { "path": "../../../../src/plugins/data/tsconfig.json" },
+    { "path": "../../../../src/plugins/data/tsconfig.json" }
   ]
 }

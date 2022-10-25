@@ -8,7 +8,7 @@
     "public/**/*.ts",
     "public/**/*.tsx",
     "server/**/*.ts",
-    "../../typings/**/*",
+    "../../typings/**/*"
   ],
   "exclude": [],
   "references": [

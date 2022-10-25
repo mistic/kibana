@@ -11,11 +11,11 @@
     "common/**/*",
     "public/**/*",
     "server/**/*",
-    "__fixtures__/**/*",
+    "__fixtures__/**/*"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },
     { "path": "../presentation_util/tsconfig.json" },
-    { "path": "../expressions/tsconfig.json" },
+    { "path": "../expressions/tsconfig.json" }
   ]
 }

@@ -54,9 +54,31 @@ export async function updateRootRefsConfig(log: ToolingLog) {
     return;
   }
 
-  const refs = PROJECTS.filter((p) => p.isCompositeProject())
-    .map((p) => `./${normalize(Path.relative(REPO_ROOT, p.tsConfigPath))}`)
-    .sort((a, b) => a.localeCompare(b));
+  // eslint-disable-next-line prefer-const
+  let refs: string[] = [];
+
+  const compositeProjects = PROJECTS.filter((p) => p.isCompositeProject());
+  for (const p of compositeProjects) {
+    const pTsRefs = `./${normalize(Path.relative(REPO_ROOT, p.tsConfigPath))}`.replace(
+      'tsconfig.json',
+      'tsconfig.refs_build.json'
+    );
+    refs.push(pTsRefs);
+    //
+    const tsconfig = JSON.parse(await Fs.readFile(p.tsConfigPath, { encoding: 'utf8' }));
+    tsconfig!.compilerOptions!.paths = {};
+    if (tsconfig.references) {
+      tsconfig.references = tsconfig.references.map((ref: any) => {
+        return { path: ref.path.replace('tsconfig.json', 'tsconfig.refs_build.json') };
+      });
+    }
+    await Fs.writeFile(
+      `${p.directory}/tsconfig.refs_build.json`,
+      JSON.stringify(tsconfig, null, 2)
+    );
+  }
+
+  refs.sort((a, b) => a.localeCompare(b));
 
   log.debug('updating', ROOT_REFS_CONFIG_PATH);
   await Fs.writeFile(ROOT_REFS_CONFIG_PATH, generateTsConfig(refs) + '\n');

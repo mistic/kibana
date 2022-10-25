@@ -10,7 +10,6 @@
     "server/**/*",
     "scripts/**/*",
     "generated/*",
-    // have to declare *.json explicitly due to https://github.com/microsoft/TypeScript/issues/25636
     "generated/*.json",
     "common/**/*"
   ],

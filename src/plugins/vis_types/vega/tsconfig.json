@@ -11,7 +11,6 @@
     "server/**/*",
     "public/**/*",
     "*.ts",
-    // have to declare *.json explicitly due to https://github.com/microsoft/TypeScript/issues/25636
     "public/test_utils/vega_map_test.json"
   ],
   "references": [
@@ -26,6 +25,6 @@
     { "path": "../../kibana_utils/tsconfig.json" },
     { "path": "../../kibana_react/tsconfig.json" },
     { "path": "../../vis_default_editor/tsconfig.json" },
-    { "path": "../../es_ui_shared/tsconfig.json" },
+    { "path": "../../es_ui_shared/tsconfig.json" }
   ]
 }

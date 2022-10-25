@@ -8,11 +8,11 @@
     "public/**/*.ts",
     "public/**/*.tsx",
     "server/**/*.ts",
-    "../../../../typings/**/*",
+    "../../../../typings/**/*"
   ],
   "exclude": [],
   "references": [
     { "path": "../../../../src/core/tsconfig.json" },
-    { "path": "../core_plugin_a/tsconfig.json" },
+    { "path": "../core_plugin_a/tsconfig.json" }
   ]
 }

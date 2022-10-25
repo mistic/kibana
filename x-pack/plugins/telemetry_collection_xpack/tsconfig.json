@@ -13,7 +13,7 @@
     "../../../typings/*",
     "schema/xpack_monitoring.json",
     "schema/xpack_plugins.json",
-    "schema/xpack_root.json",
+    "schema/xpack_root.json"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },

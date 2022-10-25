@@ -18,6 +18,6 @@
     { "path": "../saved_objects/tsconfig.json" },
     { "path": "../kibana_utils/tsconfig.json" },
     { "path": "../kibana_react/tsconfig.json" },
-    { "path": "../ui_actions/tsconfig.json" },
+    { "path": "../ui_actions/tsconfig.json" }
   ]
 }

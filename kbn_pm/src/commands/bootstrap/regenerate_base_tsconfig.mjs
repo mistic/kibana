@@ -44,6 +44,6 @@ export async function regenerateBaseTsconfig(packages, plugins) {
 
   await Fsp.writeFile(
     tsconfigPath,
-    [...lines.slice(0, start + 1), ...pluginsMap, ...lines.slice(end)].join('\n')
+    [...lines.slice(0, start + 1), ...packagesMap, ...pluginsMap, ...lines.slice(end)].join('\n')
   );
 }

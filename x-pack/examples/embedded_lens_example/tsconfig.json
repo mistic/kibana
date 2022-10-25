@@ -16,6 +16,6 @@
     { "path": "../../../src/plugins/data/tsconfig.json" },
     { "path": "../../../src/plugins/embeddable/tsconfig.json" },
     { "path": "../../plugins/lens/tsconfig.json" },
-    { "path": "../../../examples/developer_examples/tsconfig.json" },
+    { "path": "../../../examples/developer_examples/tsconfig.json" }
   ]
 }

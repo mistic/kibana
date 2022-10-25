@@ -13,7 +13,7 @@
     "common/**/*",
     "../../../typings/**/*",
     "schema/oss_plugins.json",
-    "schema/oss_root.json",
+    "schema/oss_root.json"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },

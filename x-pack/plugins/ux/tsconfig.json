@@ -11,7 +11,7 @@
     "common/**/*",
     "public/**/*",
     "typings/**/*",
-    "public/**/*.json",
+    "public/**/*.json"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
@@ -27,6 +27,6 @@
     { "path": "../licensing/tsconfig.json" },
     { "path": "../maps/tsconfig.json" },
     { "path": "../observability/tsconfig.json" },
-    { "path": "../lens/tsconfig.json" },
+    { "path": "../lens/tsconfig.json" }
   ]
 }

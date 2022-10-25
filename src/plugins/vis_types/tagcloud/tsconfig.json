@@ -18,6 +18,6 @@
     { "path": "../../visualizations/tsconfig.json" },
     { "path": "../../charts/tsconfig.json" },
     { "path": "../../kibana_react/tsconfig.json" },
-    { "path": "../../vis_default_editor/tsconfig.json" },
+    { "path": "../../vis_default_editor/tsconfig.json" }
   ]
 }

@@ -26,7 +26,12 @@ export async function buildTsRefs({
   verbose?: boolean;
   project?: Project;
 }): Promise<{ failed: boolean }> {
-  const relative = Path.relative(REPO_ROOT, project ? project.tsConfigPath : ROOT_REFS_CONFIG_PATH);
+  const relative = Path.relative(
+    REPO_ROOT,
+    project
+      ? project.tsConfigPath.replace('tsconfig', 'tsconfig.refs_build')
+      : ROOT_REFS_CONFIG_PATH.replace('tsconfig.refs', 'tsconfig.refs_build')
+  );
   log.info(`Building TypeScript projects refs for ${relative}...`);
 
   try {

@@ -8,11 +8,11 @@
     "public/**/*.ts",
     "public/**/*.tsx",
     "server/**/*.ts",
-    "../../typings/**/*",
+    "../../typings/**/*"
   ],
   "exclude": [],
   "references": [
     { "path": "../../src/plugins/kibana_react/tsconfig.json" },
-    { "path": "../../src/plugins/ui_actions/tsconfig.json" },
+    { "path": "../../src/plugins/ui_actions/tsconfig.json" }
   ]
 }

@@ -21,6 +21,6 @@
     { "path": "../../vis_types/gauge/tsconfig.json" },
     { "path": "../../vis_types/xy/tsconfig.json" },
     { "path": "../../vis_types/pie/tsconfig.json" },
-    { "path": "../../vis_types/heatmap/tsconfig.json" },
+    { "path": "../../vis_types/heatmap/tsconfig.json" }
   ]
 }

@@ -2,7 +2,7 @@
 
 load("@npm//@bazel/typescript:index.bzl", _ts_project = "ts_project")
 
-def ts_project(validate = False, **kwargs):
+def ts_project(validate = False, root_dir = ".", **kwargs):
   """A macro around the upstream ts_project rule.
 
   Args:
@@ -12,5 +12,6 @@ def ts_project(validate = False, **kwargs):
 
   _ts_project(
     validate = validate,
+    root_dir = ".",
     **kwargs
   )

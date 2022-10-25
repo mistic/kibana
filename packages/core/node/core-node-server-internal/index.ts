@@ -9,4 +9,4 @@
 export { nodeConfig } from './src/node_config';
 
 export { NodeService } from './src/node_service';
-export type { InternalNodeServicePreboot } from './src/node_service';
+export type { InternalNodeServicePreboot, PrebootDeps } from './src/node_service';

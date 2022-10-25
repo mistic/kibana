@@ -7,13 +7,13 @@
     "declarationMap": true
   },
   "include": [
-    "public/**/*",
+    "public/**/*"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
     { "path": "../../../src/plugins/embeddable/tsconfig.json" },
     { "path": "../../../src/plugins/kibana_react/tsconfig.json" },
     { "path": "../../../src/plugins/ui_actions/tsconfig.json" },
-    { "path": "../../../src/plugins/ui_actions_enhanced/tsconfig.json" },
+    { "path": "../../../src/plugins/ui_actions_enhanced/tsconfig.json" }
   ]
 }

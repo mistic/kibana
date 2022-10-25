@@ -12,7 +12,7 @@
     "public/**/*",
     "server/**/*",
     "test/**/*",
-    "../../../typings/**/*",
+    "../../../typings/**/*"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },

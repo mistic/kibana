@@ -14,6 +14,7 @@ import { mergeMap, reduce } from 'rxjs/operators';
 import execa from 'execa';
 import { run } from '@kbn/dev-cli-runner';
 import { createFailError } from '@kbn/dev-cli-errors';
+import { REPO_ROOT } from '@kbn/utils';
 
 import { PROJECTS } from './projects';
 import { buildTsRefs } from './build_ts_refs';
@@ -22,6 +23,19 @@ import { updateRootRefsConfig } from './root_refs_config';
 export async function runTypeCheckCli() {
   run(
     async ({ log, flags, procRunner }) => {
+      // run type builds for packages
+      const BAZEL_RUNNER_SRC = '../../../packages/kbn-bazel-runner/index.js';
+      const { runBazel } = await import(BAZEL_RUNNER_SRC);
+      await runBazel(['build', '//packages:build_types', '--show_result=1'], {
+        cwd: REPO_ROOT,
+        logPrefix: '\x1b[94m[bazel]\x1b[39m',
+        onErrorExit(code: any, output: any) {
+          throw createFailError(
+            `The bazel command that was running exited with code [${code}] and output: ${output}`
+          );
+        },
+      });
+
       // if the tsconfig.refs.json file is not self-managed then make sure it has
       // a reference to every composite project in the repo
       await updateRootRefsConfig(log);

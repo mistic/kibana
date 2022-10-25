@@ -14,8 +14,8 @@
       "cypress",
       "cypress-file-upload",
       "cypress-pipe",
-      "node",
-    ],
+      "node"
+    ]
   },
   "references": [
     { "path": "../tsconfig.json" }

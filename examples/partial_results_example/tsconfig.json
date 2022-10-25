@@ -14,6 +14,6 @@
   "references": [
     { "path": "../../src/core/tsconfig.json" },
     { "path": "../developer_examples/tsconfig.json" },
-    { "path": "../../src/plugins/expressions/tsconfig.json" },
+    { "path": "../../src/plugins/expressions/tsconfig.json" }
   ]
 }

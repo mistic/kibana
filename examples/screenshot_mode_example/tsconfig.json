@@ -17,6 +17,6 @@
     { "path": "../../src/plugins/navigation/tsconfig.json" },
     { "path": "../../src/plugins/screenshot_mode/tsconfig.json" },
     { "path": "../../src/plugins/usage_collection/tsconfig.json" },
-    { "path": "../developer_examples/tsconfig.json" },
+    { "path": "../developer_examples/tsconfig.json" }
   ]
 }

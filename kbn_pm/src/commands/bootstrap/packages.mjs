@@ -9,7 +9,7 @@
 import { REPO_ROOT } from '../../lib/paths.mjs';
 
 /** @type {string} */
-const KBN_BAZEL_PACKAGES_SRC = '../../../../packages/kbn-bazel-packages/src/index.js';
+const KBN_BAZEL_PACKAGES_SRC = '../../../../packages/kbn-bazel-packages/index.js';
 
 /**
  * @returns {Promise<import('@kbn/bazel-packages').BazelPackage[]>}

@@ -4,5 +4,6 @@
   "typings": "./expect.d.ts",
   "version": "1.0.0",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "types": "./target_types/index.d.ts"
 }

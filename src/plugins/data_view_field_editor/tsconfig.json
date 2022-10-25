@@ -11,7 +11,7 @@
     "__jest__/**/*",
     "common/**/*",
     "public/**/*",
-    "server/**/*",
+    "server/**/*"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },

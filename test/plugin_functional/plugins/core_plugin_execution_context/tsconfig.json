@@ -5,7 +5,7 @@
   },
   "include": [
     "index.ts",
-    "server/**/*.ts",
+    "server/**/*.ts"
   ],
   "exclude": [],
   "references": [

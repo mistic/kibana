@@ -8,7 +8,7 @@
   },
   "include": [
     "public/**/*",
-    "server/**/*",
+    "server/**/*"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },

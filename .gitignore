@@ -87,7 +87,8 @@ report.asciidoc
 *.tsbuildinfo
 
 # Automatically generated and user-modifiable
-/tsconfig.refs.json
+tsconfig.refs.json
+tsconfig.refs_build.json
 
 # Yarn local mirror content
 .yarn-local-mirror

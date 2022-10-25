@@ -7,7 +7,7 @@
     "index.ts",
     "public/**/*.ts",
     "public/**/*.tsx",
-    "../../typings/**/*",
+    "../../typings/**/*"
   ],
   "exclude": [],
   "references": [
@@ -16,6 +16,6 @@
     { "path": "../../src/plugins/data/tsconfig.json" },
     { "path": "../../src/plugins/data_views/tsconfig.json" },
     { "path": "../../src/plugins/data_view_field_editor/tsconfig.json" },
-    { "path": "../developer_examples/tsconfig.json" },
+    { "path": "../developer_examples/tsconfig.json" }
   ]
 }

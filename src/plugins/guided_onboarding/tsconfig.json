@@ -14,6 +14,6 @@
     },
     {
       "path": "../kibana_react/tsconfig.json"
-    },
+    }
   ]
 }

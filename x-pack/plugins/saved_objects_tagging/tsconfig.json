@@ -4,12 +4,12 @@
     "outDir": "./target/types",
     "emitDeclarationOnly": true,
     "declaration": true,
-    "declarationMap": true,
+    "declarationMap": true
   },
   "include": [
     "common/**/*",
     "public/**/*",
-    "server/**/*",
+    "server/**/*"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
@@ -19,6 +19,6 @@
     { "path": "../../../src/plugins/kibana_react/tsconfig.json" },
     { "path": "../../../src/plugins/usage_collection/tsconfig.json" },
     { "path": "../features/tsconfig.json" },
-    { "path": "../security/tsconfig.json" },
+    { "path": "../security/tsconfig.json" }
   ]
 }

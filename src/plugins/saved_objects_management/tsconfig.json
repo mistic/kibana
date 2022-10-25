@@ -9,7 +9,7 @@
   "include": [
     "common/**/*",
     "public/**/*",
-    "server/**/*",
+    "server/**/*"
   ],
   "references": [
     { "path": "../../core/tsconfig.json" },
@@ -18,6 +18,6 @@
     { "path": "../kibana_react/tsconfig.json" },
     { "path": "../management/tsconfig.json" },
     { "path": "../saved_objects_tagging_oss/tsconfig.json" },
-    { "path": "../../../x-pack/plugins/spaces/tsconfig.json" },
+    { "path": "../../../x-pack/plugins/spaces/tsconfig.json" }
   ]
 }

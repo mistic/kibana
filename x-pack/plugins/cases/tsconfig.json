@@ -14,13 +14,9 @@
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
-
-    // optionalPlugins from ./kibana.json
     { "path": "../lens/tsconfig.json" },
     { "path": "../security/tsconfig.json" },
     { "path": "../spaces/tsconfig.json" },
-
-    // Required from './kibana.json'
     { "path": "../actions/tsconfig.json" },
     { "path": "../rule_registry/tsconfig.json" },
     { "path": "../triggers_actions_ui/tsconfig.json"},

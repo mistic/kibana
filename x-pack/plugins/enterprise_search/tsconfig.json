@@ -11,7 +11,7 @@
     "common/**/*",
     "public/**/*",
     "server/**/*",
-    "../../../typings/**/*",
+    "../../../typings/**/*"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
@@ -26,6 +26,6 @@
     { "path": "../features/tsconfig.json" },
     { "path": "../licensing/tsconfig.json" },
     { "path": "../security/tsconfig.json" },
-    { "path": "../spaces/tsconfig.json" },
+    { "path": "../spaces/tsconfig.json" }
   ]
 }

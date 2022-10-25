@@ -8,6 +8,6 @@
   },
   "include": ["public/**/*"],
   "references": [
-    { "path": "../../core/tsconfig.json" },
+    { "path": "../../core/tsconfig.json" }
   ]
 }

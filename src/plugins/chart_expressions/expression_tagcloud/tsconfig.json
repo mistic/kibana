@@ -10,7 +10,7 @@
   "include": [
     "common/**/*",
     "public/**/*",
-    "server/**/*",
+    "server/**/*"
   ],
   "references": [
     { "path": "../tsconfig.json" },
@@ -21,6 +21,6 @@
     { "path": "../../visualizations/tsconfig.json" },
     { "path": "../../charts/tsconfig.json" },
     { "path": "../../field_formats/tsconfig.json" },
-    { "path": "../../kibana_utils/tsconfig.json" },
+    { "path": "../../kibana_utils/tsconfig.json" }
   ]
 }

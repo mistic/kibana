@@ -7,7 +7,7 @@
     "index.ts",
     "public/**/*.ts",
     "public/**/*.tsx",
-    "../../typings/**/*",
+    "../../typings/**/*"
   ],
   "exclude": [],
   "references": [
@@ -16,6 +16,6 @@
     { "path": "../../src/plugins/expressions/tsconfig.json" },
     { "path": "../../src/plugins/ui_actions/tsconfig.json" },
     { "path": "../../src/plugins/inspector/tsconfig.json" },
-    { "path": "../developer_examples/tsconfig.json" },
+    { "path": "../developer_examples/tsconfig.json" }
   ]
 }

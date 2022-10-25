@@ -8,7 +8,7 @@
     "types": [
       "node",
       "@emotion/react/types/css-prop",
-      "@kbn/ambient-ui-types",
+      "@kbn/ambient-ui-types"
     ]
   },
   "include": [
@@ -18,14 +18,14 @@
     "api_integration/apis/logstash/pipeline/fixtures/*.json",
     "api_integration/apis/logstash/pipelines/fixtures/*.json",
     "api_integration/apis/telemetry/fixtures/*.json",
-    "api_integration/apis/telemetry/fixtures/*.json",
+    "api_integration/apis/telemetry/fixtures/*.json"
   ],
   "exclude": [
     "target/**/*",
     "analytics/fixtures/plugins/**/*",
     "interpreter_functional/plugins/**/*",
     "plugin_functional/plugins/**/*",
-    "server_integration/__fixtures__/plugins/**/*",
+    "server_integration/__fixtures__/plugins/**/*"
   ],
   "references": [
     { "path": "../src/core/tsconfig.json" },
@@ -65,6 +65,6 @@
     { "path": "plugin_functional/plugins/core_app_status/tsconfig.json" },
     { "path": "plugin_functional/plugins/core_provider_plugin/tsconfig.json" },
     { "path": "server_integration/__fixtures__/plugins/status_plugin_a/tsconfig.json" },
-    { "path": "server_integration/__fixtures__/plugins/status_plugin_b/tsconfig.json" },
+    { "path": "server_integration/__fixtures__/plugins/status_plugin_b/tsconfig.json" }
   ]
 }

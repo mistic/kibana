@@ -11,6 +11,6 @@
     "common/**/*"
   ],
   "references": [
-    { "path": "../../core/tsconfig.json" },
+    { "path": "../../core/tsconfig.json" }
   ]
 }

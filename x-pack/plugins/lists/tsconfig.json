@@ -11,8 +11,7 @@
     "common/**/*",
     "public/**/*",
     "server/**/*",
-    // have to declare *.json explicitly due to https://github.com/microsoft/TypeScript/issues/25636
-    "server/**/*.json",
+    "server/**/*.json"
   ],
   "references": [
     { "path": "../../../src/core/tsconfig.json" },
