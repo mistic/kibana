@@ -82,7 +82,7 @@ describe('Key rotation routes', () => {
       const routeParamsMock = routeDefinitionParamsMock.create();
       defineKeyRotationRoutes(routeParamsMock);
       const [, rotateRouteHandler] = routeParamsMock.router.post.mock.calls.find(
-        ([{ path }]) => path === '/api/encrypted_saved_objects/_rotate_key'
+        ([{ path }]: any) => path === '/api/encrypted_saved_objects/_rotate_key'
       )!;
 
       await expect(
