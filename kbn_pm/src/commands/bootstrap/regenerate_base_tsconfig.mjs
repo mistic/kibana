@@ -14,13 +14,23 @@ import { convertPluginIdToPackageId } from './plugins.mjs';
 import { normalizePath } from './normalize_path.mjs';
 
 /**
+ * @param {import('@kbn/bazel-packages').BazelPackage[]} packages
  * @param {import('@kbn/plugin-discovery').KibanaPlatformPlugin[]} plugins
  */
-export async function regenerateBaseTsconfig(plugins) {
+export async function regenerateBaseTsconfig(packages, plugins) {
   const tsconfigPath = Path.resolve(REPO_ROOT, 'tsconfig.base.json');
   const lines = (await Fsp.readFile(tsconfigPath, 'utf-8')).split('\n');
 
-  const packageMap = plugins
+  const packagesMap = packages
+    .slice()
+    .sort((a, b) => a.normalizedRepoRelativeDir.localeCompare(b.normalizedRepoRelativeDir))
+    .flatMap((p) => {
+      const id = p.pkg.name
+      const path = p.normalizedRepoRelativeDir
+      return [`      "${id}": ["${path}"],`, `      "${id}/*": ["${path}/*"],`];
+    });
+
+  const pluginsMap = plugins
     .slice()
     .sort((a, b) => a.manifestPath.localeCompare(b.manifestPath))
     .flatMap((p) => {
@@ -34,6 +44,6 @@ export async function regenerateBaseTsconfig(plugins) {
 
   await Fsp.writeFile(
     tsconfigPath,
-    [...lines.slice(0, start + 1), ...packageMap, ...lines.slice(end)].join('\n')
+    [...lines.slice(0, start + 1), ...pluginsMap, ...lines.slice(end)].join('\n')
   );
 }
