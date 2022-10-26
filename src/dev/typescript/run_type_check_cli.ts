@@ -7,11 +7,6 @@
  */
 
 import Path from 'path';
-import Os from 'os';
-
-import * as Rx from 'rxjs';
-import { mergeMap, reduce } from 'rxjs/operators';
-import execa from 'execa';
 import { run } from '@kbn/dev-cli-runner';
 import { createFailError } from '@kbn/dev-cli-errors';
 import { REPO_ROOT } from '@kbn/utils';
@@ -23,6 +18,7 @@ import { updateRootRefsConfig } from './root_refs_config';
 export async function runTypeCheckCli() {
   run(
     async ({ log, flags, procRunner }) => {
+      // TODO: encapsulate this
       // run type builds for packages
       const BAZEL_RUNNER_SRC = '../../../packages/kbn-bazel-runner/index.js';
       const { runBazel } = await import(BAZEL_RUNNER_SRC);
@@ -49,6 +45,8 @@ export async function runTypeCheckCli() {
         return !p.disableTypeCheck && (!projectFilter || p.tsConfigPath === projectFilter);
       });
 
+      // TODO: remove temporary refs file when finishing the typecheck
+
       if (projects.length > 1 || projects[0].isCompositeProject()) {
         const { failed } = await buildTsRefs({
           log,
@@ -68,56 +66,6 @@ export async function runTypeCheckCli() {
           throw createFailError(`Unable to find projects to type-check`);
         }
       }
-
-      const concurrencyArg =
-        typeof flags.concurrency === 'string' && parseInt(flags.concurrency, 10);
-      const concurrency =
-        concurrencyArg && concurrencyArg > 0
-          ? concurrencyArg
-          : Math.min(4, Math.round((Os.cpus() || []).length / 2) || 1) || 1;
-
-      log.info('running type check in', projects.length, 'projects');
-
-      const tscArgs = [...['--emitDeclarationOnly', 'false'], '--noEmit', '--pretty'];
-
-      const failureCount = await Rx.lastValueFrom(
-        Rx.from(projects).pipe(
-          mergeMap(async (p) => {
-            const relativePath = Path.relative(process.cwd(), p.tsConfigPath);
-
-            const result = await execa(
-              process.execPath,
-              [
-                '--max-old-space-size=5120',
-                require.resolve('typescript/bin/tsc'),
-                ...[
-                  '--project',
-                  p.tsConfigPath.replace('tsconfig.json', 'tsconfig.refs_build.json'),
-                ],
-                ...tscArgs,
-              ],
-              {
-                reject: false,
-                all: true,
-              }
-            );
-
-            if (result.failed) {
-              log.error(`Type check failed in ${relativePath}:`);
-              log.error(result.all ?? ' - tsc produced no output - ');
-              return 1;
-            } else {
-              log.success(relativePath);
-              return 0;
-            }
-          }, concurrency),
-          reduce((acc, f) => acc + f, 0)
-        )
-      );
-
-      if (failureCount > 0) {
-        throw createFailError(`${failureCount} type checks failed`);
-      }
     },
     {
       description: `
@@ -131,12 +79,9 @@ export async function runTypeCheckCli() {
           node scripts/type_check --project packages/kbn-pm/tsconfig.json
       `,
       flags: {
-        string: ['project', 'concurrency'],
-        boolean: ['skip-lib-check'],
+        string: ['project'],
         help: `
-          --concurrency <number>  Number of projects to check in parallel. Defaults to 50% of available CPUs, up to 4.
           --project [path]        Path to a tsconfig.json file determines the project to check
-          --skip-lib-check        Skip type checking of all declaration files (*.d.ts). Default is false
           --help                  Show this message
         `,
       },
