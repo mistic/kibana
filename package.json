@@ -574,6 +574,7 @@
     "@kbn/portable-dashboards-example": "link:examples/portable_dashboards_example",
     "@kbn/preboot-example-plugin": "link:examples/preboot_example",
     "@kbn/presentation-containers": "link:packages/presentation/kbn-presentation-containers",
+    "@kbn/presentation-panel-plugin": "link:src/plugins/presentation_panel",
     "@kbn/presentation-publishing": "link:packages/presentation/kbn-presentation-publishing",
     "@kbn/presentation-util-plugin": "link:src/plugins/presentation_util",
     "@kbn/profiling-data-access-plugin": "link:x-pack/plugins/profiling_data_access",

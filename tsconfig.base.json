@@ -1120,6 +1120,8 @@
       "@kbn/preboot-example-plugin/*": ["examples/preboot_example/*"],
       "@kbn/presentation-containers": ["packages/presentation/kbn-presentation-containers"],
       "@kbn/presentation-containers/*": ["packages/presentation/kbn-presentation-containers/*"],
+      "@kbn/presentation-panel-plugin": ["src/plugins/presentation_panel"],
+      "@kbn/presentation-panel-plugin/*": ["src/plugins/presentation_panel/*"],
       "@kbn/presentation-publishing": ["packages/presentation/kbn-presentation-publishing"],
       "@kbn/presentation-publishing/*": ["packages/presentation/kbn-presentation-publishing/*"],
       "@kbn/presentation-util-plugin": ["src/plugins/presentation_util"],

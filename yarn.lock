@@ -5180,6 +5180,10 @@
   version "0.0.0"
   uid ""
 
+"@kbn/presentation-panel-plugin@link:src/plugins/presentation_panel":
+  version "0.0.0"
+  uid ""
+
 "@kbn/presentation-publishing@link:packages/presentation/kbn-presentation-publishing":
   version "0.0.0"
   uid ""
