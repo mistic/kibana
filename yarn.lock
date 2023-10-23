@@ -5176,6 +5176,14 @@
   version "0.0.0"
   uid ""
 
+"@kbn/presentation-containers@link:packages/presentation/kbn-presentation-containers":
+  version "0.0.0"
+  uid ""
+
+"@kbn/presentation-publishing@link:packages/presentation/kbn-presentation-publishing":
+  version "0.0.0"
+  uid ""
+
 "@kbn/presentation-util-plugin@link:src/plugins/presentation_util":
   version "0.0.0"
   uid ""

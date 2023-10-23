@@ -11,10 +11,17 @@ import { ErrorLike } from '@kbn/expressions-plugin/common';
 import { Adapters } from '../types';
 import { IContainer } from '../containers/i_container';
 import { EmbeddableInput } from '../../../common/types';
-import { EmbeddableAppContext } from '../../embeddable_panel/types';
 
 export type EmbeddableError = ErrorLike;
 export type { EmbeddableInput };
+
+export interface EmbeddableAppContext {
+  /**
+   * Current app's path including query and hash starting from {appId}
+   */
+  getCurrentPath?: () => string;
+  currentAppId?: string;
+}
 
 export interface EmbeddableOutput {
   // Whether the embeddable is actively loading.

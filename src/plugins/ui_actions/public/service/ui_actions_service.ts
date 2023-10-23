@@ -8,7 +8,13 @@
 
 import type { Trigger } from '@kbn/ui-actions-browser/src/triggers';
 import { TriggerRegistry, ActionRegistry, TriggerToActionsRegistry } from '../types';
-import { ActionInternal, Action, ActionDefinition } from '../actions';
+import {
+  ActionInternal,
+  Action,
+  ActionDefinition,
+  isFrequentCompatibilityChangeAction,
+  FrequentCompatibilityChangeAction,
+} from '../actions';
 import { TriggerInternal } from '../triggers/trigger_internal';
 import { TriggerContract } from '../triggers/trigger_contract';
 import { UiActionsExecutionService } from './ui_actions_execution_service';
@@ -170,6 +176,24 @@ export class UiActionsService {
     }, []);
   };
 
+  public readonly getFrequentCompatibilityChangeActionsForTrigger = (
+    triggerId: string,
+    context: object
+  ): FrequentCompatibilityChangeAction[] => {
+    const actions = this.getTriggerActions!(triggerId);
+    return actions.reduce((acc: Action[], action, i) => {
+      if (
+        isFrequentCompatibilityChangeAction(action) &&
+        action.couldBecomeCompatible({
+          ...context,
+          trigger: this.getTrigger(triggerId),
+        })
+      ) {
+        acc.push(action);
+      }
+      return acc;
+    }, []) as FrequentCompatibilityChangeAction[];
+  };
   /**
    * @deprecated
    *

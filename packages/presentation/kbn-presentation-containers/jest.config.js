@@ -6,8 +6,8 @@
  * Side Public License, v 1.
  */
 
-export * from './action';
-export * from './action_internal';
-export * from './compatibility_change_action';
-export * from './create_action';
-export * from './incompatible_action_error';
+module.exports = {
+  preset: '@kbn/test',
+  rootDir: '../..',
+  roots: ['<rootDir>/packages/kbn-presentation-containers'],
+};

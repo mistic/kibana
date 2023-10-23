@@ -17,7 +17,13 @@ export type { UiActionsSetup, UiActionsStart } from './plugin';
 export type { UiActionsServiceParams } from './service';
 export { UiActionsService } from './service';
 export type { Action, ActionDefinition as UiActionsActionDefinition } from './actions';
-export { ActionInternal, createAction, IncompatibleActionError } from './actions';
+export {
+  ActionInternal,
+  createAction,
+  IncompatibleActionError,
+  type FrequentCompatibilityChangeAction,
+  isFrequentCompatibilityChangeAction,
+} from './actions';
 export { buildContextMenuForActions } from './context_menu';
 export type {
   Presentable as UiActionsPresentable,

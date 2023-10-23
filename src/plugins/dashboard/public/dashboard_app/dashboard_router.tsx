@@ -36,6 +36,12 @@ import { DashboardMountContext } from './hooks/dashboard_mount_context';
 import { DashboardEmbedSettings, DashboardMountContextProps } from './types';
 import { DashboardListingPage } from './listing_page/dashboard_listing_page';
 import { dashboardReadonlyBadge, getDashboardPageTitle } from './_dashboard_app_strings';
+import { EuiSpacer, EuiTitle } from '@elastic/eui';
+import {
+  AnalyticsPanel,
+  EmbeddableComponentRenderer,
+  SpecificAnalyticsComponent,
+} from './embeddable_tests';
 
 export const dashboardUrlParams = {
   showTopMenu: 'show-top-menu',
@@ -118,12 +124,22 @@ export async function mountApp({ core, element, appUnMounted, mountContext }: Da
     const title = (routeParams.title as string) || undefined;
     const filter = (routeParams.filter as string) || undefined;
     return (
-      <DashboardListingPage
-        initialFilter={filter}
-        title={title}
-        kbnUrlStateStorage={getUrlStateStorage(routeProps.history)}
-        redirectTo={redirect}
-      />
+      <>
+        <EuiTitle>
+          <h1>TESTING GENERIC EMBEDDABLE</h1>
+        </EuiTitle>
+        <EmbeddableComponentRenderer
+          getInitialState={() => ({ superName: 'Bradly Brad Bradford' })}
+        />
+        <EuiSpacer size="l" />
+        <EuiTitle>
+          <h1>TESTING SPECIFIC EMBEDDABLE TYPE</h1>
+        </EuiTitle>
+        <AnalyticsPanel
+          Component={SpecificAnalyticsComponent}
+          componentProps={{ testName: 'super duper test' }}
+        />
+      </>
     );
   };
 

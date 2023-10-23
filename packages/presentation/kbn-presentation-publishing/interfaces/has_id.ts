@@ -6,8 +6,13 @@
  * Side Public License, v 1.
  */
 
-export * from './action';
-export * from './action_internal';
-export * from './compatibility_change_action';
-export * from './create_action';
-export * from './incompatible_action_error';
+export interface HasId {
+  id: string;
+}
+
+export const apiHasId = (unknownApi: unknown | null): unknownApi is HasId => {
+  return Boolean((unknownApi as HasId)?.id !== undefined);
+};
+
+export const getId = (api: unknown | null): string | undefined =>
+  apiHasId(api) ? api.id : undefined;
