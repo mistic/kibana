@@ -35,7 +35,6 @@ export interface ValueFormatConfig {
 // Formatting can optionally be added to any column
 export interface FormattedIndexPatternColumn extends BaseIndexPatternColumn {
   params?: {
-    window?: number;
     format?: ValueFormatConfig;
   };
 }

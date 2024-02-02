@@ -702,7 +702,7 @@ interface ManagedReferenceOperationDefinition<C extends BaseIndexPatternColumn> 
   selectionStyle?: 'hidden';
 }
 
-export interface OperationDefinitionMap<C extends BaseIndexPatternColumn, P = {}> {
+interface OperationDefinitionMap<C extends BaseIndexPatternColumn, P = {}> {
   field: FieldBasedOperationDefinition<C, P>;
   none: FieldlessOperationDefinition<C, P>;
   fullReference: FullReferenceOperationDefinition<C>;
@@ -731,11 +731,11 @@ export type OperationType = string;
  * This is an operation definition of an unspecified column out of all possible
  * column types.
  */
-export type GenericOperationDefinition<
-  C extends BaseIndexPatternColumn = BaseIndexPatternColumn,
-  P = {},
-  AR extends boolean = false
-> = OperationDefinition<BaseIndexPatternColumn, keyof OperationDefinitionMap<C>, P, AR>;
+export type GenericOperationDefinition =
+  | OperationDefinition<BaseIndexPatternColumn, 'field'>
+  | OperationDefinition<BaseIndexPatternColumn, 'none'>
+  | OperationDefinition<BaseIndexPatternColumn, 'fullReference'>
+  | OperationDefinition<BaseIndexPatternColumn, 'managedReference'>;
 
 /**
  * List of all available operation definitions

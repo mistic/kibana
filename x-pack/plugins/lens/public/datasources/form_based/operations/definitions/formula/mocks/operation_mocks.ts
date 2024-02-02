@@ -5,12 +5,8 @@
  * 2.0.
  */
 
-import type {
-  GenericOperationDefinition,
-  OperationDefinition,
-  OperationDefinitionMap,
-} from '../..';
-import type { BaseIndexPatternColumn, GenericIndexPatternColumn } from '../../column_types';
+import type { GenericOperationDefinition } from '../..';
+import type { GenericIndexPatternColumn } from '../../column_types';
 import { getFilter } from '../../helpers';
 
 interface PartialColumnParams {
@@ -20,13 +16,19 @@ interface PartialColumnParams {
   reducedTimeRange?: string;
 }
 
-export function createOperationDefinitionMock<
-  T extends keyof OperationDefinitionMap<BaseIndexPatternColumn>
->(
+type OperationByInputType<Input extends GenericOperationDefinition['input']> = Extract<
+  GenericOperationDefinition,
+  { input: Input }
+>;
+
+export function createOperationDefinitionMock(
   operation: string,
-  column: T extends keyof OperationDefinitionMap<BaseIndexPatternColumn>
-    ? Partial<OperationDefinition<BaseIndexPatternColumn, T>>
-    : Partial<OperationDefinition<BaseIndexPatternColumn, 'field'>>,
+  {
+    input = 'field',
+    getErrorMessage,
+    buildColumn,
+    ...params
+  }: Partial<GenericOperationDefinition> = {},
   {
     label = operation,
     dataType = 'number',
@@ -34,8 +36,7 @@ export function createOperationDefinitionMock<
     scale = 'ratio',
     timeScale,
   }: Partial<GenericIndexPatternColumn> = {}
-): GenericOperationDefinition {
-  const { input = 'field', getErrorMessage, buildColumn, ...params } = column;
+): OperationByInputType<typeof input> {
   const sharedColumnParams = {
     label,
     dataType,
@@ -66,8 +67,7 @@ export function createOperationDefinitionMock<
       onFieldChange: jest.fn(),
       toEsAggsFn: jest.fn(),
       getPossibleOperationForField:
-        (params as unknown as OperationDefinition<BaseIndexPatternColumn, 'field'>)
-          ?.getPossibleOperationForField ??
+        (params as OperationByInputType<typeof input>).getPossibleOperationForField ??
         jest.fn((arg) => ({
           scale,
           dataType,
@@ -75,7 +75,7 @@ export function createOperationDefinitionMock<
         })),
       ...sharedDefinitionParams,
       ...params,
-    } as OperationDefinition<BaseIndexPatternColumn, 'field'>;
+    } as OperationByInputType<typeof input>;
   }
   if (input === 'fullReference') {
     return {
@@ -102,7 +102,7 @@ export function createOperationDefinitionMock<
       selectionStyle: 'field',
       ...sharedDefinitionParams,
       ...params,
-    } as OperationDefinition<BaseIndexPatternColumn, 'fullReference'>;
+    } as OperationByInputType<typeof input>;
   }
   return {
     buildColumn:
@@ -116,5 +116,5 @@ export function createOperationDefinitionMock<
     createCopy: jest.fn(),
     ...sharedDefinitionParams,
     ...params,
-  } as OperationDefinition<BaseIndexPatternColumn, 'none' | 'managedReference'>;
+  } as OperationByInputType<typeof input>;
 }
