@@ -1,0 +1,5 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "parallel": 4,
+  "defaultBase": "main"
+}
