@@ -10,6 +10,7 @@ const Path = require('path');
 const webpack = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const UiSharedDepsNpm = require('.');
 
@@ -174,6 +175,9 @@ module.exports = (_, argv) => {
         context: REPO_ROOT,
         path: Path.resolve(outputPath, '[name]-manifest.json'),
         name: '__kbnSharedDeps_npm__',
+      }),
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
       }),
     ],
   };

@@ -66,7 +66,8 @@ RUNTIME_DEPS = [
   "@npm//redux",
   "@npm//react-redux",
   "@npm//immer",
-  "@npm//reselect"
+  "@npm//reselect",
+  "@npm//webpack-bundle-analyzer"
 ]
 
 webpack_cli(
@@ -86,8 +87,7 @@ webpack_cli(
     "--config",
     "$(location webpack.config.js)",
     "--output-path",
-    "$(@D)",
-    "--stats=errors-only"
+    "$(@D)"
   ],
   visibility = ["//visibility:public"],
   env = select({
