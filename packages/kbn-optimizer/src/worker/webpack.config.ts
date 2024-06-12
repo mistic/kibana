@@ -112,6 +112,7 @@ export function getWebpackConfig(
       noParse: [
         /[\/\\]node_modules[\/\\]lodash[\/\\]index\.js$/,
         /[\/\\]node_modules[\/\\]vega[\/\\]build-es5[\/\\]vega\.js$/,
+        /[\/\\]node_modules[\/\\]@tanstack[\/\\]virtual-core[\/\\]dist[\/\\]cjs[\/\\]index\.cjs$/,
       ],
 
       rules: [
