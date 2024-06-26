@@ -236,6 +236,18 @@ export function getWebpackConfig(
         {
           test: /\.(js|tsx?)$/,
           exclude: /node_modules/,
+          // TODO: remove this
+          // exclude: (modulePath) => {
+          //   // Exclude all node_modules except for node1 and node2
+          //   if (
+          //     /node_modules/.test(modulePath) &&
+          //     !/node_modules[\/\\]@elastic[\/\\]help-center-common/.test(modulePath) &&
+          //     !/node_modules[\/\\]@elastic[\/\\]help-center-host/.test(modulePath)
+          //   ) {
+          //     return true;
+          //   }
+          //   return false;
+          // },
           use: {
             loader: 'babel-loader',
             options: {
