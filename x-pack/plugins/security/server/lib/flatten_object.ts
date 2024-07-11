@@ -10,7 +10,7 @@ import { compact, isObject } from 'lodash';
 // Inspired by x-pack/plugins/observability_solution/apm/public/utils/flatten_object.ts
 // Slighly modified to have key/value exposed as Object.
 export const flattenObject = (
-  item: Record<any, any | any[]> | null | undefined,
+  item: Record<any, unknown | unknown[]> | null | undefined,
   accDefault: Record<string, any> = {},
   parentKey?: string
 ): Record<string, any> => {
@@ -22,12 +22,9 @@ export const flattenObject = (
         const childKey = isArrayWithSingleValue ? '' : key;
         const currentKey = compact([parentKey, childKey]).join('.');
         // item[key] can be a primitive (string, number, boolean, null, undefined) or Object or Array
-        // @ts-expect-error upgrade typescript v5.1.6
         if (isObject(item[key])) {
-          // @ts-expect-error upgrade typescript v5.1.6
-          flattenObject(item[key], acc, currentKey);
+          flattenObject(item[key] as any, acc, currentKey);
         } else {
-          // @ts-expect-error upgrade typescript v5.1.6
           acc[currentKey] = item[key];
         }
 

@@ -105,10 +105,8 @@ export class AnonymousAuthenticationProvider extends BaseAuthenticationProvider 
     return new HTTPAuthorizationHeader(
       'Basic',
       new BasicHTTPAuthorizationHeaderCredentials(
-        // @ts-expect-error upgrade typescript v5.1.6
-        credentials.username,
-        // @ts-expect-error upgrade typescript v5.1.6
-        credentials.password
+        (credentials as UsernameAndPasswordCredentials).username,
+        (credentials as UsernameAndPasswordCredentials).password
       ).toString()
     );
   }
