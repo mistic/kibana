@@ -57,7 +57,7 @@ function isAPIKeyCredentials(
     | ElasticsearchAnonymousUserCredentials
     | APIKeyCredentials
     | UsernameAndPasswordCredentials
-): credentials is APIKeyCredentials {
+): credentials is Readonly<APIKeyCredentials> {
   return !!(credentials as APIKeyCredentials).apiKey;
 }
 
@@ -105,8 +105,8 @@ export class AnonymousAuthenticationProvider extends BaseAuthenticationProvider 
     return new HTTPAuthorizationHeader(
       'Basic',
       new BasicHTTPAuthorizationHeaderCredentials(
-        (credentials as UsernameAndPasswordCredentials).username,
-        (credentials as UsernameAndPasswordCredentials).password
+        credentials.username,
+        credentials.password
       ).toString()
     );
   }
