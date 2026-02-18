@@ -1151,6 +1151,15 @@ paths:
       summary: Get A2A agent card
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X GET "${KIBANA_URL}/api/agent_builder/a2a/{agentId}.json" \
+              -H "Authorization: ApiKey ${API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/agent_builder/a2a/{agentId}.json
       x-state: Technical Preview
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1208,6 +1217,15 @@ paths:
       summary: List agents
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+             -X GET "${KIBANA_URL}/api/agent_builder/agents" \
+             -H "Authorization: ApiKey ${API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/agent_builder/agents
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1337,6 +1355,59 @@ paths:
       summary: Create an agent
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X POST "${KIBANA_URL}/api/agent_builder/agents" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "id": "new-agent-id",
+                "name": "Search Index Helper",
+                "description": "Hi! I can help you search the data within the indices starting with \"content-\" prefix.",
+                "labels": ["custom-indices", "department-search"],
+                "avatar_color": "#BFDBFF",
+                "avatar_symbol": "SI",
+                "configuration": {
+                  "instructions": "You are a custom agent that wants to help searching data using all indices starting with prefix \"content-\".",
+                  "tools": [
+                    {
+                      "tool_ids": [
+                        "platform.core.search",
+                        "platform.core.list_indices",
+                        "platform.core.get_index_mapping",
+                        "platform.core.get_document_by_id"
+                      ]
+                    }
+                  ]
+                }
+            }'
+        - lang: Console
+          source: |
+            POST kbn://api/agent_builder/agents
+            {
+              "id": "new-agent-id",
+              "name": "Search Index Helper",
+              "description": "Hi! I can help you search the data within the indices starting with \"content-\" prefix.",
+              "labels": ["custom-indices", "department-search"],
+              "avatar_color": "#BFDBFF",
+              "avatar_symbol": "SI",
+              "configuration": {
+                "instructions": "You are a custom agent that wants to help searching data using all indices starting with prefix \"content-\".",
+                "tools": [
+                  {
+                    "tool_ids": [
+                      "platform.core.search",
+                      "platform.core.list_indices",
+                      "platform.core.get_index_mapping",
+                      "platform.core.get_document_by_id"
+                    ]
+                  }
+                ]
+              }
+            }
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1379,6 +1450,16 @@ paths:
       summary: Delete an agent
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X DELETE "${KIBANA_URL}/api/agent_builder/agents/{id}" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true"
+        - lang: Console
+          source: |
+            DELETE kbn://api/agent_builder/agents/{id}
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1429,6 +1510,15 @@ paths:
       summary: Get an agent by ID
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X GET "${KIBANA_URL}/api/agent_builder/agents/{id}" \
+              -H "Authorization: ApiKey ${API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/agent_builder/agents/{id}
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1556,6 +1646,53 @@ paths:
       summary: Update an agent
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X PUT "${KIBANA_URL}/api/agent_builder/agents/{id}" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "name": "Search Index Helper",
+                "description": "Updated description - Search for anything in \"content-*\" indices!",
+                "labels": ["custom-indices", "department-search", "elastic-employees"],
+                "avatar_color": "#BFDBFF",
+                "avatar_symbol": "SI",
+                "configuration": {
+                  "instructions": "You are a custom agent that wants to help searching data using all indices starting with prefix \"content-\".",
+                  "tools": [{
+                    "tool_ids": [
+                      "platform.core.search",
+                      "platform.core.list_indices",
+                      "platform.core.get_index_mapping",
+                      "platform.core.get_document_by_id"
+                    ]
+                  }]
+                }
+              }'
+        - lang: Console
+          source: |
+            PUT kbn://api/agent_builder/agents/{id}
+            {
+              "name": "Search Index Helper",
+              "description": "Updated description - Search for anything in \"content-*\" indices!",
+              "labels": ["custom-indices", "department-search", "elastic-employees"],
+              "avatar_color": "#BFDBFF",
+              "avatar_symbol": "SI",
+              "configuration": {
+                "instructions": "You are a custom agent that wants to help searching data using all indices starting with prefix \"content-\".",
+                "tools": [{
+                  "tool_ids": [
+                    "platform.core.search",
+                    "platform.core.list_indices",
+                    "platform.core.get_index_mapping",
+                    "platform.core.get_document_by_id"
+                  ]
+                }]
+              }
+            }
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1598,6 +1735,15 @@ paths:
       summary: List conversations
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X GET "${KIBANA_URL}/api/agent_builder/conversations" \
+              -H "Authorization: ApiKey ${API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/agent_builder/conversations
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1640,6 +1786,16 @@ paths:
       summary: Delete conversation by ID
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X DELETE "${KIBANA_URL}/api/agent_builder/conversations/{conversation_id}" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true"
+        - lang: Console
+          source: |
+            DELETE kbn://api/agent_builder/conversations/{conversation_id}
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -1690,6 +1846,15 @@ paths:
       summary: Get conversation by ID
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X GET "${KIBANA_URL}/api/agent_builder/conversations/{conversation_id}" \
+              -H "Authorization: ApiKey ${API_KEY}"
+        - lang: Console
+          source: |
+            GET kbn://api/agent_builder/conversations/{conversation_id}
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -2319,6 +2484,24 @@ paths:
       summary: Send chat message
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X POST "${KIBANA_URL}/api/agent_builder/converse" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "input": "What is Elasticsearch?",
+                "agent_id": "elastic-ai-agent"}'
+        - lang: Console
+          source: |
+            POST kbn://api/agent_builder/converse
+            {
+              "input": "What is Elasticsearch?",
+              "agent_id": "elastic-ai-agent"
+            }
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
@@ -2683,6 +2866,27 @@ paths:
       summary: Send chat message (streaming)
       tags:
         - agent builder
+      x-codeSamples:
+        - lang: curl
+          source: |
+            curl \
+              -X POST "${KIBANA_URL}/api/agent_builder/converse/async" \
+              -H "Authorization: ApiKey ${API_KEY}" \
+              -H "kbn-xsrf: true" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "input": "Hello again let us have an async chat",
+                "agent_id": "elastic-ai-agent",
+                "conversation_id": "<CONVERSATION_ID>"
+              }'
+        - lang: Console
+          source: |
+            POST kbn://api/agent_builder/converse/async
+            {
+              "input": "Hello again let's have an async chat",
+              "agent_id": "elastic-ai-agent",
+              "conversation_id": "<CONVERSATION_ID>"
+            }
       x-state: ''
       x-metaTags:
         - content: Kibana, Elastic Cloud Serverless
